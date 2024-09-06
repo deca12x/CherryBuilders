@@ -21,6 +21,9 @@ export default function CreateRequestModal({ isOpen, onClose, onCreateRequest }:
   const [amount, setAmount] = useState('')
 
   const handleCreateRequest = () => {
+
+    
+
     onCreateRequest(amount)
     setAmount('')
     onClose()

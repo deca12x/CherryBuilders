@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
+import RequestMessage from './RequestMessage';
 
 interface Message {
   id: number;
@@ -68,28 +68,22 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
           ref={index === messages.length - 1 ? lastMessageRef : null}
           className={`flex mb-4 ${msg.sender === currentUserAddress ? 'justify-end' : 'justify-start'}`}
         >
-          <div 
-            className={`rounded-lg p-3 max-w-xs ${
-              msg.sender === currentUserAddress ? 'bg-primary text-primary-foreground' : 'bg-muted'
-            } ${msg.type === 'request' ? 'flex flex-col items-start' : ''}`}
-          >
-            {msg.type === 'request' ? (
-              <>
-                <p>{msg.message}</p>
-                {msg.sender !== currentUserAddress && (
-                  <Button 
-                    onClick={() => handlePay(msg.message.split(' ')[1])} 
-                    className="mt-2"
-                    size="sm"
-                  >
-                    Pay
-                  </Button>
-                )}
-              </>
-            ) : (
+          {msg.type === 'request' ? (
+            <RequestMessage
+              message={msg.message}
+              amount={msg.message.split(' ')[1]}
+              isCurrentUser={msg.sender === currentUserAddress}
+              onPay={handlePay}
+            />
+          ) : (
+            <div 
+              className={`rounded-lg p-3 max-w-xs ${
+                msg.sender === currentUserAddress ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              }`}
+            >
               <p>{msg.message}</p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       ))}
     </ScrollArea>
