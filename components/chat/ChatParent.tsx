@@ -43,10 +43,6 @@ export default function ChatParent({
     const [otherUser, setOtherUser] = useState<User>({ address: '0x456...', name: 'Bob' })
     const channelRef = useRef<any>(null);
 
-    const chatHistory = [
-        { id: 1, name: otherUser.name, lastMessage: 'Hey, how are you?' },
-        // ... other chat history items ...
-    ]
 
     useEffect(() => {
         console.log('ChatParent: Component mounted or chatId/userAddress changed')
@@ -170,7 +166,7 @@ export default function ChatParent({
 
     return (
         <div className="flex h-screen bg-background">
-            <ChatSidebar chatHistory={chatHistory} />
+            <ChatSidebar userAddress={userAddress} />
             <div className="flex-1 flex flex-col">
                 <ChatHeader name={otherUser.name} />
                 <MessageList
