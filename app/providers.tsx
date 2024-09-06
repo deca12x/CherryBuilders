@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode } from "react";
 import { WagmiProvider } from "wagmi";
 import { config } from "@/lib/wagmi";
+//@ts-ignore
 import { DynamicContextProvider, EthereumWalletConnectors, DynamicWagmiConnector } from "@/lib/dynamic";
 
 const queryClient = new QueryClient();
