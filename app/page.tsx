@@ -5,6 +5,7 @@ import { K2D } from "next/font/google";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import WorldIDVerification from "@/components/verify";
 
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
@@ -21,6 +22,7 @@ export default function Home() {
           <h1 className={`text-6xl font-bold text-center text-primary ${k2d.className}`}>DEVLINK!</h1>
           <div className="flex flex-col justify-center items-center mt-8 gap-3">
             <DynamicWidget />
+            <WorldIDVerification />
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">
