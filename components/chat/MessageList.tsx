@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
 
 interface Message {
   id: number;
   sender: string;
   message: string;
+  type?: string;
 }
 
 interface MessageListProps {
@@ -53,6 +55,11 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
     };
   }, [messages]);
 
+  const handlePay = (amount: string) => {
+    // Implement payment logic here
+    console.log(`Paying ${amount}`);
+  };
+
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
       {messages.map((msg, index) => (
@@ -64,9 +71,24 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
           <div 
             className={`rounded-lg p-3 max-w-xs ${
               msg.sender === currentUserAddress ? 'bg-primary text-primary-foreground' : 'bg-muted'
-            }`}
+            } ${msg.type === 'request' ? 'flex flex-col items-start' : ''}`}
           >
-            <p>{msg.message}</p>
+            {msg.type === 'request' ? (
+              <>
+                <p>{msg.message}</p>
+                {msg.sender !== currentUserAddress && (
+                  <Button 
+                    onClick={() => handlePay(msg.message.split(' ')[1])} 
+                    className="mt-2"
+                    size="sm"
+                  >
+                    Pay
+                  </Button>
+                )}
+              </>
+            ) : (
+              <p>{msg.message}</p>
+            )}
           </div>
         </div>
       ))}

@@ -14,6 +14,7 @@ interface ChatMessage {
     message: string;
     created_at: string;
     chat_id: string;
+    type?: string;
 }
 
 interface User {
@@ -124,15 +125,16 @@ export default function ChatParent({
         }
     }
 
-    const handleSend = async () => {
-        if (message.trim()) {
-            console.log('Sending message:', message)
+    const handleSend = async (messageText: string, type?: string) => {
+        if (messageText.trim()) {
+            console.log('Sending message:', messageText, 'Type:', type)
             const newMessage: ChatMessage = {
                 id: Date.now(),
                 sender: userAddress,
-                message: message.trim(),
+                message: messageText.trim(),
                 chat_id: chatId,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                type: type
             };
         
             console.log('Adding message to UI:', newMessage)
@@ -163,7 +165,6 @@ export default function ChatParent({
             }
         }
     }
-
     return (
         <div className="flex h-screen bg-background">
             <ChatSidebar userAddress={userAddress} />
