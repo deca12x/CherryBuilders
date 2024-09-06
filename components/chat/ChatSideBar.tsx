@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 
 type ChatHistoryItem = {
   id: number;
@@ -14,6 +15,7 @@ export default function ChatSidebar({ chatHistory }: { chatHistory: ChatHistoryI
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
       <ScrollArea className="h-[calc(100vh-5rem)]">
+      <DynamicWidget />
         {chatHistory.map((chat) => (
           <div key={chat.id} className="flex items-center p-4 hover:bg-accent cursor-pointer">
             <Avatar className="h-10 w-10">
