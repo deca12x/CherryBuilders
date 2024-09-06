@@ -8,55 +8,52 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type Tag = "Javascript" | "Typescript" | "React" | "Solidity";
+type Tag = "frontend dev" | "backend dev" | "solidity dev" | "ui/ux dev";
 
-interface Link {
-  url: string;
-  platform: string;
+interface ProfileData {
+  name: string;
+  bio: string | null;
+  tags: Tag[];
+  github_link: string | null;
+  twitter_link: string | null;
+  farcaster_link: string | null;
+  other_link: string | null;
 }
 
 const ProfilePage: React.FC = () => {
   const { address } = useAccount();
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [links, setLinks] = useState<Link[]>([{ url: "", platform: "" }]);
-  const [newLink, setNewLink] = useState({ url: "", platform: "" });
-  const [customAddress, setCustomAddress] = useState("");
+  const [profileData, setProfileData] = useState<ProfileData>({
+    name: "",
+    bio: "",
+    tags: [],
+    github_link: "",
+    twitter_link: "",
+    farcaster_link: "",
+    other_link: "",
+  });
 
   const availableTags: Tag[] = [
-    "Javascript",
-    "Typescript",
-    "React",
-    "Solidity",
+    "frontend dev",
+    "backend dev",
+    "solidity dev",
+    "ui/ux dev",
   ];
+
+  const handleChange = (field: keyof ProfileData, value: string | Tag[]) => {
+    setProfileData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleTagToggle = (tag: Tag) => {
+    const newTags = profileData.tags.includes(tag)
+      ? profileData.tags.filter((t) => t !== tag)
+      : [...profileData.tags, tag];
+    handleChange("tags", newTags);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement form submission logic
-    console.log({ name, bio, tags, links, address: customAddress || address });
-  };
-
-  const handleTagToggle = (tag: Tag) => {
-    setTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const addLink = () => {
-    if (links.length < 10) {
-      setLinks((prev) => [...prev, { url: "", platform: "" }]);
-    }
-  };
-
-  const updateLink = (
-    index: number,
-    field: "url" | "platform",
-    value: string
-  ) => {
-    setLinks((prev) =>
-      prev.map((link, i) => (i === index ? { ...link, [field]: value } : link))
-    );
+    console.log(profileData);
   };
 
   return (
@@ -72,9 +69,9 @@ const ProfilePage: React.FC = () => {
             </Label>
             <Input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={50}
+              value={profileData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              maxLength={255}
               required
               className="mt-1"
             />
@@ -86,22 +83,20 @@ const ProfilePage: React.FC = () => {
             </Label>
             <Textarea
               id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              maxLength={250}
-              required
+              value={profileData.bio || ""}
+              onChange={(e) => handleChange("bio", e.target.value)}
               className="mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-sm font-medium">Tags</Label>
+            <Label className="text-sm font-medium">Skills</Label>
             <div className="mt-1 space-y-2">
               {availableTags.map((tag) => (
                 <div key={tag} className="flex items-center">
                   <Checkbox
                     id={tag}
-                    checked={tags.includes(tag)}
+                    checked={profileData.tags.includes(tag)}
                     onCheckedChange={() => handleTagToggle(tag)}
                   />
                   <label htmlFor={tag} className="ml-2 text-sm">
@@ -113,35 +108,43 @@ const ProfilePage: React.FC = () => {
           </div>
 
           <div>
-            <Label className="text-sm font-medium">Links</Label>
-            <div className="mt-1 space-y-2">
-              {links.map((link, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Input
-                    placeholder="Platform"
-                    value={link.platform}
-                    onChange={(e) =>
-                      updateLink(index, "platform", e.target.value)
-                    }
-                  />
-                  <Input
-                    placeholder="URL"
-                    value={link.url}
-                    onChange={(e) => updateLink(index, "url", e.target.value)}
-                  />
-                </div>
-              ))}
-              {links.length < 10 && (
-                <Button
-                  type="button"
-                  onClick={addLink}
-                  className="mt-2 p-2 h-auto"
-                  variant="outline"
-                >
-                  +
-                </Button>
-              )}
-            </div>
+            <Input
+              placeholder="GitHub"
+              value={profileData.github_link || ""}
+              onChange={(e) => handleChange("github_link", e.target.value)}
+              maxLength={255}
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <Input
+              placeholder="X"
+              value={profileData.twitter_link || ""}
+              onChange={(e) => handleChange("twitter_link", e.target.value)}
+              maxLength={255}
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <Input
+              placeholder="Farcaster"
+              value={profileData.farcaster_link || ""}
+              onChange={(e) => handleChange("farcaster_link", e.target.value)}
+              maxLength={255}
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <Input
+              placeholder="Other link"
+              value={profileData.other_link || ""}
+              onChange={(e) => handleChange("other_link", e.target.value)}
+              maxLength={255}
+              className="mt-1"
+            />
           </div>
         </form>
       </div>
