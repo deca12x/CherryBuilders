@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface Message {
@@ -13,6 +13,16 @@ interface MessageListProps {
 }
 
 const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress }) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
     <ScrollArea className="flex-1 p-4">
       {messages.map((msg) => (
@@ -29,6 +39,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
           </div>
         </div>
       ))}
+      <div ref={messagesEndRef} />
     </ScrollArea>
   )
 }

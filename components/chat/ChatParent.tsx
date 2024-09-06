@@ -68,15 +68,37 @@ export default function ChatParent({
 
   const handleSend = async () => {
     if (message.trim()) {
-      const { error } = await supabase
+      const newMessage = {
+        id: Date.now(), // Temporary ID
+        sender: userAddress,
+        message: message.trim(),
+        created_at: new Date().toISOString(),
+        chat_id: chatId
+      };
+
+      // Optimistically update the UI
+      setCurrentChat(prevMessages => [...prevMessages, newMessage]);
+      setMessage('');
+
+      const { data, error } = await supabase
         .from('messages')
-        .insert({ sender: userAddress, message: message.trim(), chat_id: chatId })  // Add chat_id here
+        .insert(newMessage)
+        .select()
       
-      if (error) console.error('Error sending message:', error)
-      else setMessage('')
+      if (error) {
+        console.error('Error sending message:', error);
+        // Revert the optimistic update
+        setCurrentChat(prevMessages => prevMessages.filter(msg => msg.id !== newMessage.id));
+      } else if (data) {
+        // Update the message with the correct ID from the database
+        setCurrentChat(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === newMessage.id ? data[0] : msg
+          )
+        );
+      }
     }
   }
-
   return (
     <div className="flex h-screen bg-background">
       <ChatSidebar chatHistory={chatHistory} />
