@@ -20,7 +20,7 @@ const ProfilePage: React.FC = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [tags, setTags] = useState<Tag[]>([]);
-  const [links, setLinks] = useState<Link[]>([]);
+  const [links, setLinks] = useState<Link[]>([{ url: "", platform: "" }]);
   const [newLink, setNewLink] = useState({ url: "", platform: "" });
   const [customAddress, setCustomAddress] = useState("");
 
@@ -44,10 +44,19 @@ const ProfilePage: React.FC = () => {
   };
 
   const addLink = () => {
-    if (newLink.url && newLink.platform) {
-      setLinks((prev) => [...prev, newLink]);
-      setNewLink({ url: "", platform: "" });
+    if (links.length < 10) {
+      setLinks((prev) => [...prev, { url: "", platform: "" }]);
     }
+  };
+
+  const updateLink = (
+    index: number,
+    field: "url" | "platform",
+    value: string
+  ) => {
+    setLinks((prev) =>
+      prev.map((link, i) => (i === index ? { ...link, [field]: value } : link))
+    );
   };
 
   return (
@@ -108,46 +117,31 @@ const ProfilePage: React.FC = () => {
             <div className="mt-1 space-y-2">
               {links.map((link, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <span>{link.platform}:</span>
-                  <span>{link.url}</span>
+                  <Input
+                    placeholder="Platform"
+                    value={link.platform}
+                    onChange={(e) =>
+                      updateLink(index, "platform", e.target.value)
+                    }
+                  />
+                  <Input
+                    placeholder="URL"
+                    value={link.url}
+                    onChange={(e) => updateLink(index, "url", e.target.value)}
+                  />
                 </div>
               ))}
-              <div className="flex items-center space-x-2">
-                <Input
-                  placeholder="Platform"
-                  value={newLink.platform}
-                  onChange={(e) =>
-                    setNewLink((prev) => ({
-                      ...prev,
-                      platform: e.target.value,
-                    }))
-                  }
-                />
-                <Input
-                  placeholder="URL"
-                  value={newLink.url}
-                  onChange={(e) =>
-                    setNewLink((prev) => ({ ...prev, url: e.target.value }))
-                  }
-                />
-                <Button type="button" onClick={addLink}>
-                  Add
+              {links.length < 10 && (
+                <Button
+                  type="button"
+                  onClick={addLink}
+                  className="mt-2 p-2 h-auto"
+                  variant="outline"
+                >
+                  +
                 </Button>
-              </div>
+              )}
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="evmAddress" className="text-sm font-medium">
-              EVM Address
-            </Label>
-            <Input
-              id="evmAddress"
-              value={customAddress || address || ""}
-              onChange={(e) => setCustomAddress(e.target.value)}
-              placeholder="Enter EVM address"
-              className="mt-1"
-            />
           </div>
         </form>
       </div>
