@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, MessageCircle, Cog, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Heart, MessageCircle, Cog, User, Link } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,18 +12,30 @@ export const users = [
     images: ["/images/john1.jpg", "/images/john2.jpeg", "/images/john3.jpg"],
     tags: ["Travel", "Photography", "Foodie"],
     bio: "Adventure seeker and coffee enthusiast. Always looking for the next exciting experience!",
+    github_link: "https://github.com",
+    twitter_link: "https://twitter.com",
+    farcaster_link: "https://farcaster",
+    other_link: "https://other.com",
   },
   {
     name: "Jim Smith",
     images: ["/images/jim1.jpg", "/images/jim2.jpg"],
     tags: ["Fitness", "Tech", "Movies"],
     bio: "Software developer by day, fitness junkie by night. Love discussing the latest tech trends and watching classic films.",
+    github_link: "https://github.com",
+    twitter_link: "https://twitter.com",
+    farcaster_link: "https://farcaster",
+    other_link: "https://other.com",
   },
   {
     name: "Jane Doe",
     images: ["/images/jane1.jpg", "/images/jane2.webp"],
     tags: ["Music", "Art", "Fashion"],
     bio: "Music lover and aspiring fashion designer. I enjoy painting and exploring new art galleries.",
+    github_link: "https://github.com",
+    twitter_link: "https://twitter.com",
+    farcaster_link: "https://farcaster",
+    other_link: "https://other.com",
   },
 ];
 
@@ -113,21 +125,56 @@ export default function Matching() {
           transition={{ type: "spring", duration: 0.7 }}
         >
           <div className="flex flex-col p-4 gap-3">
+            {/* Stats */}
+            <div className="flex flex-row gap-3">
+              {/* Worldcoin ID */}
+              <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
+                <p className="font-bold text-foreground">Worldcoin ID</p>
+                <p className="text-muted-foreground">Confirmed</p>
+              </div>
+              {/* Talent score */}
+              <div className="flex flex-col items-center bg-card rounded-xl p-3">
+                <p className="font-bold text-foreground">Talent Score</p>
+                <p className="text-muted-foreground">90</p>
+              </div>
+            </div>
             {/* Bio */}
             <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
               <p className="font-bold text-foreground">Who am I?</p>
               <p className="text-muted-foreground">{user.bio}</p>
             </div>
 
-            {/* Additional sections */}
-            <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
-              <p className="font-bold text-foreground">My Interests</p>
-              <p className="text-muted-foreground">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            </div>
-
-            <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
-              <p className="font-bold text-foreground">Looking For</p>
-              <p className="text-muted-foreground">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            {/* Links */}
+            <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
+              <p className="font-bold text-foreground">Links</p>
+              <div className="flex justify-between">
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <img height={26} width={26} src="/images/github.png" alt="github logo" />
+                  <a href={user.github_link} className="text-muted-foreground hover:underline">
+                    Github
+                  </a>
+                </p>
+                <p className="flex text-muted-foreground items-center gap-2">
+                  <img height={20} width={20} src="/images/x_logo.svg" alt="x logo" />
+                  <a href={user.twitter_link} className="text-muted-foreground hover:underline">
+                    (Twitter)
+                  </a>
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <img height={23} width={23} src="/images/farcaster.svg" alt="farcaster logo" />
+                  <a href={user.farcaster_link} className="text-muted-foreground hover:underline">
+                    Farcaster
+                  </a>
+                </p>
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <Link size={24} />
+                  <a href={user.other_link} className="text-muted-foreground hover:underline">
+                    Other
+                  </a>
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
