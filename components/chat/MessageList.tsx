@@ -86,7 +86,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
         >
           {msg.type === 'request' ? (
             <RequestMessage
-            requestId={msg.requestId as string}
+              requestId={msg.requestId as string}
               message={msg.message}
               amount={msg.message.split(' ')[1]}
               isCurrentUser={msg.sender === currentUserAddress}
@@ -95,7 +95,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
             />
           ) : (
             <div 
-              className={`rounded-lg p-3 max-w-xs ${
+              className={`rounded-lg p-3 max-w-[75%] break-words ${
                 msg.sender === currentUserAddress ? 'bg-primary text-primary-foreground' : 'bg-muted'
               }`}
             >

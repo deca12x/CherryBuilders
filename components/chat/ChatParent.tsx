@@ -7,13 +7,17 @@ import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import { supabase } from "@/lib/supabase";
 import { ChatMessage, ChatParentProps, User } from "@/lib/types";
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Button } from "../ui/button";
+import { Menu } from "lucide-react";
+import BottomNavigationBar from "../navbar/BottomNavigationBar";
 
 export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
   const [message, setMessage] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const channelRef = useRef<any>(null);
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   useEffect(() => {
     console.log("ChatParent: Component mounted or chatId/userAddress changed");
     console.log("Current userAddress:", userAddress);
@@ -170,16 +174,34 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <ChatSidebar userAddress={userAddress} activeChatId={chatId} />
-      <div className="flex-1 flex flex-col">
+    <div className="flex flex-col h-screen bg-background lg:flex-row">
+      {/* Mobile Sidebar Trigger */}
+      <div className="lg:hidden p-4 border-b border-border">
+        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
+            <ChatSidebar userAddress={userAddress} activeChatId={chatId} />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block w-1/4 border-r border-border">
+        <ChatSidebar userAddress={userAddress} activeChatId={chatId} />
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col p-2 pb-12">
         <ChatHeader name={otherUser?.name || "Loading..."} />
         <MessageList
-          key={currentChat.length} // Force re-render on messages change
+          key={currentChat.length}
           messages={currentChat}
           currentUserAddress={userAddress}
         />
-
         <MessageInput
           payeeAddress={userAddress}
           payerAddress={otherUser?.address as string}
@@ -187,7 +209,9 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
           setMessage={setMessage}
           handleSend={handleSend}
         />
+           
       </div>
+      <BottomNavigationBar />
     </div>
-  );
+  )
 }

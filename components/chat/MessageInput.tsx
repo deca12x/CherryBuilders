@@ -37,7 +37,7 @@ export default function MessageInput({ message, setMessage, handleSend, payeeAdd
 
   return (
     <div className="p-4 border-t border-border bg-card">
-      <div className="flex space-x-2">
+      <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
         <Input
           type="text"
           placeholder="Type a message..."
@@ -46,37 +46,39 @@ export default function MessageInput({ message, setMessage, handleSend, payeeAdd
           onKeyPress={(e) => e.key === 'Enter' && onSend()}
           className="flex-1"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <Paperclip className="h-4 w-4 mr-2" />
-              Attach
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onSelect={() => setIsModalOpen(true)}>
-              <Image src={'/request.png'} className="mr-2 h-4 w-4" width={24} height={24} alt="request" />
-              <span>Create Request</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <ImageIcon className="mr-2 h-4 w-4" />
-              <span>Image</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <FileText className="mr-2 h-4 w-4" />
-              <span>Document</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button onClick={onSend}>
-          <Send className="h-4 w-4" />
-          <span className="sr-only">Send</span>
-        </Button>
+        <div className="flex space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto">
+                <Paperclip className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Attach</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onSelect={() => setIsModalOpen(true)}>
+                <Image src={'/request.png'} className="mr-2 h-4 w-4" width={24} height={24} alt="request" />
+                <span>Create Request</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <ImageIcon className="mr-2 h-4 w-4" />
+                <span>Image</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Document</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button onClick={onSend} className="w-full sm:w-auto">
+            <Send className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Send</span>
+          </Button>
+        </div>
       </div>
 
       <CreateRequestModal
-      payeeAddress={payeeAddress}
-      payerAddress={payerAddress}
+        payeeAddress={payeeAddress}
+        payerAddress={payerAddress}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreateRequest={handleCreateRequest}
