@@ -41,7 +41,7 @@ export default function Home() {
       <Card className="sm:max-w-xl">
         <CardContent className="pt-6">
           <h1 className={`text-3xl font-bold text-center text-primary ${k2d.className}`}>Welcome to</h1>
-          <h1 className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}>DEVLINK!</h1>
+          <h1 className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}>Cherry 🍒</h1>
           <div className="flex flex-col justify-center items-center mt-8 gap-3">
             <ConnectButton />
           </div>
