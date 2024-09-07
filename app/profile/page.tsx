@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
 import NotAuthenticated from "@/components/NotAuthenticated";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
+import { RefreshCcw } from "lucide-react";
 
 const ProfilePage: React.FC = () => {
   const { address } = useAccount();
@@ -28,6 +29,7 @@ const ProfilePage: React.FC = () => {
     profile_pictures: [],
     evm_address: address || "",
     verified: false,
+    talent_score: 0,
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,6 +175,39 @@ const ProfilePage: React.FC = () => {
     event.preventDefault();
   };
 
+  const handleUpdateTalentScore = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    // Fetch Talent Passport from /api/talent as a POST request
+    const response = await fetch("/api/talent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address }),
+    });
+
+    if (!response.ok) {
+      toast({
+        title: "Error",
+        description: "No Talent Passport found for this address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const passportScore: number = await response.json();
+    console.log("Talent Passport score:", passportScore);
+
+    if (!passportScore) {
+      toast({
+        title: "Error",
+        description: "No Talent Passport found for this address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    handleChange("talent_score", passportScore.toString());
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -275,8 +310,25 @@ const ProfilePage: React.FC = () => {
                   <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={false} />
                 </Button>
               ) : (
-                <p className="text-sm pt-1 text-green-500">Already Verified</p>
+                <p className="text-md pt-1 text-green-500">Already Verified</p>
               )}
+            </motion.div>
+
+            {/* Talent score */}
+            <motion.div className="flex items-center mt-6 gap-2" variants={itemVariants}>
+              <Label className="text-md font-medium block items-center justify-center underline">
+                <a
+                  href="https://talentprotocol.notion.site/Builder-Score-FAQ-4e07c8df13514ce79661ed0d776d4741"
+                  target="_blank"
+                >
+                  Talent Score:
+                </a>
+              </Label>
+              <span className={"text-md mr-3 text-primary"}>{profileData.talent_score ?? "N/A"}</span>
+              <button className="flex items-center hover:text-primary" onClick={handleUpdateTalentScore}>
+                <RefreshCcw />
+                <span className="text-xs ml-1">Update</span>
+              </button>
             </motion.div>
 
             <motion.div variants={itemVariants}>

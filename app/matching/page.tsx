@@ -107,6 +107,7 @@ export default function Matching() {
         if (chatDataError) throw chatDataError;
 
         setIsMatchModalOpen(true);
+        setIsProfilesEndedModalOpen(false);
         setMatchedChatId(chatData?.id);
 
         if (chatError) throw chatError;
@@ -283,7 +284,7 @@ export default function Matching() {
                 {/* Talent score */}
                 <div className="flex flex-col items-center bg-card rounded-xl p-3">
                   <p className="font-bold text-foreground">Talent Score</p>
-                  <p className="text-muted-foreground">{user.talent_score}</p>
+                  <p className="text-muted-foreground">{user.talent_score ?? "N/A"}</p>
                 </div>
               </div>
               {/* Bio */}
