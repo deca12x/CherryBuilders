@@ -1,14 +1,30 @@
 "use client";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Heart, Link } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { user_tag, UserType } from "@/lib/types";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
+import { supabase } from "@/lib/supabase";
+import { useAccount } from "wagmi";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
-export const users: UserType[] = [];
+export const users: UserType[] = [
+  {
+    evm_address: "0xabcdef1234567890",
+    name: "Jim Smith",
+    verified: false,
+    talent_score: 85,
+    profile_pictures: ["/images/jim2.jpg", "/images/jim1.jpg"],
+    tags: ["solidity dev", "ui/ux dev"],
+    bio: "Software developer by day, fitness junkie by night. Love discussing the latest tech trends and watching classic films.",
+    github_link: "https://github.com",
+    twitter_link: "https://twitter.com",
+    farcaster_link: "https://farcaster",
+    other_link: "https://other.com",
+  },
+];
 
 export default function Matching() {
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -18,11 +34,15 @@ export default function Matching() {
   const [bioDirection, setBioDirection] = useState(0);
   const [animateFrame, setAnimateFrame] = useState(false);
 
+  // Get the user's address from the useAccount hook
+  const { address } = useAccount();
+
   // Fetch the user from the get-random-users internal route as soon as the component mounts
   useEffect(() => {
     setLoadingUsers(true);
     const fetchUser = async () => {
-      const response = await fetch("/api/get-random-users");
+      // Pass the user's address as a payload to the get-random-users route
+      const response = await fetch("/api/get-random-users", { method: "POST", body: JSON.stringify({ address }) });
       const data = await response.json();
       if (data.error) {
         console.error(data.error);
@@ -37,7 +57,40 @@ export default function Matching() {
     setLoadingUsers(false);
   }, []);
 
+  const checkMatch = async () => {
+    // Check if the there's a matching row in the matches table
+    try {
+      const { data, error } = await supabase
+        .from("matches")
+        .select("*")
+        .eq("user_2", address)
+        .eq("user_1", users[currentUser].evm_address)
+        .neq("matched", true);
+      if (error) {
+        throw new Error("Error fetching matches");
+      } else if (data.length === 0) {
+        console.log("No matches found, creating a new match");
+        await supabase.from("matches").insert([{ user_1: address, user_2: users[currentUser].evm_address }]);
+      } else if (data.length > 0) {
+        console.log("Match exists");
+        // Update the matched column to true
+        await supabase
+          .from("matches")
+          .update({ matched: true })
+          .eq("user_1", address)
+          .eq("user_2", users[currentUser].evm_address);
+
+        // Create a new chat row in the chats table
+        await supabase.from("chats").insert([{ user_1: address, user_2: users[currentUser].evm_address }]);
+      }
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+  };
+
   const handleNext = () => {
+    checkMatch();
     setDirection(1);
     setBioDirection(1);
     setAnimateFrame(true);
