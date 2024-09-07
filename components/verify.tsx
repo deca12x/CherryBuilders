@@ -1,5 +1,5 @@
 "use client"; // for Next.js app router
-import React from "react";
+import React, { useEffect } from "react";
 import {
   IDKitWidget,
   VerificationLevel,
@@ -14,6 +14,10 @@ const WorldIDVerification: React.FC = () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
     process.env.NEXT_PUBLIC_ANON_KEY as string
   );
+
+  useEffect(() => {
+    console.log("address", address);
+  }, [address]);
 
   const handleVerify = async (proof: ISuccessResult) => {
     if (!address) {

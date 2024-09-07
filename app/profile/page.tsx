@@ -80,7 +80,7 @@ const ProfilePage: React.FC = () => {
   ): Promise<void> {
     try {
       const { error } = await supabase
-        .from("profiles") // Adjust this to match your table name
+        .from("user_data") // Adjust this to match your table name
         .upsert(
           {
             evm_address: address,
