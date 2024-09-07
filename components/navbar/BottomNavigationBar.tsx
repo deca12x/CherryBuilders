@@ -9,7 +9,7 @@ const BottomNavigationBar = () => {
       <div className="flex justify-around items-center py-2">
         <button
           onClick={() => {
-            Router.push("/chat-example/83a9f840-4d74-4397-bab2-0de1e47984c0");
+            Router.push("/chat");
           }}
           className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
           aria-label="Messages"
