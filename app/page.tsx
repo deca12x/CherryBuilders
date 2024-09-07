@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 import { K2D } from "next/font/google";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
