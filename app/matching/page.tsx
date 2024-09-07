@@ -107,6 +107,7 @@ export default function Matching() {
         if (chatDataError) throw chatDataError;
 
         setIsMatchModalOpen(true);
+        setIsProfilesEndedModalOpen(false);
         setMatchedChatId(chatData?.id);
 
         if (chatError) throw chatError;
