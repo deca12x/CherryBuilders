@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useAccount } from "wagmi";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ interface ProfileData {
   twitter_link: string | null;
   farcaster_link: string | null;
   other_link: string | null;
+  profile_pictures: string[];
 }
 
 const ProfilePage: React.FC = () => {
@@ -36,7 +37,11 @@ const ProfilePage: React.FC = () => {
     twitter_link: "",
     farcaster_link: "",
     other_link: "",
+    profile_pictures: [],
   });
+
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const availableTags: Tag[] = [
     "frontend dev",
@@ -45,7 +50,7 @@ const ProfilePage: React.FC = () => {
     "ui/ux dev",
   ];
 
-  const handleChange = (field: keyof ProfileData, value: string | Tag[]) => {
+  const handleChange = (field: keyof ProfileData, value: string | Tag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -56,6 +61,48 @@ const ProfilePage: React.FC = () => {
     handleChange("tags", newTags);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const { error } = await supabase.storage
+          .from('profile-pictures')
+          .upload(`${address}/${fileName}`, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(`${address}/${fileName}`);
+
+        return publicUrl;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setProfileData(prev => ({
+        ...prev,
+        profile_pictures: [...prev.profile_pictures, ...uploadedUrls]
+      }));
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      // TODO: Show error message to user
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      profile_pictures: prev.profile_pictures.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address) {
@@ -64,7 +111,6 @@ const ProfilePage: React.FC = () => {
     }
 
     try {
-      // Assuming you have a function to update the database
       await updateProfileData(address, profileData);
       console.log("Profile saved successfully");
       // TODO: Show success message to user
@@ -80,7 +126,7 @@ const ProfilePage: React.FC = () => {
   ): Promise<void> {
     try {
       const { error } = await supabase
-        .from("user_data") // Adjust this to match your table name
+        .from("user_data")
         .upsert(
           {
             evm_address: address,
@@ -91,6 +137,7 @@ const ProfilePage: React.FC = () => {
             twitter_link: profileData.twitter_link || null,
             farcaster_link: profileData.farcaster_link || null,
             other_link: profileData.other_link || null,
+            profile_pictures: profileData.profile_pictures,
             updated_at: new Date().toISOString(),
           },
           {
@@ -103,7 +150,7 @@ const ProfilePage: React.FC = () => {
       console.log("Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
-      throw error; // Re-throw the error so it can be handled by the calling function
+      throw error;
     }
   }
 
@@ -114,6 +161,45 @@ const ProfilePage: React.FC = () => {
           Create Your Profile
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="profilePictures" className="text-sm font-medium">
+              Profile Pictures
+            </Label>
+            <div className="mt-1 flex flex-wrap items-center gap-4">
+              {profileData.profile_pictures.map((url, index) => (
+                <div key={url} className="relative">
+                  <img
+                    src={url}
+                    alt={`Profile ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? "Uploading..." : "Upload Images"}
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="name" className="text-sm font-medium">
               Name
