@@ -1,11 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    webpack: (config) => {
-        // added due to issues finding these packages when running. Github issue/comment:
-        // https://github.com/WalletConnect/walletconnect-monorepo/issues/1908#issuecomment-1487801131
-        config.externals.push("pino-pretty", "lokijs", "encoding");
-        return config;
-    }
+	webpack: config => {
+		config.resolve.fallback = { fs: false, net: false, tls: false }
+		return config
+	},
 }
 
 module.exports = nextConfig

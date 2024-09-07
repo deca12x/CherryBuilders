@@ -7,13 +7,14 @@ import { useAccount } from "wagmi";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 // Initialize Supabase client using environment variables
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_ANON_KEY as string
 );
 
 export default function Home() {
@@ -61,7 +62,8 @@ export default function Home() {
             DEVLINK!
           </h1>
           <div className="flex flex-col justify-center items-center mt-8 gap-3">
-            <DynamicWidget />
+            <ConnectButton />
+            <WorldIDVerification />
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">
