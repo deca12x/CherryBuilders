@@ -6,7 +6,6 @@ import ChatHeader from '@/components/chat/ChatHeader';
 import ChatSidebar from '@/components/chat/ChatSideBar';
 import MessageList from '@/components/chat/MessageList';
 import MessageInput from '@/components/chat/MessageInput'
-import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 
 interface ChatMessage {
     id: number;
@@ -15,6 +14,8 @@ interface ChatMessage {
     created_at: string;
     chat_id: string;
     type?: string;
+    requestId?: string;
+    paid?: boolean
 }
 
 interface User {
@@ -165,16 +166,17 @@ export default function ChatParent({
             })
     }
 
-    const handleSend = async (messageText: string, type?: string) => {
+    const handleSend = async (messageText: string, type?: string, requestId?: string) => {
         if (messageText.trim()) {
-            console.log('Sending message:', messageText, 'Type:', type)
+            console.log('Sending message:', messageText, 'Type:', type, 'RequestId:', requestId)
             const newMessage: ChatMessage = {
                 id: Date.now(),
                 sender: userAddress,
                 message: messageText.trim(),
                 chat_id: chatId,
                 created_at: new Date().toISOString(),
-                type: type
+                type: type,
+                requestId: requestId // This will now be correctly stored in the database
             };
         
             console.log('Adding message to UI:', newMessage)
@@ -202,10 +204,15 @@ export default function ChatParent({
                         msg.id === newMessage.id ? data[0] : msg
                     )
                 );
+
+                if (type === 'request' && requestId) {
+                    console.log('Request message stored with requestId:', requestId)
+                }
             }
         }
     }
 
+    
     return (
         <div className="flex h-screen bg-background">
             <ChatSidebar userAddress={userAddress} />

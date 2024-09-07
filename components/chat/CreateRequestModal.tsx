@@ -15,11 +15,13 @@ import { RequestNetwork } from "@requestnetwork/request-client.js"
 import { useAccount, useWalletClient } from 'wagmi'
 import { Types, Utils } from "@requestnetwork/request-client.js";
 import { Loader2 } from 'lucide-react';
+import { contracts, ValidChainId } from '@/utils/contracts/contracts'
+import { parseEther } from 'viem'
 
 type CreateRequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreateRequest: (amount: string) => void;
+  onCreateRequest: (amount: string, requestId: string) => void;
   payeeAddress: string;
   payerAddress: string;
 }
@@ -29,6 +31,7 @@ export default function CreateRequestModal({ isOpen, onClose, onCreateRequest, p
   const { data: walletClient } = useWalletClient();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const {chainId} = useAccount();
 
   const handleCreateRequest = async () => {
     setIsLoading(true);
@@ -56,13 +59,13 @@ export default function CreateRequestModal({ isOpen, onClose, onCreateRequest, p
           // The currency in which the request is denominated
           currency: {
             type: Types.RequestLogic.CURRENCY.ERC20,
-            value: '0x370DE27fdb7D1Ff1e1BaA7D11c5820a324Cf623C',
-            network: 'sepolia',
+            value: contracts[chainId as ValidChainId].tUSDCAddress,
+            network: contracts[chainId as ValidChainId].name,
           },
 
           // The expected amount as a string, in parsed units, respecting `decimals`
           // Consider using `parseUnits()` from ethers or viem
-          expectedAmount: '1000000000000000000',
+          expectedAmount: `${parseEther(amount)}`,
 
           // The payee identity. Not necessarily the same as the payment recipient.
           payee: {
@@ -84,7 +87,7 @@ export default function CreateRequestModal({ isOpen, onClose, onCreateRequest, p
         paymentNetwork: {
           id: Types.Extension.PAYMENT_NETWORK_ID.ERC20_FEE_PROXY_CONTRACT,
           parameters: {
-            paymentNetworkName: 'sepolia',
+            paymentNetworkName: contracts[chainId as ValidChainId].name,
             paymentAddress: payeeIdentity,
             feeAddress: feeRecipient,
             feeAmount: '0',
@@ -115,9 +118,13 @@ export default function CreateRequestModal({ isOpen, onClose, onCreateRequest, p
       const confirmedRequestData = await request.waitForConfirmation();
 
       console.log(confirmedRequestData.requestId);
-      setLoadingMessage('Request created successfully!');
 
-      onCreateRequest(amount);
+
+      
+
+      setLoadingMessage('Request created successfully!');
+      onCreateRequest(amount, confirmedRequestData.requestId);
+
       setAmount('');
       setIsLoading(false);
       onClose();

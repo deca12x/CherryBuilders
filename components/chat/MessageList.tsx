@@ -7,6 +7,8 @@ interface Message {
   sender: string;
   message: string;
   type?: string;
+  requestId?: string;
+  paid?: boolean;
 }
 
 interface MessageListProps {
@@ -70,9 +72,11 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
         >
           {msg.type === 'request' ? (
             <RequestMessage
+            requestId={msg.requestId as string}
               message={msg.message}
               amount={msg.message.split(' ')[1]}
               isCurrentUser={msg.sender === currentUserAddress}
+              hasBeenPaid={msg.paid}
               onPay={handlePay}
             />
           ) : (
