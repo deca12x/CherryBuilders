@@ -5,17 +5,11 @@ import { K2D } from "next/font/google";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@supabase/supabase-js";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import WorldIDVerification from "@/components/verify";
+import { supabase } from "@/lib/supabase";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
-
-// Initialize Supabase client using environment variables
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_ANON_KEY as string
-);
 
 export default function Home() {
   const { address } = useAccount();

@@ -1,20 +1,18 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { createClient } from '@supabase/supabase-js'
-import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+"use client";
+import React, { useState, useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { supabase } from "@/lib/supabase";
 
 type ChatHistoryItem = {
   id: string;
   name: string;
   lastMessage: string;
   otherUserAddress: string;
-}
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL as string, process.env.NEXT_PUBLIC_ANON_KEY as string)
+};
 
 export default function ChatSidebar({ userAddress }: { userAddress: string }) {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
@@ -27,29 +25,28 @@ export default function ChatSidebar({ userAddress }: { userAddress: string }) {
 
   const fetchChatHistory = async () => {
     setIsLoading(true);
-    console.log('Fetching chat history for user:', userAddress);
-    const { data, error } = await supabase
-      .from('chats')
-      .select('*')
-      .or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
+    console.log("Fetching chat history for user:", userAddress);
+    const { data, error } = await supabase.from("chats").select("*").or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
 
     if (error) {
-      console.error('Error fetching chat history:', error);
+      console.error("Error fetching chat history:", error);
       setIsLoading(false);
       return;
     }
 
-    console.log('Fetched chat history:', data);
-    const history: ChatHistoryItem[] = await Promise.all(data.map(async (chat) => {
-      const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
-      const lastMessage = await fetchLastMessage(chat.id);
-      return {
-        id: chat.id,
-        name: `User ${otherUserAddress.slice(0, 6)}...`,
-        lastMessage: lastMessage?.message || 'No messages yet',
-        otherUserAddress
-      };
-    }));
+    console.log("Fetched chat history:", data);
+    const history: ChatHistoryItem[] = await Promise.all(
+      data.map(async (chat) => {
+        const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
+        const lastMessage = await fetchLastMessage(chat.id);
+        return {
+          id: chat.id,
+          name: `User ${otherUserAddress.slice(0, 6)}...`,
+          lastMessage: lastMessage?.message || "No messages yet",
+          otherUserAddress,
+        };
+      })
+    );
 
     setChatHistory(history);
     setIsLoading(false);
@@ -57,14 +54,14 @@ export default function ChatSidebar({ userAddress }: { userAddress: string }) {
 
   const fetchLastMessage = async (chatId: string): Promise<{ message: string } | null> => {
     const { data, error } = await supabase
-      .from('messages')
-      .select('message')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: false })
+      .from("messages")
+      .select("message")
+      .eq("chat_id", chatId)
+      .order("created_at", { ascending: false })
       .limit(1);
 
     if (error) {
-      console.error('Error fetching last message:', error);
+      console.error("Error fetching last message:", error);
       return null;
     }
     return data[0] || null;
@@ -87,8 +84,8 @@ export default function ChatSidebar({ userAddress }: { userAddress: string }) {
           </div>
         ) : (
           chatHistory.map((chat) => (
-            <div 
-              key={chat.id} 
+            <div
+              key={chat.id}
               className="flex items-center p-4 hover:bg-accent cursor-pointer transition-colors duration-200"
               onClick={() => handleChatClick(chat.id)}
             >

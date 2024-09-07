@@ -5,6 +5,7 @@ import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { user_tag, UserType } from "@/lib/types";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
+import { supabase } from "@/lib/supabase";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -57,9 +58,22 @@ export default function Matching() {
   const [bioDirection, setBioDirection] = useState(0);
   const [animateFrame, setAnimateFrame] = useState(false);
 
+  // Fetch the user from supabase as soon as the component mounts
   useEffect(() => {
-    // Fetch the user from supabase
-    const { data, error } = await supabase.from("users").select("*").eq("address", users[currentUser].address);
+    const fetchUser = async () => {
+      const { data, error } = await supabase.from("user_data").select("*");
+
+      if (error) {
+        console.error("Error fetching users:", error);
+        return;
+      }
+
+      if (data) {
+        console.log("Fetched users:", data);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   const handleNext = () => {

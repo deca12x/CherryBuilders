@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import WorldIDVerification from "@/components/verify";
-import { createClient } from "@supabase/supabase-js";
 import { motion } from 'framer-motion'
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { supabase } from "@/lib/supabase";
 type Tag = "frontend dev" | "backend dev" | "solidity dev" | "ui/ux";
 
 interface ProfileData {
@@ -25,10 +25,6 @@ interface ProfileData {
 }
 
 const ProfilePage: React.FC = () => {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_ANON_KEY as string
-  );
   const { address } = useAccount();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",

@@ -1,20 +1,12 @@
 "use client"; // for Next.js app router
 import React, { useEffect } from "react";
-import {
-  IDKitWidget,
-  VerificationLevel,
-  ISuccessResult,
-} from "@worldcoin/idkit";
+import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
 import { useAccount } from "wagmi";
-import { createClient } from "@supabase/supabase-js";
 import { Button } from "./ui/button";
+import { supabase } from "@/lib/supabase";
 
 const WorldIDVerification: React.FC = () => {
   const { address } = useAccount();
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_ANON_KEY as string
-  );
 
   useEffect(() => {
     console.log("address", address);
@@ -34,10 +26,7 @@ const WorldIDVerification: React.FC = () => {
     }
   };
 
-  async function updateVerificationStatus(
-    address: string,
-    isVerified: boolean
-  ): Promise<void> {
+  async function updateVerificationStatus(address: string, isVerified: boolean): Promise<void> {
     try {
       const { error } = await supabase
         .from("profiles") // Adjust this to match your table name
@@ -73,7 +62,11 @@ const WorldIDVerification: React.FC = () => {
       handleVerify={handleVerify}
       verification_level={VerificationLevel.Device}
     >
-      {({ open }) => <Button onClick={open} className="rounded-2xl bg-white text-black hover:bg-slate-300">Verify with World ID</Button>}
+      {({ open }) => (
+        <Button onClick={open} className="rounded-2xl bg-white text-black hover:bg-slate-300">
+          Verify with World ID
+        </Button>
+      )}
     </IDKitWidget>
   );
 };

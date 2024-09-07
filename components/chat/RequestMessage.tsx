@@ -15,8 +15,8 @@ import {
 import { walletClientToSigner } from '@/utils/request/wallet-utils';
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@supabase/supabase-js';
 import { CheckCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 
 interface RequestMessageProps {
@@ -45,10 +45,6 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast()
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_ANON_KEY as string
-  );
 
   useEffect(() => {
     const fetchRequestData = async () => {
