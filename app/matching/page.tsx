@@ -10,22 +10,6 @@ import { useAccount } from "wagmi";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
-export const users: UserType[] = [
-  {
-    evm_address: "0xabcdef1234567890",
-    name: "Jim Smith",
-    verified: false,
-    talent_score: 85,
-    profile_pictures: ["/images/jim2.jpg", "/images/jim1.jpg"],
-    tags: ["solidity dev", "ui/ux dev"],
-    bio: "Software developer by day, fitness junkie by night. Love discussing the latest tech trends and watching classic films.",
-    github_link: "https://github.com",
-    twitter_link: "https://twitter.com",
-    farcaster_link: "https://farcaster",
-    other_link: "https://other.com",
-  },
-];
-
 export default function Matching() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
