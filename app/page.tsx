@@ -6,7 +6,6 @@ import { useAccount } from "wagmi";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import WorldIDVerification from "@/components/verify";
 import { supabase } from "@/lib/supabase";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });

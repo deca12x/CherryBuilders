@@ -6,9 +6,12 @@ import { useAccount } from "wagmi";
 import { Button } from "./ui/button";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import {useRouter} from 'next/navigation'
+import { useRouter } from "next/navigation";
 
-const WorldIDVerification: React.FC<{ onVerificationSuccess: () => void }> = ({ onVerificationSuccess }) => {
+const WorldIDVerification: React.FC<{ onVerificationSuccess: () => void; redirect: boolean }> = ({
+  onVerificationSuccess,
+  redirect,
+}) => {
   const { address } = useAccount();
   const { toast } = useToast();
 
@@ -50,7 +53,9 @@ const WorldIDVerification: React.FC<{ onVerificationSuccess: () => void }> = ({ 
         .from("user_data")
         .update({ verified: isVerified, updated_at: new Date().toISOString() })
         .eq("evm_address", address);
-        router.push('/matching')
+      if (redirect) {
+        router.push("/matching");
+      }
       if (error) throw error;
 
       console.log("Verification status updated successfully");

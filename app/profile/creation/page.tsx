@@ -321,7 +321,7 @@ const ProfilePage: React.FC = () => {
             <p className="text-lg">
               Your profile has been saved. Please complete the World ID verification to finalize your profile.
             </p>
-            <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} />
+            <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={true} />
             <Button onClick={() => setStep(0)} className="w-full mt-4">
               Back to Profile
             </Button>
