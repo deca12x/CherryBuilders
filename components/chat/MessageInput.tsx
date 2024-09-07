@@ -16,9 +16,11 @@ type MessageInputProps = {
   message: string;
   setMessage: (message: string) => void;
   handleSend: (message: string, type?: string) => void;
+  payeeAddress: string;
+  payerAddress: string;
 }
 
-export default function MessageInput({ message, setMessage, handleSend }: MessageInputProps) {
+export default function MessageInput({ message, setMessage, handleSend, payeeAddress, payerAddress }: MessageInputProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleCreateRequest = (amount: string) => {
@@ -72,6 +74,8 @@ export default function MessageInput({ message, setMessage, handleSend }: Messag
       </div>
 
       <CreateRequestModal
+      payeeAddress={payeeAddress}
+      payerAddress={payerAddress}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreateRequest={handleCreateRequest}

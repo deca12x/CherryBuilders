@@ -41,23 +41,97 @@ export default function ChatParent({
 }: ChatParentProps) {
     const [message, setMessage] = useState('')
     const [currentChat, setCurrentChat] = useState<ChatMessage[]>([])
-    const [otherUser, setOtherUser] = useState<User>({ address: '0x456...', name: 'Bob' })
+    const [otherUser, setOtherUser] = useState<User | null>(null)
     const channelRef = useRef<any>(null);
-
 
     useEffect(() => {
         console.log('ChatParent: Component mounted or chatId/userAddress changed')
+        console.log('Current userAddress:', userAddress)
+        console.log('Current chatId:', chatId)
         console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
         console.log('Supabase connection status:', supabase.getChannels().length > 0 ? 'Connected' : 'Disconnected')
+    
+        const initializeChat = async () => {
+            await fetchChatDetails()
+            await fetchMessages()
+            setupRealtimeSubscription()
+        }
+    
+        initializeChat()
+    
+        // Ping the channel every 30 seconds to keep the connection alive
+        const intervalId = setInterval(() => {
+            console.log('Pinging channel to keep connection alive')
+            channelRef.current?.send({
+                type: 'broadcast',
+                event: 'ping',
+                payload: {},
+            })
+        }, 30000)
+    
+        return () => {
+            console.log('ChatParent: Component unmounting, unsubscribing from channel')
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current)
+            }
+            clearInterval(intervalId)
+        }
+    }, [chatId, userAddress])
 
-        fetchMessages()
-        
+    const fetchChatDetails = async () => {
+        console.log('Fetching chat details for chat ID:', chatId)
+        const { data, error } = await supabase
+            .from('chats')
+            .select('*')
+            .eq('id', chatId)
+            .single()
+    
+        if (error) {
+            console.error('Error fetching chat details:', error)
+            return
+        }
+    
+        if (data) {
+            console.log('Chat data:', data)
+            console.log(data)
+            const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1
+            console.log('Determined other user address:', otherUserAddress)
+    
+            // Set the otherUser state with the address, even if we can't fetch the name
+            setOtherUser({
+                address: otherUserAddress,
+                name: `User ${otherUserAddress.slice(0, 6)}...`
+            })
+    
+      
+        } else {
+            console.log('No chat data found for chat ID:', chatId)
+        }
+    }
+
+    const fetchMessages = async () => {
+        console.log('Fetching messages for chat:', chatId)
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: true })
+
+        if (error) {
+            console.error('Error fetching messages:', error)
+        } else {
+            console.log('Fetched messages:', data)
+            setCurrentChat(data as ChatMessage[])
+        }
+    }
+
+    const setupRealtimeSubscription = () => {
         console.log(`Subscribing to channel: chat:${chatId}`)
         channelRef.current = supabase
             .channel(`chat:${chatId}`)
             .on('postgres_changes', 
                 { 
-                    event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+                    event: '*',
                     schema: 'public', 
                     table: 'messages', 
                     filter: `chat_id=eq.${chatId}` 
@@ -89,40 +163,6 @@ export default function ChatParent({
                     console.log('Successfully subscribed to channel')
                 }
             })
-
-        // Ping the channel every 30 seconds to keep the connection alive
-        const intervalId = setInterval(() => {
-            console.log('Pinging channel to keep connection alive')
-            channelRef.current.send({
-                type: 'broadcast',
-                event: 'ping',
-                payload: {},
-            })
-        }, 30000)
-
-        return () => {
-            console.log('ChatParent: Component unmounting, unsubscribing from channel')
-            if (channelRef.current) {
-                supabase.removeChannel(channelRef.current)
-            }
-            clearInterval(intervalId)
-        }
-    }, [chatId, userAddress])
-
-    const fetchMessages = async () => {
-        console.log('Fetching messages for chat:', chatId)
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .eq('chat_id', chatId)
-            .order('created_at', { ascending: true })
-
-        if (error) {
-            console.error('Error fetching messages:', error)
-        } else {
-            console.log('Fetched messages:', data)
-            setCurrentChat(data as ChatMessage[])
-        }
     }
 
     const handleSend = async (messageText: string, type?: string) => {
@@ -165,17 +205,21 @@ export default function ChatParent({
             }
         }
     }
+
     return (
         <div className="flex h-screen bg-background">
             <ChatSidebar userAddress={userAddress} />
             <div className="flex-1 flex flex-col">
-                <ChatHeader name={otherUser.name} />
+                <ChatHeader name={otherUser?.name || 'Loading...'} />
                 <MessageList
                     key={currentChat.length}  // Force re-render on messages change
                     messages={currentChat}
                     currentUserAddress={userAddress}
                 />
+                
                 <MessageInput
+                    payeeAddress={userAddress}
+                    payerAddress={otherUser?.address as string}
                     message={message}
                     setMessage={setMessage}
                     handleSend={handleSend}
