@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, Link } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
@@ -10,6 +10,7 @@ import { useAccount } from "wagmi";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
+import Image from "next/image";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -178,7 +179,19 @@ export default function Matching() {
                 <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
                   <div className="flex flex-col w-full p-2 gap-1">
-                    <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className}`}>{user.name}</h2>
+                    <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className} flex`}>
+                      {user.name}{" "}
+                      {user.verified && (
+                        <Image
+                          src={"/worldcoinlogo.png"}
+                          width={24}
+                          height={24}
+                          alt="logo"
+                          className="ml-1 h-10 w-10 rounded-full"
+                        />
+                      )}{" "}
+                      <VerifiedIcon className="ml-1 h-6 w-6" />{" "}
+                    </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
                       {user.tags.map((tag: UserTag, index: number) => (

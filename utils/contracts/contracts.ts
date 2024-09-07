@@ -12,9 +12,9 @@ export const contracts: Record<ValidChainId, {
         name: 'sepolia',
         tUSDCAddress: "0x4e084005835a1059B1D1c741E21ab511458F90b0",
     },
-    //Mantle testenet
+    //Mantle
     5000: {
-        tUSDCAddress: "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9",
+        tUSDCAddress: "0xdEAddEaDdeadDEadDEADDEAddEADDEAddead1111",
         name: 'mantle'
     },
     //Celo mainnet

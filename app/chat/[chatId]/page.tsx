@@ -5,6 +5,7 @@ import NotAuthenticated from "@/components/NotAuthenticated";
 import { useAccount } from "wagmi";
 import { useParams } from 'next/navigation';
 import { useEffect } from "react";
+import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 
 export default function ChatUI() {
   const { address } = useAccount();
@@ -15,7 +16,10 @@ export default function ChatUI() {
   return (
     <>
       {address ? (
+        <div>
         <ChatParent userAddress={address as string} chatId={chatId} />
+    
+        </div>
       ) : (
         <NotAuthenticated />
       )}
