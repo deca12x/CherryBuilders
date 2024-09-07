@@ -3,14 +3,18 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, X, Heart, MessageCircle, Cog, User, Link } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
+import { user_tag, UserType } from "@/lib/types";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
-export const users = [
+export const users: UserType[] = [
   {
+    address: "0x1234567890abcdef",
     name: "John Doe",
-    images: ["/images/john1.jpg", "/images/john2.jpeg", "/images/john3.jpg"],
-    tags: ["Travel", "Photography", "Foodie"],
+    verified: true,
+    talent_score: 90,
+    profile_pictures: ["/images/john1.jpg", "/images/john2.jpeg", "/images/john3.jpg"],
+    tags: ["frontend dev", "backend dev", "solidity dev"],
     bio: "Adventure seeker and coffee enthusiast. Always looking for the next exciting experience!",
     github_link: "https://github.com",
     twitter_link: "https://twitter.com",
@@ -18,9 +22,12 @@ export const users = [
     other_link: "https://other.com",
   },
   {
+    address: "0xabcdef1234567890",
     name: "Jim Smith",
-    images: ["/images/jim1.jpg", "/images/jim2.jpg"],
-    tags: ["Fitness", "Tech", "Movies"],
+    verified: false,
+    talent_score: 85,
+    profile_pictures: ["/images/jim1.jpg", "/images/jim2.jpg"],
+    tags: ["solidity dev", "ui/ux dev"],
     bio: "Software developer by day, fitness junkie by night. Love discussing the latest tech trends and watching classic films.",
     github_link: "https://github.com",
     twitter_link: "https://twitter.com",
@@ -28,9 +35,12 @@ export const users = [
     other_link: "https://other.com",
   },
   {
+    address: "0xabcdef1234567890",
     name: "Jane Doe",
-    images: ["/images/jane1.jpg", "/images/jane2.webp"],
-    tags: ["Music", "Art", "Fashion"],
+    verified: true,
+    talent_score: 40,
+    profile_pictures: ["/images/jane1.jpg", "/images/jane2.webp"],
+    tags: ["ui/ux dev", "frontend dev"],
     bio: "Music lover and aspiring fashion designer. I enjoy painting and exploring new art galleries.",
     github_link: "https://github.com",
     twitter_link: "https://twitter.com",
@@ -63,14 +73,16 @@ export default function Matching() {
   };
 
   const handleImageNext = () => {
-    setCurrentImage((prev) => (prev + 1) % users[currentUser].images.length);
+    setCurrentImage((prev) => (prev + 1) % users[currentUser].profile_pictures.length);
   };
 
   const handleImagePrevious = () => {
-    setCurrentImage((prev) => (prev - 1 + users[currentUser].images.length) % users[currentUser].images.length);
+    setCurrentImage(
+      (prev) => (prev - 1 + users[currentUser].profile_pictures.length) % users[currentUser].profile_pictures.length
+    );
   };
 
-  const ProfileCard = ({ user, imageIndex }: { user: any; imageIndex: any }) => (
+  const ProfileCard = ({ user, imageIndex }: { user: UserType; imageIndex: number }) => (
     <div className="w-full max-w-md bg-background shadow-lg overflow-hidden relative flex-grow pb-24">
       <AnimatePresence>
         <motion.div
@@ -79,20 +91,20 @@ export default function Matching() {
           initial={{ x: animateFrame ? direction * 400 : 0, opacity: animateFrame ? 0 : 1 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: animateFrame ? direction * -400 : 0, opacity: animateFrame ? 0 : 1 }}
-          transition={{ type: "spring", duration: 0.6 }}
+          transition={{ type: "spring", duration: 0.55 }}
           onAnimationComplete={() => setAnimateFrame(false)}
         >
           {/* Image */}
           <div className="relative h-[400px]">
-            <img src={user.images[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
+            <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent flex items-end">
               <div className="flex flex-col w-full p-2 gap-1">
                 <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className}`}>{user.name}</h2>
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2">
-                  {user.tags.map((tag: any, index: any) => (
+                  {user.tags.map((tag: user_tag, index: number) => (
                     <span key={index} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm">
-                      {tag}
+                      {tag.charAt(0).toUpperCase() + tag.slice(1)}
                     </span>
                   ))}
                 </div>
@@ -130,12 +142,14 @@ export default function Matching() {
               {/* Worldcoin ID */}
               <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
                 <p className="font-bold text-foreground">Worldcoin ID</p>
-                <p className="text-muted-foreground">Confirmed</p>
+                <p className={user.verified ? "text-green-500" : "text-red-500"}>
+                  {user.verified ? "Confirmed" : "Unconfirmed"}
+                </p>
               </div>
               {/* Talent score */}
               <div className="flex flex-col items-center bg-card rounded-xl p-3">
                 <p className="font-bold text-foreground">Talent Score</p>
-                <p className="text-muted-foreground">90</p>
+                <p className="text-muted-foreground">{user.talent_score}</p>
               </div>
             </div>
             {/* Bio */}
@@ -147,7 +161,7 @@ export default function Matching() {
             {/* Links */}
             <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
               <p className="font-bold text-foreground">Links</p>
-              <div className="flex justify-between">
+              <div className="flex justify-between sm:px-14">
                 <p className="text-muted-foreground flex items-center gap-2">
                   <img height={26} width={26} src="/images/github.png" alt="github logo" />
                   <a href={user.github_link} className="text-muted-foreground hover:underline">
@@ -161,7 +175,7 @@ export default function Matching() {
                   </a>
                 </p>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between sm:px-14">
                 <p className="text-muted-foreground flex items-center gap-2">
                   <img height={23} width={23} src="/images/farcaster.svg" alt="farcaster logo" />
                   <a href={user.farcaster_link} className="text-muted-foreground hover:underline">
@@ -191,7 +205,7 @@ export default function Matching() {
       {/* Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card shadow-lg">
         {/* Buttons */}
-        <div className="absolute -top-16 left-0 right-0 flex justify-center space-x-4">
+        <div className="absolute -top-16 sm:-top-20 left-0 right-0 flex justify-center space-x-4">
           <button
             onClick={handlePrevious}
             className="bg-destructive text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-destructive/90 transition-colors"
@@ -207,7 +221,7 @@ export default function Matching() {
             <Heart size={24} />
           </button>
         </div>
-        <div className="flex justify-around items-center py-2">
+        <div className="flex justify-around items-center py-2 sm:hidden">
           <button className="p-2 text-muted-foreground hover:text-primary transition-colors" aria-label="Messages">
             <MessageCircle size={24} />
           </button>
