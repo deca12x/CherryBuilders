@@ -7,6 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
+import BottomNavigationBar from "../navbar/BottomNavigationBar";
 
 type ChatHistoryItem = {
   id: string;
@@ -141,11 +142,12 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
     
 
       {/* Desktop Sidebar */}
-      <div className="block w-full max-w-sm bg-card border-r border-border">
+      <div className="block w-full max-w-sm bg-card border-r border-border p-4">
         <div className="p-4 border-b border-border">
           <h2 className="text-xl font-semibold">Chats</h2>
         </div>
         <ChatList />
+        <BottomNavigationBar />
       </div>
     </>
   )
