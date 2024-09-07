@@ -7,6 +7,7 @@ import {
 } from "@worldcoin/idkit";
 import { useAccount } from "wagmi";
 import { createClient } from "@supabase/supabase-js";
+import { Button } from "./ui/button";
 
 const WorldIDVerification: React.FC = () => {
   const { address } = useAccount();
@@ -72,7 +73,7 @@ const WorldIDVerification: React.FC = () => {
       handleVerify={handleVerify}
       verification_level={VerificationLevel.Device}
     >
-      {({ open }) => <button onClick={open}>Verify with World ID</button>}
+      {({ open }) => <Button onClick={open} className="rounded-2xl bg-white text-black hover:bg-slate-300">Verify with World ID</Button>}
     </IDKitWidget>
   );
 };
