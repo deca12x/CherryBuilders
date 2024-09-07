@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Send, Paperclip, DollarSign, Image, FileText } from 'lucide-react'
+import { Send, Paperclip, DollarSign, Image as ImageIcon, FileText } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import CreateRequestModal from './CreateRequestModal'
+import Image from 'next/image'
 
 type MessageInputProps = {
   message: string;
@@ -54,11 +55,11 @@ export default function MessageInput({ message, setMessage, handleSend, payeeAdd
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onSelect={() => setIsModalOpen(true)}>
-              <DollarSign className="mr-2 h-4 w-4" />
+              <Image src={'/request.png'} className="mr-2 h-4 w-4" width={24} height={24} alt="request" />
               <span>Create Request</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Image className="mr-2 h-4 w-4" />
+              <ImageIcon className="mr-2 h-4 w-4" />
               <span>Image</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
