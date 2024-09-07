@@ -56,7 +56,7 @@ export default function MessageInput({ message, setMessage, handleSend, payeeAdd
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onSelect={() => setIsModalOpen(true)}>
-                <Image src={'/request.png'} className="mr-2 h-4 w-4" width={24} height={24} alt="request" />
+                <Image src={'/images/request.png'} className="mr-2 h-4 w-4" width={24} height={24} alt="request" />
                 <span>Create Request</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
