@@ -5,51 +5,10 @@ import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { user_tag, UserType } from "@/lib/types";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
-import { supabase } from "@/lib/supabase";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
-export const users: UserType[] = [
-  {
-    address: "0x1234567890abcdef",
-    name: "John Doe",
-    verified: true,
-    talent_score: 90,
-    profile_pictures: ["/images/john1.jpg", "/images/john2.jpeg", "/images/john3.jpg"],
-    tags: ["frontend dev", "backend dev", "solidity dev"],
-    bio: "Adventure seeker and coffee enthusiast. Always looking for the next exciting experience!",
-    github_link: "https://github.com",
-    twitter_link: "https://twitter.com",
-    farcaster_link: "https://farcaster",
-    other_link: "https://other.com",
-  },
-  {
-    address: "0xabcdef1234567890",
-    name: "Jim Smith",
-    verified: false,
-    talent_score: 85,
-    profile_pictures: ["/images/jim1.jpg", "/images/jim2.jpg"],
-    tags: ["solidity dev", "ui/ux dev"],
-    bio: "Software developer by day, fitness junkie by night. Love discussing the latest tech trends and watching classic films.",
-    github_link: "https://github.com",
-    twitter_link: "https://twitter.com",
-    farcaster_link: "https://farcaster",
-    other_link: "https://other.com",
-  },
-  {
-    address: "0xabcdef1234567890",
-    name: "Jane Doe",
-    verified: true,
-    talent_score: 40,
-    profile_pictures: ["/images/jane1.jpg", "/images/jane2.webp"],
-    tags: ["ui/ux dev", "frontend dev"],
-    bio: "Music lover and aspiring fashion designer. I enjoy painting and exploring new art galleries.",
-    github_link: "https://github.com",
-    twitter_link: "https://twitter.com",
-    farcaster_link: "https://farcaster",
-    other_link: "https://other.com",
-  },
-];
+export const users: UserType[] = [];
 
 export default function Matching() {
   const [currentUser, setCurrentUser] = useState(0);
@@ -58,21 +17,20 @@ export default function Matching() {
   const [bioDirection, setBioDirection] = useState(0);
   const [animateFrame, setAnimateFrame] = useState(false);
 
-  // Fetch the user from supabase as soon as the component mounts
+  // Fetch the user from the get-random-users internal route as soon as the component mounts
   useEffect(() => {
     const fetchUser = async () => {
-      const { data, error } = await supabase.from("user_data").select("*");
-
-      if (error) {
-        console.error("Error fetching users:", error);
+      const response = await fetch("/api/get-random-users");
+      const data = await response.json();
+      if (data.error) {
+        console.error(data.error);
         return;
-      }
-
-      if (data) {
-        console.log("Fetched users:", data);
+      } else {
+        console.log(data);
+        // Update the users array with the fetched data
+        users.push(...data);
       }
     };
-
     fetchUser();
   }, []);
 
@@ -117,7 +75,7 @@ export default function Matching() {
           {/* Image */}
           <div className="relative h-[400px]">
             <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent flex items-end">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
               <div className="flex flex-col w-full p-2 gap-1">
                 <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className}`}>{user.name}</h2>
                 {/* Tags */}
@@ -184,13 +142,13 @@ export default function Matching() {
               <div className="flex justify-between sm:px-14">
                 <p className="text-muted-foreground flex items-center gap-2">
                   <img height={26} width={26} src="/images/github.png" alt="github logo" />
-                  <a href={user.github_link} className="text-muted-foreground hover:underline">
+                  <a href={user.github_link} target="_blank" className="text-muted-foreground hover:underline">
                     Github
                   </a>
                 </p>
                 <p className="flex text-muted-foreground items-center gap-2">
                   <img height={20} width={20} src="/images/x_logo.svg" alt="x logo" />
-                  <a href={user.twitter_link} className="text-muted-foreground hover:underline">
+                  <a href={user.twitter_link} target="_blank" className="text-muted-foreground hover:underline">
                     (Twitter)
                   </a>
                 </p>
@@ -198,13 +156,13 @@ export default function Matching() {
               <div className="flex justify-between sm:px-14">
                 <p className="text-muted-foreground flex items-center gap-2">
                   <img height={23} width={23} src="/images/farcaster.svg" alt="farcaster logo" />
-                  <a href={user.farcaster_link} className="text-muted-foreground hover:underline">
+                  <a href={user.farcaster_link} target="_blank" className="text-muted-foreground hover:underline">
                     Farcaster
                   </a>
                 </p>
                 <p className="text-muted-foreground flex items-center gap-2">
                   <Link size={24} />
-                  <a href={user.other_link} className="text-muted-foreground hover:underline">
+                  <a href={user.other_link} target="_blank" className="text-muted-foreground hover:underline">
                     Other
                   </a>
                 </p>
