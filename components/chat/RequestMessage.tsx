@@ -40,16 +40,20 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
   const [status, setStatus] = useState(APP_STATUS.AWAITING_INPUT);
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents>();
 
-  const requestClient = new RequestNetwork({
+
+  useEffect(() => {
+    const fetchRequestData = async () => {
+      try {
+          const requestClient = new RequestNetwork({
     nodeConnectionConfig: {
       baseURL: 'https://sepolia.gateway.request.network',
     },
   });
 
-  useEffect(() => {
-    const fetchRequestData = async () => {
-      try {
+        console.log(requestId)
         const _request = await requestClient.fromRequestId(requestId);
+        console.log('_request', _request)
+        console.log(_request)
         const _requestData = _request.getData();
         setRequestData(_requestData);
       } catch (err) {
@@ -69,12 +73,12 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
       // Check if approval is needed
       const needsApproval = !(await hasErc20Approval(requestData, walletClientToSigner(walletClient)));
 
-      if (needsApproval) {
+
         setStatus(APP_STATUS.APPROVING);
         const approvalTx = await approveErc20(requestData, walletClientToSigner(walletClient));
         await approvalTx.wait(2);
         setStatus(APP_STATUS.APPROVED);
-      }
+    
 
       // Proceed with payment
       setStatus(APP_STATUS.PAYING);
@@ -82,6 +86,12 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
       await paymentTx.wait(2);
 
       // Poll for balance update
+      const requestClient = new RequestNetwork({
+        nodeConnectionConfig: {
+          baseURL: 'https://sepolia.gateway.request.network',
+        },
+      });
+    
       const _request = await requestClient.fromRequestId(requestId);
       let _requestData = _request.getData();
       while (_requestData.balance?.balance! < _requestData.expectedAmount) {
