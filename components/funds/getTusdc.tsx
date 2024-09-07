@@ -38,7 +38,7 @@ export function GetTUSDC() {
                 abi,
                 functionName: 'mint',
                 args: [parseEther('10000')],
-                chainId: chainId as ValidChainId
+               
             });
         } else {
             console.error('Invalid or unsupported chain ID');
