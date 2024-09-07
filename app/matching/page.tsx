@@ -183,7 +183,7 @@ export default function Matching() {
                       {user.name}{" "}
                       {user.verified && (
                         <Image
-                          src={"/worldcoinlogo.png"}
+                          src={"/images/worldcoinlogo.png"}
                           width={24}
                           height={24}
                           alt="logo"
