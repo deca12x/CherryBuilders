@@ -8,8 +8,8 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Devlink",
-  description: "A webapp to meet new developers and projects",
+  title: "Cherry 🍒",
+  description: "A webapp to meet new developers, connect with them and start great collaborations",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <Providers>{children}</Providers>
         <Toaster />
-
       </body>
     </html>
   );
