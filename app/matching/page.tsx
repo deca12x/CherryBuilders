@@ -180,18 +180,18 @@ export default function Matching() {
                 <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
                   <div className="flex flex-col w-full p-2 gap-1">
-                    <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className} flex`}>
-                      {user.name}{" "}
+                    <h2 className={`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`}>
+                      <span className="mb-1">{user.name}</span>
                       {user.verified && (
                         <Image
                           src={"/images/worldcoinlogo.png"}
-                          width={24}
-                          height={24}
+                          width={20}
+                          height={20}
                           alt="logo"
-                          className="ml-1 h-10 w-10 rounded-full"
+                          className="ml-2 h-8 w-8 rounded-full"
                         />
-                      )}{" "}
-                      <VerifiedIcon className="ml-1 h-6 w-6" />{" "}
+                      )}
+                      <VerifiedIcon className="-mt-5 h-4 w-4" />
                     </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
@@ -294,37 +294,45 @@ export default function Matching() {
               </div>
 
               {/* Links */}
-              <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
-                <p className="font-bold text-foreground">Links</p>
-                <div className="flex justify-between sm:px-14">
-                  <p className="text-muted-foreground flex items-center gap-2">
-                    <img height={26} width={26} src="/images/github.png" alt="github logo" />
-                    <a href={user.github_link} target="_blank" className="text-muted-foreground hover:underline">
-                      Github
-                    </a>
-                  </p>
-                  <p className="flex text-muted-foreground items-center gap-2">
-                    <img height={20} width={20} src="/images/x_logo.svg" alt="x logo" />
-                    <a href={user.twitter_link} target="_blank" className="text-muted-foreground hover:underline">
-                      (Twitter)
-                    </a>
-                  </p>
+              {(user.twitter_link || user.github_link || user.farcaster_link || user.other_link) && (
+                <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
+                  <p className="font-bold text-foreground">Links</p>
+                  <div className="grid grid-cols-2 gap-4 sm:px-14">
+                    {user.github_link && (
+                      <p className="text-muted-foreground flex items-center gap-2">
+                        <img height={26} width={26} src="/images/github.png" alt="github logo" />
+                        <a href={user.github_link} target="_blank" className="text-muted-foreground hover:underline">
+                          Github
+                        </a>
+                      </p>
+                    )}
+                    {user.twitter_link && (
+                      <p className="text-muted-foreground flex items-center gap-2">
+                        <img height={20} width={20} src="/images/x_logo.svg" alt="x logo" />
+                        <a href={user.twitter_link} target="_blank" className="text-muted-foreground hover:underline">
+                          Twitter
+                        </a>
+                      </p>
+                    )}
+                    {user.farcaster_link && (
+                      <p className="text-muted-foreground flex items-center gap-2">
+                        <img height={23} width={23} src="/images/farcaster.svg" alt="farcaster logo" />
+                        <a href={user.farcaster_link} target="_blank" className="text-muted-foreground hover:underline">
+                          Farcaster
+                        </a>
+                      </p>
+                    )}
+                    {user.other_link && (
+                      <p className="text-muted-foreground flex items-center gap-2">
+                        <Link size={24} />
+                        <a href={user.other_link} target="_blank" className="text-muted-foreground hover:underline">
+                          Other
+                        </a>
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex justify-between sm:px-14">
-                  <p className="text-muted-foreground flex items-center gap-2">
-                    <img height={23} width={23} src="/images/farcaster.svg" alt="farcaster logo" />
-                    <a href={user.farcaster_link} target="_blank" className="text-muted-foreground hover:underline">
-                      Farcaster
-                    </a>
-                  </p>
-                  <p className="text-muted-foreground flex items-center gap-2">
-                    <Link size={24} />
-                    <a href={user.other_link} target="_blank" className="text-muted-foreground hover:underline">
-                      Other
-                    </a>
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col p-4 gap-3 items-center justify-center">
