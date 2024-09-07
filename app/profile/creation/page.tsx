@@ -12,6 +12,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
+import { getTalentPassportByWalletOrId } from "@/lib/talent";
 
 const ProfilePage: React.FC = () => {
   const { address } = useAccount();
@@ -147,10 +148,19 @@ const ProfilePage: React.FC = () => {
   };
 
   async function updateProfileData(address: string, profileData: UserType): Promise<void> {
+    // Get the talent passport if the user has one
+    const response = await fetch("/api/talent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address }),
+    });
+    const passportScore: number = response.ok ? await response.json() : 0;
+
     const { error } = await supabase.from("user_data").upsert(
       {
         ...profileData,
         evm_address: address,
+        talent_score: passportScore || 0,
         updated_at: new Date().toISOString(),
       },
       {
