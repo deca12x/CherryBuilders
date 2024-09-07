@@ -11,7 +11,7 @@ import WorldIDVerification from "@/components/verify";
 import { motion } from 'framer-motion'
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
-type Tag = "frontend dev" | "backend dev" | "solidity dev" | "ui/ux";
+type Tag = "frontend dev" | "backend dev" | "solidity dev" | "ui/ux dev";
 
 interface ProfileData {
   name: string;
@@ -44,7 +44,7 @@ const ProfilePage: React.FC = () => {
     "frontend dev",
     "backend dev",
     "solidity dev",
-    "ui/ux",
+    "ui/ux dev",
   ];
 
   const handleChange = (field: keyof ProfileData, value: string | Tag[] | string[]) => {
