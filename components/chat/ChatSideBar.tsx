@@ -101,7 +101,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   };
 
   const handleChatClick = (chatId: string) => {
-    router.push(`/chat-example/${chatId}`);
+    router.push(`/chat/${chatId}`);
     setIsOpen(false);
   };
 
