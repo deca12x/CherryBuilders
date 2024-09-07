@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import WorldIDVerification from "@/components/verify";
+import { createClient } from "@supabase/supabase-js";
 
 type Tag = "frontend dev" | "backend dev" | "solidity dev" | "ui/ux dev";
 
@@ -21,6 +23,10 @@ interface ProfileData {
 }
 
 const ProfilePage: React.FC = () => {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_ANON_KEY as string
+  );
   const { address } = useAccount();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
@@ -50,11 +56,56 @@ const ProfilePage: React.FC = () => {
     handleChange("tags", newTags);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
-    console.log(profileData);
+    if (!address) {
+      console.error("No EVM address available");
+      return;
+    }
+
+    try {
+      // Assuming you have a function to update the database
+      await updateProfileData(address, profileData);
+      console.log("Profile saved successfully");
+      // TODO: Show success message to user
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      // TODO: Show error message to user
+    }
   };
+
+  async function updateProfileData(
+    address: string,
+    profileData: ProfileData
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from("profiles") // Adjust this to match your table name
+        .upsert(
+          {
+            evm_address: address,
+            name: profileData.name,
+            bio: profileData.bio || null,
+            tags: profileData.tags,
+            github_link: profileData.github_link || null,
+            twitter_link: profileData.twitter_link || null,
+            farcaster_link: profileData.farcaster_link || null,
+            other_link: profileData.other_link || null,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "evm_address",
+          }
+        );
+
+      if (error) throw error;
+
+      console.log("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error; // Re-throw the error so it can be handled by the calling function
+    }
+  }
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
@@ -90,7 +141,7 @@ const ProfilePage: React.FC = () => {
           </div>
 
           <div>
-            <Label className="text-sm font-medium">Skills</Label>
+            <Label className="text-sm font-medium">Tags</Label>
             <div className="mt-1 space-y-2">
               {availableTags.map((tag) => (
                 <div key={tag} className="flex items-center">
@@ -119,7 +170,7 @@ const ProfilePage: React.FC = () => {
 
           <div>
             <Input
-              placeholder="X"
+              placeholder="X (Twitter)"
               value={profileData.twitter_link || ""}
               onChange={(e) => handleChange("twitter_link", e.target.value)}
               maxLength={255}
@@ -145,6 +196,13 @@ const ProfilePage: React.FC = () => {
               maxLength={255}
               className="mt-1"
             />
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium">
+              Verification (Optional)
+            </Label>
+            <WorldIDVerification />
           </div>
         </form>
       </div>
