@@ -54,10 +54,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   const fetchChatHistory = async () => {
     setIsLoading(true);
     console.log("Fetching chat history for user:", userAddress);
-    const { data, error } = await supabase
-      .from("chats")
-      .select("*")
-      .or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
+    const { data, error } = await supabase.from("chats").select("*").or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
 
     if (error) {
       console.error("Error fetching chat history:", error);
@@ -102,12 +99,13 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
 
   const handleChatClick = (chatId: string) => {
     router.push(`/chat/${chatId}`);
+
     setIsOpen(false);
+
   };
 
   const ChatList = () => (
     <ScrollArea className="h-[calc(100vh-10rem)] lg:h-[calc(100vh-4rem)]">
-  
       {isLoading ? (
         <div className="flex justify-center items-center h-full">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -117,7 +115,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
           <div
             key={chat.id}
             className={`flex items-center p-4 hover:bg-accent cursor-pointer transition-colors duration-200 ${
-              chat.id === activeChatId ? 'bg-accent' : ''
+              chat.id === activeChatId ? "bg-accent" : ""
             }`}
             onClick={() => handleChatClick(chat.id)}
           >
@@ -133,12 +131,11 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
         ))
       )}
     </ScrollArea>
-  )
+  );
 
   return (
     <>
       {/* Mobile Topbar */}
-    
 
       {/* Desktop Sidebar */}
       <div className="block w-full max-w-sm bg-card border-r border-border">
@@ -148,5 +145,5 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
         <ChatList />
       </div>
     </>
-  )
+  );
 }

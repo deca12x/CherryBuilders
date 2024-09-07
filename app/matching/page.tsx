@@ -1,12 +1,15 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
-import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { supabase } from "@/lib/supabase";
 import { useAccount } from "wagmi";
+import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
+import MatchModal from "@/components/matching/MatchModal";
+import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import Image from "next/image";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
@@ -16,19 +19,17 @@ export default function Matching() {
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [direction, setDirection] = useState(0);
-  const [bioDirection, setBioDirection] = useState(0);
   const [animateFrame, setAnimateFrame] = useState(false);
+  const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
+  const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
+  const [matchedChatId, setMatchedChatId] = useState<string>("");
 
   const { address } = useAccount();
 
   useEffect(() => {
     const fetchUsers = async () => {
       if (!address) return;
-
       setIsLoading(true);
-      setError(null);
 
       try {
         const response = await fetch("/api/get-random-users", {
@@ -45,7 +46,6 @@ export default function Matching() {
         setUsers(data);
       } catch (error) {
         console.error("Error fetching users:", error);
-        setError("Failed to load users. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -58,75 +58,86 @@ export default function Matching() {
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;
-  
+
     try {
-      // Check if there's an existing match in either direction
-      const { data: existingMatches, error: fetchError } = await supabase
+      const { data, error } = await supabase
         .from("matches")
         .select("*")
-        .or(`user_1.eq.${address},user_2.eq.${address}`)
-        .or(`user_1.eq.${currentUser.evm_address},user_2.eq.${currentUser.evm_address}`);
-  
-      if (fetchError) throw fetchError;
-  
-      if (existingMatches && existingMatches.length > 0) {
-        // A match already exists
-        const match = existingMatches[0];
-        if (match.matched) {
-          console.log("Users are already matched");
-          return;
-        }
-  
-        // Update the existing match
+        .eq("user_2", address)
+        .eq("user_1", currentUser.evm_address)
+        .or("matched.is.null,matched.eq.false");
+
+      console.log(data);
+
+      if (error) throw error;
+
+      if (data.length === 0) {
+        console.log("No matches found, creating a new match if it doesn't exist");
+        const { error: insertError } = await supabase
+          .from("matches")
+          .upsert([{ user_1: address, user_2: currentUser.evm_address, matched: false }]);
+
+        if (insertError) throw insertError;
+      } else if (data.length > 0) {
+        console.log("Match exists");
         const { error: updateError } = await supabase
           .from("matches")
           .update({ matched: true })
-          .eq("id", match.id);
-  
+          .eq("user_1", currentUser.evm_address)
+          .eq("user_2", address);
+
         if (updateError) throw updateError;
-  
-        console.log("Match updated");
-  
-        // Create a new chat
+
+        // Create a chat between the two users
         const { error: chatError } = await supabase
           .from("chats")
-          .insert([{ user_1: match.user_1, user_2: match.user_2 }]);
-  
+          .insert([{ user_1: address, user_2: currentUser.evm_address }]);
+
         if (chatError) throw chatError;
-  
-        console.log("Chat created");
-      } else {
-        // No existing match, create a new one
-        const { error: insertError } = await supabase
-          .from("matches")
-          .insert([{ user_1: address, user_2: currentUser.evm_address, matched: false }]);
-  
-        if (insertError) throw insertError;
-  
-        console.log("New potential match created");
+
+        // Get the chat ID
+        const { data: chatData, error: chatDataError } = await supabase
+          .from("chats")
+          .select("id")
+          .eq("user_1", address)
+          .eq("user_2", currentUser.evm_address)
+          .limit(1)
+          .single();
+
+        if (chatDataError) throw chatDataError;
+
+        setIsMatchModalOpen(true);
+        setMatchedChatId(chatData?.id);
+
+        if (chatError) throw chatError;
       }
     } catch (error) {
       console.error("Error in checkMatch:", error);
     }
   };
 
-  const handleNext = () => {
+  const handleAccept = () => {
     if (users.length === 0) return;
     checkMatch();
-    setDirection(1);
-    setBioDirection(1);
-    setAnimateFrame(true);
-    setCurrentUserIndex((prev) => (prev + 1) % users.length);
-    setCurrentImageIndex(0);
+    // If the current user is the last user in the list, do not animate
+    if (currentUserIndex !== users.length - 1) {
+      setAnimateFrame(true);
+      setCurrentUserIndex((prev) => prev + 1);
+      setCurrentImageIndex(0);
+    } else {
+      setIsProfilesEndedModalOpen(true);
+    }
   };
 
-  const handlePrevious = () => {
-    if (users.length === 0) return;
-    setDirection(-1);
-    setBioDirection(-1);
-    setAnimateFrame(true);
-    setCurrentUserIndex((prev) => (prev - 1 + users.length) % users.length);
-    setCurrentImageIndex(0);
+  const handleReject = () => {
+    if (users.length === 0 || currentUserIndex === users.length - 1) {
+      setIsProfilesEndedModalOpen(true);
+    } else {
+      setAnimateFrame(true);
+      setCurrentUserIndex((prev) => prev + 1);
+      //setCurrentUserIndex((prev) => (prev - 1 + users.length) % users.length);
+      setCurrentImageIndex(0);
+    }
   };
 
   const handleImageNext = () => {
@@ -153,9 +164,9 @@ export default function Matching() {
         <motion.div
           key="1"
           className="w-full"
-          initial={{ x: animateFrame ? direction * 400 : 0, opacity: animateFrame ? 0 : 1 }}
+          initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: animateFrame ? direction * -400 : 0, opacity: animateFrame ? 0 : 1 }}
+          exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
           transition={{ type: "spring", duration: 0.55 }}
           onAnimationComplete={() => setAnimateFrame(false)}
         >
@@ -168,7 +179,19 @@ export default function Matching() {
                 <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
                   <div className="flex flex-col w-full p-2 gap-1">
-                    <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className} flex`}>{user.name} {user.verified &&  <Image src={'/worldcoinlogo.png'} width={24} height={24} alt="logo" className="ml-1 h-10 w-10 rounded-full" /> }  <VerifiedIcon className="ml-1 h-6 w-6" />  </h2>
+                    <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className} flex`}>
+                      {user.name}{" "}
+                      {user.verified && (
+                        <Image
+                          src={"/images/worldcoinlogo.png"}
+                          width={24}
+                          height={24}
+                          alt="logo"
+                          className="ml-1 h-10 w-10 rounded-full"
+                        />
+                      )}{" "}
+                      <VerifiedIcon className="ml-1 h-6 w-6" />{" "}
+                    </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
                       {user.tags.map((tag: UserTag, index: number) => (
@@ -208,9 +231,9 @@ export default function Matching() {
         <motion.div
           key="2"
           className="w-full"
-          initial={{ x: animateFrame ? bioDirection * 400 : 0, opacity: animateFrame ? 0 : 1 }}
+          initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: animateFrame ? bioDirection * -400 : 0, opacity: animateFrame ? 0 : 1 }}
+          exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
           transition={{ type: "spring", duration: 0.7 }}
         >
           {isLoading ? (
@@ -312,21 +335,6 @@ export default function Matching() {
     </div>
   );
 
-  const renderContent = () => {
-    if (isLoading) {
-      return <div className="text-center text-xl">Loading...</div>;
-    }
-
-    if (error) {
-      return <div className="text-center text-xl text-red-500">{error}</div>;
-    }
-
-    if (users.length === 0) {
-      return <div className="text-center text-xl">No users available</div>;
-    }
-
-    return <ProfileCard user={currentUser} imageIndex={currentImageIndex} isLoading={isLoading} />;
-  };
   return (
     <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
       {/* Profile Card */}
@@ -339,7 +347,7 @@ export default function Matching() {
       {/* Buttons */}
       <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
         <button
-          onClick={handlePrevious}
+          onClick={handleReject}
           className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
           aria-label="Dislike"
           disabled={isLoading || users.length === 0}
@@ -347,7 +355,7 @@ export default function Matching() {
           <X size={24} />
         </button>
         <button
-          onClick={handleNext}
+          onClick={handleAccept}
           className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
           aria-label="Like"
           disabled={isLoading || users.length === 0}
@@ -358,6 +366,12 @@ export default function Matching() {
 
       {/* Navigation */}
       <BottomNavigationBar />
+
+      {/* Match Modal */}
+      <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
+
+      {/* Profiles Ended Modal */}
+      <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
     </div>
   );
 }

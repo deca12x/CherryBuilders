@@ -13,10 +13,10 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
 import NotAuthenticated from "@/components/NotAuthenticated";
+import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 
 const ProfilePage: React.FC = () => {
   const { address } = useAccount();
-  const [step, setStep] = useState(0);
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
@@ -27,6 +27,7 @@ const ProfilePage: React.FC = () => {
     other_link: "",
     profile_pictures: [],
     evm_address: address || "",
+    verified: false,
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,10 +132,9 @@ const ProfilePage: React.FC = () => {
       await updateProfileData(address, profileData);
       toast({
         title: "Success",
-        description: "Profile saved successfully. Please proceed to World ID verification.",
+        description: "Profile saved successfully.",
         variant: "default",
       });
-      setStep(1);
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -151,7 +151,6 @@ const ProfilePage: React.FC = () => {
     const { error } = await supabase.from("user_data").upsert(
       {
         ...profileData,
-        evm_address: address,
         updated_at: new Date().toISOString(),
       },
       {
@@ -168,7 +167,10 @@ const ProfilePage: React.FC = () => {
       description: "Your profile is now complete with World ID verification!",
       variant: "default",
     });
-    // Optionally, you can redirect the user or perform any other action here
+  };
+
+  const handleWorldIDClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
   };
 
   const containerVariants = {
@@ -190,19 +192,19 @@ const ProfilePage: React.FC = () => {
   };
 
   return address ? (
-    <motion.main
-      className="flex flex-col min-h-screen bg-background"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-        <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
-          {step === 0 ? "Edit Your Profile" : "Verify with World ID"}
-        </motion.h1>
-        <ConnectButton />
+    <>
+      <motion.main
+        className="flex flex-col min-h-screen bg-background pb-16"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
+          <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
+            Edit Your Profile
+          </motion.h1>
+          <ConnectButton />
 
-        {step === 0 ? (
           <form onSubmit={handleSubmit} className="space-y-6 mt-6">
             <motion.div variants={itemVariants}>
               <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
@@ -266,6 +268,17 @@ const ProfilePage: React.FC = () => {
               />
             </motion.div>
 
+            <motion.div className="mt-6 gap-3" variants={itemVariants}>
+              <Label className="text-sm font-medium block">World ID</Label>
+              {!profileData.verified ? (
+                <Button className="bg-transparent p-0 m-0 pt-3" onClick={handleWorldIDClick}>
+                  <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={false} />
+                </Button>
+              ) : (
+                <p className="text-sm pt-1 text-green-500">Already Verified</p>
+              )}
+            </motion.div>
+
             <motion.div variants={itemVariants}>
               <Label className="text-sm font-medium mb-2 block">Tags</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -313,23 +326,16 @@ const ProfilePage: React.FC = () => {
 
             <motion.div className="mt-6" variants={itemVariants}>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Next: Verify with World ID"}
+                {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
             </motion.div>
           </form>
-        ) : (
-          <motion.div className="space-y-6 mt-6" variants={itemVariants}>
-            <p className="text-lg">
-              Your profile has been saved. Please complete the World ID verification to finalize your profile.
-            </p>
-            <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} />
-            <Button onClick={() => setStep(0)} className="w-full mt-4">
-              Back to Profile
-            </Button>
-          </motion.div>
-        )}
-      </div>
-    </motion.main>
+        </div>
+      </motion.main>
+
+      {/* Navigation */}
+      <BottomNavigationBar />
+    </>
   ) : (
     <NotAuthenticated />
   );
