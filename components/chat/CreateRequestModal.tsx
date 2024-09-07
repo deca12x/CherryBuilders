@@ -47,6 +47,8 @@ export default function CreateRequestModal({ isOpen, onClose, onCreateRequest, p
         signatureProvider: web3SignatureProvider,
       });
 
+      console.log(walletClient);
+
       const payeeIdentity = payeeAddress;
       const payerIdentity = payerAddress;
       const paymentRecipient = payeeIdentity;
