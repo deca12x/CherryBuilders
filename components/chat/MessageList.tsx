@@ -57,6 +57,20 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserAddress 
     };
   }, [messages]);
 
+
+  // useEffect(() => {
+  //   const array = []
+  //   messages.forEach(msg => {
+  //     array.push({
+  //       sender: msg.sender,
+  //       message: msg.message
+  //     })
+  
+  //   });
+
+  //   console.log(array)
+  // }, [messages]);
+
   const handlePay = (amount: string) => {
     // Implement payment logic here
     console.log(`Paying ${amount}`);
