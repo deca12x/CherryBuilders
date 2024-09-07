@@ -1,34 +1,29 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Cherry 🍒
 
-## Getting Started
+Cherry is a web application designed to help developers meet, connect, and start great collaborations. Built with Next.js and leveraging blockchain technology, Cherry offers a unique platform for networking and project collaboration in the developer community.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+- User profiles with customizable information
+- Matching system for connecting developers
+- Chat functionality with integrated payment system, thanks to Request Network
+- World ID verification for an enhanced trust layer
+- Talent Passport scoring system for a more informed matching process
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technology Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [Request Network](https://request.network/) - For in chat integrated payment of requests and invoices
+- [World ID](https://worldcoin.org/world-id) - For user verification and security
+- [Celo](https://celo.org/) - For safe and low-cost transactions on Celo blockchain through Request Network.
+- [Mantle](https://mantle.xyz/) - Leveraged the ethereum rollup Mantle to create, send and pay Request Network invoices
+- [Ora](https://www.oracles.org/) - To generate a score for the matched users based on their chat history. Code can be found [here](https://github.com/deca12x/OraChatScore/blob/main/src/Prompt.sol)
+- [DBForest](https://www.dbforest.org/) - Deployed PostgreSQL database on DBForest to store user information, chat history, and other relevant data
+- [Talent Passport](https://passport.talentprotocol.com/signin) - To allow users to better evaluate each other's profile and skills
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## License
 
-## Learn More
+GPLv3
 
-To learn more about Next.js, take a look at the following resources:
+## Acknowledgements
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This project was created during the ETHWarsaw 2024 hackathon.
