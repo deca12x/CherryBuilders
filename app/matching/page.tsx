@@ -11,6 +11,7 @@ const k2d = K2D({ weight: "600", subsets: ["latin"] });
 export const users: UserType[] = [];
 
 export default function Matching() {
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [currentUser, setCurrentUser] = useState(0);
   const [currentImage, setCurrentImage] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -19,6 +20,7 @@ export default function Matching() {
 
   // Fetch the user from the get-random-users internal route as soon as the component mounts
   useEffect(() => {
+    setLoadingUsers(true);
     const fetchUser = async () => {
       const response = await fetch("/api/get-random-users");
       const data = await response.json();
@@ -32,6 +34,7 @@ export default function Matching() {
       }
     };
     fetchUser();
+    setLoadingUsers(false);
   }, []);
 
   const handleNext = () => {
