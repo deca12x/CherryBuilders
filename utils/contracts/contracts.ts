@@ -1,7 +1,7 @@
 //replace with chain ids
 
-export type ValidChainId = 11155111 | 84532 | 421614 ;
-export type ValidChainName = 'sepolia' | 'mantle' | 'alfajores'
+export type ValidChainId = 11155111 | 5000 | 42220 ;
+export type ValidChainName = 'sepolia' | 'mantle' | 'celo'
 
 export const contracts: Record<ValidChainId, {
     tUSDCAddress: `0x${string}`;
@@ -13,14 +13,14 @@ export const contracts: Record<ValidChainId, {
         tUSDCAddress: "0x4e084005835a1059B1D1c741E21ab511458F90b0",
     },
     //Mantle testenet
-    84532: {
-        tUSDCAddress: "0xf6dC757C9F7E5e5eE5787c31f2aBEa4B19001015",
+    5000: {
+        tUSDCAddress: "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9",
         name: 'mantle'
     },
-    //Celo testnet
-    421614: {
-        tUSDCAddress: "0x37ff5b5f37038db083957c415d5b105ee2e27e4f",
-        name:'alfajores'
+    //Celo mainnet
+    42220: {
+        tUSDCAddress: "0x471EcE3750Da237f93B8E339c536989b8978a438",
+        name:'celo'
     },
     
 };

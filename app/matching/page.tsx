@@ -57,39 +57,52 @@ export default function Matching() {
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;
-
+  
     try {
-      const { data, error } = await supabase
+      // Check if there's an existing match in either direction
+      const { data: existingMatches, error: fetchError } = await supabase
         .from("matches")
         .select("*")
-        .eq("user_2", address)
-        .eq("user_1", currentUser.evm_address)
-        .neq("matched", true);
-
-      if (error) throw error;
-
-      if (data.length === 0) {
-        console.log("No matches found, creating a new match");
-        const { error: insertError } = await supabase
-          .from("matches")
-          .insert([{ user_1: address, user_2: currentUser.evm_address }]);
-
-        if (insertError) throw insertError;
-      } else if (data.length > 0) {
-        console.log("Match exists");
+        .or(`user_1.eq.${address},user_2.eq.${address}`)
+        .or(`user_1.eq.${currentUser.evm_address},user_2.eq.${currentUser.evm_address}`);
+  
+      if (fetchError) throw fetchError;
+  
+      if (existingMatches && existingMatches.length > 0) {
+        // A match already exists
+        const match = existingMatches[0];
+        if (match.matched) {
+          console.log("Users are already matched");
+          return;
+        }
+  
+        // Update the existing match
         const { error: updateError } = await supabase
           .from("matches")
           .update({ matched: true })
-          .eq("user_1", currentUser.evm_address)
-          .eq("user_2", address);
-
+          .eq("id", match.id);
+  
         if (updateError) throw updateError;
-
+  
+        console.log("Match updated");
+  
+        // Create a new chat
         const { error: chatError } = await supabase
           .from("chats")
-          .insert([{ user_1: address, user_2: currentUser.evm_address }]);
-
+          .insert([{ user_1: match.user_1, user_2: match.user_2 }]);
+  
         if (chatError) throw chatError;
+  
+        console.log("Chat created");
+      } else {
+        // No existing match, create a new one
+        const { error: insertError } = await supabase
+          .from("matches")
+          .insert([{ user_1: address, user_2: currentUser.evm_address, matched: false }]);
+  
+        if (insertError) throw insertError;
+  
+        console.log("New potential match created");
       }
     } catch (error) {
       console.error("Error in checkMatch:", error);

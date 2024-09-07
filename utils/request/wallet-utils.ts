@@ -10,8 +10,8 @@ export function constructProviderFromWalletClient(walletClient: any) {
 
    //MULTI CHAIN
   const network = {
-    chainId: 11155111,  // Sepolia chain ID
-    name: 'Sepolia'
+    chainId: walletClient.chain.id,  // Sepolia chain ID
+    name: walletClient.chain.name
   };
 
   try {
