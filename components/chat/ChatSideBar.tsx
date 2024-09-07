@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 import { createClient } from '@supabase/supabase-js'
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 type ChatHistoryItem = {
   id: string;
@@ -80,7 +80,7 @@ export default function ChatSidebar({ userAddress }: { userAddress: string }) {
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
       <ScrollArea className="h-[calc(100vh-5rem)]">
-        <DynamicWidget />
+        <ConnectButton />
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

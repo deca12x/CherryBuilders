@@ -1,5 +1,5 @@
 'use client';
-import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import React from 'react';
 
 
@@ -9,7 +9,7 @@ const NotAuthenticated: React.FC = () => {
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Not Authenticated</h1>
         <p>Please connect your wallet to access the chat.</p>
-        <DynamicWidget />
+     <ConnectButton />
       </div>
     </div>
   );
