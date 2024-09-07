@@ -66,7 +66,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       // Set the otherUser state with the address, even if we can't fetch the name
       setOtherUser({
         address: otherUserAddress,
-        name: `User ${otherUserAddress.slice(0, 6)}...`,
+        name: otherUserAddress,
       });
     } else {
       console.log("No chat data found for chat ID:", chatId);
@@ -171,7 +171,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      <ChatSidebar userAddress={userAddress} />
+      <ChatSidebar userAddress={userAddress} activeChatId={chatId} />
       <div className="flex-1 flex flex-col">
         <ChatHeader name={otherUser?.name || "Loading..."} />
         <MessageList
