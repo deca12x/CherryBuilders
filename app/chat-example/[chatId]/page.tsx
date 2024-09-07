@@ -12,7 +12,6 @@ export default function ChatUI() {
   const chatId = params.chatId as string;
 
 
-
   return (
     <>
       {address ? (
