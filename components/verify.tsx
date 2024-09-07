@@ -1,33 +1,68 @@
 "use client"; // for Next.js app router
-import React from "react";
+import React, { useEffect } from "react";
 import {
   IDKitWidget,
   VerificationLevel,
   ISuccessResult,
 } from "@worldcoin/idkit";
-import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
+import { createClient } from "@supabase/supabase-js";
+import { Button } from "./ui/button";
 
 const WorldIDVerification: React.FC = () => {
-  const router = useRouter();
+  const { address } = useAccount();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_ANON_KEY as string
+  );
+
+  useEffect(() => {
+    console.log("address", address);
+  }, [address]);
+
   const handleVerify = async (proof: ISuccessResult) => {
-    console.log("proof :", proof);
-    const res = await fetch("/api/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(proof),
-    });
-    router.push("/matching"); //will go to different route
-    if (!res.ok) {
-      throw new Error("Verification failed.");
+    if (!address) {
+      console.error("No EVM address available");
+      return;
     }
-    console.log(res);
+
+    try {
+      await updateVerificationStatus(address, true);
+      console.log("Verification status updated successfully");
+    } catch (error) {
+      console.error("Failed to update verification status:", error);
+    }
   };
 
+  async function updateVerificationStatus(
+    address: string,
+    isVerified: boolean
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from("profiles") // Adjust this to match your table name
+        .upsert(
+          {
+            evm_address: address,
+            is_world_id_verified: isVerified,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "evm_address",
+          }
+        );
+
+      if (error) throw error;
+
+      console.log("Verification status updated successfully");
+    } catch (error) {
+      console.error("Error updating verification status:", error);
+      throw error;
+    }
+  }
+
   const onSuccess = () => {
-    console.log("SUCCESS");
-    // Perform actions after modal is closed (e.g., redirect user)
+    console.log("World ID verification successful");
   };
 
   return (
@@ -38,7 +73,7 @@ const WorldIDVerification: React.FC = () => {
       handleVerify={handleVerify}
       verification_level={VerificationLevel.Device}
     >
-      {({ open }) => <button onClick={open}>Verify with World ID</button>}
+      {({ open }) => <Button onClick={open} className="rounded-2xl bg-white text-black hover:bg-slate-300">Verify with World ID</Button>}
     </IDKitWidget>
   );
 };
