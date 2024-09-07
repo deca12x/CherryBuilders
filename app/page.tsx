@@ -19,18 +19,14 @@ export default function Home() {
     const checkAddress = async () => {
       if (address) {
         try {
-          const { data, error } = await supabase
-            .from("UserData")
-            .select("evmAddress")
-            .eq("evmAddress", address)
-            .single();
+          const { data, error } = await supabase.from("user_data").select("*").eq("evm_address", address).single();
 
           if (error) throw error;
 
           if (data) {
             router.push("/matching");
           } else {
-            router.push("/profile");
+            router.push("/profile/creation");
           }
         } catch (error) {
           console.error("Error checking address:", error);
@@ -43,26 +39,17 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-background">
-      <Card className="w-[350px]">
+      <Card className="sm:max-w-xl">
         <CardContent className="pt-6">
-          <h1
-            className={`text-3xl font-bold text-center text-primary ${k2d.className}`}
-          >
-            Welcome to
-          </h1>
-          <h1
-            className={`text-6xl font-bold text-center text-primary ${k2d.className}`}
-          >
-            DEVLINK!
-          </h1>
+          <h1 className={`text-3xl font-bold text-center text-primary ${k2d.className}`}>Welcome to</h1>
+          <h1 className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}>DEVLINK!</h1>
           <div className="flex flex-col justify-center items-center mt-8 gap-3">
             <ConnectButton />
-            <WorldIDVerification />
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">
           {address && (
-            <Button variant="default" onClick={() => router.push("/test")}>
+            <Button variant="default" onClick={() => router.push("/profile/creation")}>
               Launch App
             </Button>
           )}

@@ -12,7 +12,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
-import NotAuthenticated from "@/components/NotAuthenticated";
 
 const ProfilePage: React.FC = () => {
   const { address } = useAccount();
@@ -189,7 +188,7 @@ const ProfilePage: React.FC = () => {
     },
   };
 
-  return address ? (
+  return (
     <motion.main
       className="flex flex-col min-h-screen bg-background"
       initial="hidden"
@@ -198,7 +197,7 @@ const ProfilePage: React.FC = () => {
     >
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
         <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
-          {step === 0 ? "Edit Your Profile" : "Verify with World ID"}
+          {step === 0 ? "Create Your Profile" : "Verify with World ID"}
         </motion.h1>
         <ConnectButton />
 
@@ -330,8 +329,6 @@ const ProfilePage: React.FC = () => {
         )}
       </div>
     </motion.main>
-  ) : (
-    <NotAuthenticated />
   );
 };
 

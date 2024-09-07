@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Heart, Link } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
-import { user_tag, UserType } from "@/lib/types";
+import { UserTag, UserType } from "@/lib/types";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { supabase } from "@/lib/supabase";
 import { useAccount } from "wagmi";
@@ -122,12 +122,18 @@ export default function Matching() {
 
   const handleImagePrevious = () => {
     if (!currentUser) return;
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + currentUser.profile_pictures.length) % currentUser.profile_pictures.length
-    );
+    setCurrentImageIndex((prev) => (prev - 1 + currentUser.profile_pictures.length) % currentUser.profile_pictures.length);
   };
 
-  const ProfileCard = ({ user, imageIndex, isLoading }: { user: UserType | null; imageIndex: number; isLoading: boolean }) => (
+  const ProfileCard = ({
+    user,
+    imageIndex,
+    isLoading,
+  }: {
+    user: UserType | null;
+    imageIndex: number;
+    isLoading: boolean;
+  }) => (
     <div className="w-full max-w-xl bg-background shadow-lg overflow-hidden relative flex-grow pb-28">
       <AnimatePresence>
         <motion.div
@@ -151,7 +157,7 @@ export default function Matching() {
                     <h2 className={`text-3xl font-bold text-primary-foreground ${k2d.className}`}>{user.name}</h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
-                      {user.tags.map((tag: user_tag, index: number) => (
+                      {user.tags.map((tag: UserTag, index: number) => (
                         <span key={index} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm">
                           {tag.charAt(0).toUpperCase() + tag.slice(1)}
                         </span>
@@ -183,7 +189,7 @@ export default function Matching() {
             </button>
           </div>
         </motion.div>
-  
+
         {/* Content */}
         <motion.div
           key="2"
@@ -248,7 +254,7 @@ export default function Matching() {
                 <p className="font-bold text-foreground">Who am I?</p>
                 <p className="text-muted-foreground">{user.bio}</p>
               </div>
-  
+
               {/* Links */}
               <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
                 <p className="font-bold text-foreground">Links</p>
@@ -312,11 +318,7 @@ export default function Matching() {
       {/* Profile Card */}
       <div className="flex-grow flex justify-center items-center">
         <div className="w-full max-w-xl">
-          <ProfileCard 
-            user={users[currentUserIndex] || null} 
-            imageIndex={currentImageIndex}
-            isLoading={isLoading}
-          />
+          <ProfileCard user={users[currentUserIndex] || null} imageIndex={currentImageIndex} isLoading={isLoading} />
         </div>
       </div>
 

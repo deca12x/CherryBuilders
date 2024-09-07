@@ -19,7 +19,7 @@ const BottomNavigationBar = () => {
         </button>
         <button
           onClick={() => {
-            Router.push("/");
+            Router.push("/matching");
           }}
           className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
           aria-label="Find People"
@@ -29,7 +29,7 @@ const BottomNavigationBar = () => {
         </button>
         <button
           onClick={() => {
-            Router.push("/chat-example/83a9f840-4d74-4397-bab2-0de1e47984c0");
+            Router.push(`/profile`);
           }}
           className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
           aria-label="Your profile"
