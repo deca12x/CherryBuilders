@@ -1,46 +1,56 @@
-"use client"; // for Next.js app router
-import React, { useEffect } from "react";
+"use client";
+
+import React from "react";
 import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
 import { useAccount } from "wagmi";
 import { Button } from "./ui/button";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import {useRouter} from 'next/navigation'
 
-const WorldIDVerification: React.FC = () => {
+const WorldIDVerification: React.FC<{ onVerificationSuccess: () => void }> = ({ onVerificationSuccess }) => {
   const { address } = useAccount();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    console.log("address", address);
-  }, [address]);
+  const router = useRouter();
 
   const handleVerify = async (proof: ISuccessResult) => {
     if (!address) {
       console.error("No EVM address available");
+      toast({
+        title: "Error",
+        description: "No EVM address available. Please connect your wallet.",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       await updateVerificationStatus(address, true);
       console.log("Verification status updated successfully");
+      toast({
+        title: "Verification Successful",
+        description: "Your World ID verification has been successfully recorded.",
+        variant: "default",
+      });
+      onVerificationSuccess();
     } catch (error) {
       console.error("Failed to update verification status:", error);
+      toast({
+        title: "Verification Failed",
+        description: "An error occurred while updating your verification status.",
+        variant: "destructive",
+      });
     }
   };
 
   async function updateVerificationStatus(address: string, isVerified: boolean): Promise<void> {
     try {
       const { error } = await supabase
-        .from("profiles") // Adjust this to match your table name
-        .upsert(
-          {
-            evm_address: address,
-            is_world_id_verified: isVerified,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "evm_address",
-          }
-        );
-
+        .from("user_data")
+        .update({ verified: isVerified, updated_at: new Date().toISOString() })
+        .eq("evm_address", address);
+        router.push('/matching')
       if (error) throw error;
 
       console.log("Verification status updated successfully");
