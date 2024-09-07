@@ -1,11 +1,10 @@
 "use client";
-
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, MessageCircle, Cog, User, Link } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, X, Heart, Link } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { user_tag, UserType } from "@/lib/types";
-import { useRouter } from "next/navigation";
+import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -57,7 +56,11 @@ export default function Matching() {
   const [direction, setDirection] = useState(0);
   const [bioDirection, setBioDirection] = useState(0);
   const [animateFrame, setAnimateFrame] = useState(false);
-  const Router = useRouter();
+
+  useEffect(() => {
+    // Fetch the user from supabase
+    const { data, error } = await supabase.from("users").select("*").eq("address", users[currentUser].address);
+  }, []);
 
   const handleNext = () => {
     setDirection(1);
@@ -201,95 +204,33 @@ export default function Matching() {
 
   return (
     <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
-      {/* Desktop Navigation */}
-      <div className="hidden sm:flex flex-col w-full max-w-sm bg-card py-3 px-4 gap-4">
-        <button
-          onClick={() => {
-            Router.push("/chat-example/83a9f840-4d74-4397-bab2-0de1e47984c0");
-          }}
-          className="flex items-center gap-3 p-2 text-muted-foreground transition-colors hover:text-primary"
-          aria-label="Messages"
-        >
-          <MessageCircle size={32} />
-          <span>Messages</span>
-        </button>
-        <button
-          className="flex items-center gap-3 p-2 text-muted-foreground transition-colors hover:text-primary"
-          aria-label="Matches"
-        >
-          <Cog size={35} />
-          <span>Find people</span>
-        </button>
-        <button
-          className="flex items-center gap-3 p-2 text-muted-foreground transition-colors hover:text-primary"
-          aria-label="Profile"
-        >
-          <User size={32} />
-          <span>Your Profile</span>
-        </button>
-      </div>
-
       {/* Profile Card */}
       <div className="flex-grow flex justify-center items-center">
-        <div className="w-full max-w-xl pt-0 sm:pt-3">
+        <div className="w-full max-w-xl">
           <ProfileCard user={users[currentUser]} imageIndex={currentImage} />
-          {/* Desktop Buttons */}
-          <div className="hidden sm:absolute justify-center mt-4 space-x-4">
-            <button
-              onClick={handlePrevious}
-              className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors"
-              aria-label="Dislike"
-            >
-              <X size={24} />
-            </button>
-            <button
-              onClick={handleNext}
-              className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors"
-              aria-label="Like"
-            >
-              <Heart size={24} />
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-card shadow-lg">
-        {/* Buttons */}
-        <div className="absolute -top-16 left-0 right-0 flex justify-center space-x-4">
-          <button
-            onClick={handlePrevious}
-            className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors"
-            aria-label="Dislike"
-          >
-            <X size={24} />
-          </button>
-          <button
-            onClick={handleNext}
-            className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors"
-            aria-label="Like"
-          >
-            <Heart size={24} />
-          </button>
-        </div>
-        <div className="flex justify-around items-center py-2">
-          <button
-            onClick={() => {
-              Router.push("/chat-example/83a9f840-4d74-4397-bab2-0de1e47984c0");
-            }}
-            className="p-2 text-muted-foreground hover:text-primary transition-colors"
-            aria-label="Messages"
-          >
-            <MessageCircle size={24} />
-          </button>
-          <button className="p-2 text-muted-foreground hover:text-primary transition-colors" aria-label="Matches">
-            <Cog size={25} />
-          </button>
-          <button className="p-2 text-muted-foreground hover:text-primary transition-colors" aria-label="Profile">
-            <User size={24} />
-          </button>
-        </div>
-      </nav>
+      {/* Buttons */}
+      <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
+        <button
+          onClick={handlePrevious}
+          className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors"
+          aria-label="Dislike"
+        >
+          <X size={24} />
+        </button>
+        <button
+          onClick={handleNext}
+          className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors"
+          aria-label="Like"
+        >
+          <Heart size={24} />
+        </button>
+      </div>
+
+      {/*  Navigation */}
+      <BottomNavigationBar />
     </div>
   );
 }
