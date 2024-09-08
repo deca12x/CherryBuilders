@@ -183,15 +183,17 @@ export default function Matching() {
                     <h2 className={`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`}>
                       <span className="mb-1">{user.name}</span>
                       {user.verified && (
-                        <Image
-                          src={"/images/worldcoinlogo.png"}
-                          width={20}
-                          height={20}
-                          alt="logo"
-                          className="ml-2 h-8 w-8 rounded-full"
-                        />
+                        <>
+                          <Image
+                            src={"/images/worldcoinlogo.png"}
+                            width={20}
+                            height={20}
+                            alt="logo"
+                            className="ml-2 h-8 w-8 rounded-full"
+                          />
+                          <VerifiedIcon className="-mt-5 h-4 w-4" />
+                        </>
                       )}
-                      <VerifiedIcon className="-mt-5 h-4 w-4" />
                     </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
