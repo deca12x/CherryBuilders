@@ -322,7 +322,7 @@ const ProfilePage: React.FC = () => {
                 />
               </motion.div>
 
-              <motion.div className="mt-6 gap-3" variants={itemVariants}>
+              {/* <motion.div className="mt-6 gap-3" variants={itemVariants}>
                 <Label className="text-sm font-medium block">World ID</Label>
                 {!profileData.verified ? (
                   <Button className="bg-transparent p-0 m-0 pt-3" onClick={handleWorldIDClick}>
@@ -331,7 +331,7 @@ const ProfilePage: React.FC = () => {
                 ) : (
                   <p className="text-md pt-1 text-green-500">Already Verified</p>
                 )}
-              </motion.div>
+              </motion.div> */}
 
               {/* Talent score */}
               <motion.div className="flex items-center mt-6 gap-2" variants={itemVariants}>

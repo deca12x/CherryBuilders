@@ -55,17 +55,17 @@ export default function MessageInput({ message, setMessage, handleSend, payeeAdd
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onSelect={() => setIsModalOpen(true)}>
+              <DropdownMenuItem onSelect={() => setIsModalOpen(true)} className="opacity-50 cursor-not-allowed">
                 <Image src={'/images/request.png'} className="mr-2 h-4 w-4" width={24} height={24} alt="request" />
-                <span>Create Request</span>
+                <span>Create Request (coming soon)</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="opacity-50 cursor-not-allowed">
                 <ImageIcon className="mr-2 h-4 w-4" />
-                <span>Image</span>
+                <span>Image (coming soon)</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="opacity-50 cursor-not-allowed">
                 <FileText className="mr-2 h-4 w-4" />
-                <span>Document</span>
+                <span>Document (coming soon)</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
