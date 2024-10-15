@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon, Smile, Frown } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
@@ -26,6 +26,8 @@ export default function Matching() {
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingAction, setProcessingAction] = useState<'accept' | 'reject' | null>(null);
 
   const { user, ready } = usePrivy();
 
@@ -142,9 +144,11 @@ export default function Matching() {
     }
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (users.length === 0) return;
-    checkMatch();
+    setIsProcessing(true);
+    setProcessingAction('accept');
+    await checkMatch();
     // If the current user is the last user in the list, do not animate
     if (currentUserIndex !== users.length - 1) {
       setAnimateFrame(true);
@@ -153,17 +157,24 @@ export default function Matching() {
     } else {
       setIsProfilesEndedModalOpen(true);
     }
+    setIsProcessing(false);
+    setProcessingAction(null);
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
+    setIsProcessing(true);
+    setProcessingAction('reject');
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     if (users.length === 0 || currentUserIndex === users.length - 1) {
       setIsProfilesEndedModalOpen(true);
     } else {
       setAnimateFrame(true);
       setCurrentUserIndex((prev) => prev + 1);
-      //setCurrentUserIndex((prev) => (prev - 1 + users.length) % users.length);
       setCurrentImageIndex(0);
     }
+    setIsProcessing(false);
+    setProcessingAction(null);
   };
 
   const handleImageNext = () => {
@@ -187,6 +198,21 @@ export default function Matching() {
   }) => (
     <div className="w-full max-w-xl bg-background shadow-lg overflow-hidden relative flex-grow pb-28">
       <AnimatePresence>
+        {isProcessing ? (
+          <motion.div
+            key="processing"
+            className="absolute inset-0 flex items-center justify-center bg-background/80 z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {processingAction === 'accept' ? (
+              <Smile size={64} className="text-green-500" />
+            ) : (
+              <Frown size={64} className="text-gray-500" />
+            )}
+          </motion.div>
+        ) : null}
         <motion.div
           key="1"
           className="w-full"
