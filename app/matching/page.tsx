@@ -207,7 +207,7 @@ export default function Matching() {
                   <div className="flex flex-col w-full p-2 gap-1">
                     <h2 className={`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`}>
                       <span className="mb-1">{user.name}</span>
-                      {user.verified && (
+                      {/* {user.verified && (
                         <>
                           <Image
                             src={"/images/worldcoinlogo.png"}
@@ -218,7 +218,7 @@ export default function Matching() {
                           />
                           <VerifiedIcon className="-mt-5 h-4 w-4" />
                         </>
-                      )}
+                      )} */}
                     </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
@@ -300,14 +300,14 @@ export default function Matching() {
           ) : user ? (
             <div className="flex flex-col p-4 gap-3">
               {/* Stats */}
-              <div className="flex flex-row gap-3">
+              <div className="w-full gap-3">
                 {/* Worldcoin ID */}
-                <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
+                {/* <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
                   <p className="font-bold text-foreground">Worldcoin ID</p>
                   <p className={user.verified ? "text-green-500" : "text-red-500"}>
                     {user.verified ? "Confirmed" : "Unconfirmed"}
                   </p>
-                </div>
+                </div> */}
                 {/* Talent score */}
                 <div className="flex flex-col items-center bg-card rounded-xl p-3">
                   <p className="font-bold text-foreground">Talent Score</p>
