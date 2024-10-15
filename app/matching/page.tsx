@@ -1,21 +1,24 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
-import { useAccount } from "wagmi";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import Image from "next/image";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
+import LoadingSpinner from "@/components/loadingSpinner";
+import { isUserInDatabase } from "@/lib/supabase/utils";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 export default function Matching() {
   const [users, setUsers] = useState<UserType[]>([]);
+  const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,11 +27,33 @@ export default function Matching() {
   const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
 
-  const { address } = useAccount();
+  const { user, ready } = usePrivy();
+
+  const router = useRouter();
+
+  const address = user?.wallet?.address;
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (!address) return;
+      if (!ready) return;
+
+      // If no address or no user are found, push the user to log in
+      if (!user || !address) {
+        router.push("/");
+        return;
+      }
+
+      // If no error occurs but the user is not in the database
+      // push it toward the profile creation page
+      const { data, error } = await isUserInDatabase(address);
+      if (error) {
+        setError(true);
+        return;
+      } else if (!data) {
+        router.push("profile/creation");
+        return;
+      }
+
       setIsLoading(true);
 
       try {
@@ -52,7 +77,7 @@ export default function Matching() {
     };
 
     fetchUsers();
-  }, [address]);
+  }, [user, router, ready]);
 
   const currentUser = users[currentUserIndex];
 
@@ -346,43 +371,53 @@ export default function Matching() {
     </div>
   );
 
-  return (
-    <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
-      {/* Profile Card */}
-      <div className="flex-grow flex justify-center items-center">
-        <div className="w-full max-w-xl">
-          <ProfileCard user={users[currentUserIndex] || null} imageIndex={currentImageIndex} isLoading={isLoading} />
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
+        An unexpected error occured, please try again!
+      </div>
+    );
+  } else if (user && address && ready) {
+    return (
+      <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
+        {/* Profile Card */}
+        <div className="flex-grow flex justify-center items-center">
+          <div className="w-full max-w-xl">
+            <ProfileCard user={users[currentUserIndex] || null} imageIndex={currentImageIndex} isLoading={isLoading} />
+          </div>
         </div>
+
+        {/* Buttons */}
+        <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
+          <button
+            onClick={handleReject}
+            className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            aria-label="Dislike"
+            disabled={isLoading || users.length === 0}
+          >
+            <X size={24} />
+          </button>
+          <button
+            onClick={handleAccept}
+            className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
+            aria-label="Like"
+            disabled={isLoading || users.length === 0}
+          >
+            <Heart size={24} />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <BottomNavigationBar />
+
+        {/* Match Modal */}
+        <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
+
+        {/* Profiles Ended Modal */}
+        <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
       </div>
-
-      {/* Buttons */}
-      <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
-        <button
-          onClick={handleReject}
-          className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-          aria-label="Dislike"
-          disabled={isLoading || users.length === 0}
-        >
-          <X size={24} />
-        </button>
-        <button
-          onClick={handleAccept}
-          className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
-          aria-label="Like"
-          disabled={isLoading || users.length === 0}
-        >
-          <Heart size={24} />
-        </button>
-      </div>
-
-      {/* Navigation */}
-      <BottomNavigationBar />
-
-      {/* Match Modal */}
-      <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
-
-      {/* Profiles Ended Modal */}
-      <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
-    </div>
-  );
+    );
+  } else {
+    return <LoadingSpinner />;
+  }
 }

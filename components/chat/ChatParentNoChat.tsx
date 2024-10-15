@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Menu } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "../ui/button";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
+import { fetchUserData } from "@/lib/supabase/utils";
 
 type ChatHistoryItem = {
   id: string;
@@ -15,11 +13,6 @@ type ChatHistoryItem = {
   lastMessage: string;
   otherUserAddress: string;
   profilePicture: string;
-};
-
-type UserData = {
-  name: string;
-  profile_pictures: string[];
 };
 
 interface ChatSidebarProps {
@@ -37,28 +30,10 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
     fetchChatHistory();
   }, [userAddress]);
 
-  const fetchUserData = async (address: string): Promise<UserData | null> => {
-    const { data, error } = await supabase
-      .from("user_data")
-      .select("name, profile_pictures")
-      .eq("evm_address", address)
-      .single();
-
-    if (error) {
-      console.error("Error fetching user data:", error);
-      return null;
-    }
-
-    return data;
-  };
-
   const fetchChatHistory = async () => {
     setIsLoading(true);
     console.log("Fetching chat history for user:", userAddress);
-    const { data, error } = await supabase
-      .from("chats")
-      .select("*")
-      .or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
+    const { data, error } = await supabase.from("chats").select("*").or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
 
     if (error) {
       console.error("Error fetching chat history:", error);
@@ -108,7 +83,6 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
 
   const ChatList = () => (
     <ScrollArea className="h-[calc(100vh-10rem)] lg:h-[calc(100vh-4rem)]">
-  
       {isLoading ? (
         <div className="flex justify-center items-center h-full">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -118,7 +92,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
           <div
             key={chat.id}
             className={`flex items-center p-4 hover:bg-accent cursor-pointer transition-colors duration-200 ${
-              chat.id === activeChatId ? 'bg-accent' : ''
+              chat.id === activeChatId ? "bg-accent" : ""
             }`}
             onClick={() => handleChatClick(chat.id)}
           >
@@ -134,12 +108,11 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
         ))
       )}
     </ScrollArea>
-  )
+  );
 
   return (
     <>
       {/* Mobile Topbar */}
-    
 
       {/* Desktop Sidebar */}
       <div className="block w-full max-w-sm bg-card border-r border-border p-4">
@@ -150,5 +123,5 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
         <BottomNavigationBar />
       </div>
     </>
-  )
+  );
 }

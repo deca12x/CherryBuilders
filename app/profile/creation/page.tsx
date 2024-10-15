@@ -1,6 +1,5 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-import { useAccount } from "wagmi";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -8,15 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import WorldIDVerification from "@/components/verify";
 import { motion } from "framer-motion";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
-import { getTalentPassportByWalletOrId } from "@/lib/talent";
+import ConnectButton from "@/components/ui/connectButton";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
+import { isUserInDatabase } from "@/lib/supabase/utils";
+import LoadingSpinner from "@/components/loadingSpinner";
 
 const ProfilePage: React.FC = () => {
-  const { address } = useAccount();
+  const { user, ready } = usePrivy();
   const [step, setStep] = useState(0);
+  const [unlockPage, setUnlockPage] = useState(false);
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
@@ -26,36 +29,45 @@ const ProfilePage: React.FC = () => {
     farcaster_link: "",
     other_link: "",
     profile_pictures: [],
-    evm_address: address || "",
+    evm_address: user?.wallet?.address || "",
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const { toast } = useToast();
 
   const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
 
+  const address = user?.wallet?.address;
+
   useEffect(() => {
-    if (address) {
-      fetchExistingProfile();
-    }
-  }, [address]);
+    const fetchExistingProfile = async () => {
+      if (!ready) return;
 
-  const fetchExistingProfile = async () => {
-    if (!address) return;
-
-    try {
-      const { data, error } = await supabase.from("user_data").select("*").eq("evm_address", address).single();
-
-      if (error) throw error;
-
-      if (data) {
-        setProfileData(data as UserType);
+      // If no address or no user are found, push the user to log in
+      if (!user || !address) {
+        router.push("/");
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
+
+      // If no error occurs and the user is in the database
+      // push it toward the matching page
+      const { data, error } = await isUserInDatabase(address);
+      if (error) {
+        setError(true);
+        return;
+      } else if (data) {
+        router.push("/matching");
+        return;
+      } else {
+        setUnlockPage(true);
+      }
+    };
+
+    fetchExistingProfile();
+  }, [address, user, ready, router]);
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
@@ -198,148 +210,158 @@ const ProfilePage: React.FC = () => {
     },
   };
 
-  return (
-    <motion.main
-      className="flex flex-col min-h-screen bg-background"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-        <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
-          {step === 0 ? "Create Your Profile" : "Verify with World ID"}
-        </motion.h1>
-        <ConnectButton />
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
+        An unexpected error occured, please try again!
+      </div>
+    );
+  } else if (address && user && ready && unlockPage) {
+    return (
+      <motion.main
+        className="flex flex-col min-h-screen bg-background"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
+          <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
+            {step === 0 ? "Create Your Profile" : "Verify with World ID"}
+          </motion.h1>
+          <ConnectButton />
 
-        {step === 0 ? (
-          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-            <motion.div variants={itemVariants}>
-              <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
-                Profile Pictures
-              </Label>
-              <div className="flex flex-wrap items-center gap-4">
-                {profileData.profile_pictures.map((url, index) => (
-                  <motion.div key={url} className="relative" variants={itemVariants}>
-                    <img src={url} alt={`Profile ${index + 1}`} className="w-24 h-24 object-cover rounded-lg shadow-md" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
-                    >
-                      ×
-                    </button>
-                  </motion.div>
-                ))}
-                <Button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="h-24 w-24"
-                >
-                  {isUploading ? "Uploading..." : "Insert image"}
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                  multiple
-                  className="hidden"
+          {step === 0 ? (
+            <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
+                  Profile Pictures
+                </Label>
+                <div className="flex flex-wrap items-center gap-4">
+                  {profileData.profile_pictures.map((url, index) => (
+                    <motion.div key={url} className="relative" variants={itemVariants}>
+                      <img src={url} alt={`Profile ${index + 1}`} className="w-24 h-24 object-cover rounded-lg shadow-md" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </motion.div>
+                  ))}
+                  <Button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="h-24 w-24"
+                  >
+                    {isUploading ? "Uploading..." : "Insert image"}
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="name" className="text-sm font-medium mb-2 block">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={profileData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  maxLength={255}
+                  required
+                  className="w-full"
                 />
-              </div>
-            </motion.div>
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label htmlFor="name" className="text-sm font-medium mb-2 block">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={profileData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                maxLength={255}
-                required
-                className="w-full"
-              />
-            </motion.div>
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="bio" className="text-sm font-medium mb-2 block">
+                  Bio
+                </Label>
+                <Textarea
+                  id="bio"
+                  value={profileData.bio || ""}
+                  onChange={(e) => handleChange("bio", e.target.value)}
+                  className="w-full min-h-[100px]"
+                />
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label htmlFor="bio" className="text-sm font-medium mb-2 block">
-                Bio
-              </Label>
-              <Textarea
-                id="bio"
-                value={profileData.bio || ""}
-                onChange={(e) => handleChange("bio", e.target.value)}
-                className="w-full min-h-[100px]"
-              />
-            </motion.div>
+              <motion.div variants={itemVariants}>
+                <Label className="text-sm font-medium mb-2 block">Tags</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {availableTags.map((tag) => (
+                    <div key={tag} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={tag}
+                        checked={profileData.tags.includes(tag)}
+                        onCheckedChange={() => handleTagToggle(tag)}
+                      />
+                      <label htmlFor={tag} className="text-sm cursor-pointer">
+                        {tag}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label className="text-sm font-medium mb-2 block">Tags</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {availableTags.map((tag) => (
-                  <div key={tag} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={tag}
-                      checked={profileData.tags.includes(tag)}
-                      onCheckedChange={() => handleTagToggle(tag)}
-                    />
-                    <label htmlFor={tag} className="text-sm cursor-pointer">
-                      {tag}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+              <motion.div variants={itemVariants} className="space-y-4">
+                <Input
+                  placeholder="GitHub"
+                  value={profileData.github_link || ""}
+                  onChange={(e) => handleChange("github_link", e.target.value)}
+                  maxLength={255}
+                />
+                <Input
+                  placeholder="X (Twitter)"
+                  value={profileData.twitter_link || ""}
+                  onChange={(e) => handleChange("twitter_link", e.target.value)}
+                  maxLength={255}
+                />
+                <Input
+                  placeholder="Farcaster"
+                  value={profileData.farcaster_link || ""}
+                  onChange={(e) => handleChange("farcaster_link", e.target.value)}
+                  maxLength={255}
+                />
+                <Input
+                  placeholder="Other link"
+                  value={profileData.other_link || ""}
+                  onChange={(e) => handleChange("other_link", e.target.value)}
+                  maxLength={255}
+                />
+              </motion.div>
 
-            <motion.div variants={itemVariants} className="space-y-4">
-              <Input
-                placeholder="GitHub"
-                value={profileData.github_link || ""}
-                onChange={(e) => handleChange("github_link", e.target.value)}
-                maxLength={255}
-              />
-              <Input
-                placeholder="X (Twitter)"
-                value={profileData.twitter_link || ""}
-                onChange={(e) => handleChange("twitter_link", e.target.value)}
-                maxLength={255}
-              />
-              <Input
-                placeholder="Farcaster"
-                value={profileData.farcaster_link || ""}
-                onChange={(e) => handleChange("farcaster_link", e.target.value)}
-                maxLength={255}
-              />
-              <Input
-                placeholder="Other link"
-                value={profileData.other_link || ""}
-                onChange={(e) => handleChange("other_link", e.target.value)}
-                maxLength={255}
-              />
-            </motion.div>
-
-            <motion.div className="mt-6" variants={itemVariants}>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Next: Verify with World ID"}
+              <motion.div className="mt-6" variants={itemVariants}>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Next: Verify with World ID"}
+                </Button>
+              </motion.div>
+            </form>
+          ) : (
+            <motion.div className="space-y-6 mt-6" variants={itemVariants}>
+              <p className="text-lg">
+                Your profile has been saved. Please complete the World ID verification to finalize your profile.
+              </p>
+              <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={true} />
+              <Button onClick={() => setStep(0)} className="w-full mt-4">
+                Back to Profile
               </Button>
             </motion.div>
-          </form>
-        ) : (
-          <motion.div className="space-y-6 mt-6" variants={itemVariants}>
-            <p className="text-lg">
-              Your profile has been saved. Please complete the World ID verification to finalize your profile.
-            </p>
-            <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={true} />
-            <Button onClick={() => setStep(0)} className="w-full mt-4">
-              Back to Profile
-            </Button>
-          </motion.div>
-        )}
-      </div>
-    </motion.main>
-  );
+          )}
+        </div>
+      </motion.main>
+    );
+  } else {
+    return <LoadingSpinner />;
+  }
 };
 
 export default ProfilePage;

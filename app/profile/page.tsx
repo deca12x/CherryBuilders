@@ -8,16 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import WorldIDVerification from "@/components/verify";
 import { motion } from "framer-motion";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
-import NotAuthenticated from "@/components/NotAuthenticated";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { RefreshCcw } from "lucide-react";
+import ConnectButton from "@/components/ui/connectButton";
+import { usePrivy } from "@privy-io/react-auth";
+import { supabase } from "@/lib/supabase";
+import LoadingSpinner from "@/components/loadingSpinner";
+import { useRouter } from "next/navigation";
+import { isUserInDatabase } from "@/lib/supabase/utils";
 
 const ProfilePage: React.FC = () => {
-  const { address } = useAccount();
+  const { user, ready } = usePrivy();
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
@@ -27,38 +30,47 @@ const ProfilePage: React.FC = () => {
     farcaster_link: "",
     other_link: "",
     profile_pictures: [],
-    evm_address: address || "",
+    evm_address: user?.wallet?.address || "",
     verified: false,
     talent_score: 0,
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
 
+  const address = user?.wallet?.address;
+
   useEffect(() => {
-    if (address) {
-      fetchExistingProfile();
-    }
-  }, [address]);
+    const fetchExistingProfile = async () => {
+      if (!ready) return;
 
-  const fetchExistingProfile = async () => {
-    if (!address) return;
+      // If no address or no user are found, push the user to log in
+      if (!user || !address) {
+        router.push("/");
+        return;
+      }
 
-    try {
-      const { data, error } = await supabase.from("user_data").select("*").eq("evm_address", address).single();
-
-      if (error) throw error;
-
-      if (data) {
+      // If no error occurs but the user is not in the database
+      // push it toward the profile creation page
+      const { data, error } = await isUserInDatabase(address);
+      if (error) {
+        setError(true);
+        return;
+      } else if (!data) {
+        router.push("profile/creation");
+        return;
+      } else {
         setProfileData(data as UserType);
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
+    };
+
+    fetchExistingProfile();
+  }, [address, user, ready, router]);
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
@@ -226,171 +238,179 @@ const ProfilePage: React.FC = () => {
     },
   };
 
-  return address ? (
-    <>
-      <motion.main
-        className="flex flex-col min-h-screen bg-background pb-16"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-          <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
-            Edit Your Profile
-          </motion.h1>
-          <ConnectButton />
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
+        An unexpected error occured, please try again!
+      </div>
+    );
+  } else if (address && user && ready) {
+    return (
+      <>
+        <motion.main
+          className="flex flex-col min-h-screen bg-background pb-16"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
+            <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
+              Edit Your Profile
+            </motion.h1>
+            <ConnectButton />
 
-          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-            <motion.div variants={itemVariants}>
-              <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
-                Profile Pictures
-              </Label>
-              <div className="flex flex-wrap items-center gap-4">
-                {profileData.profile_pictures.map((url, index) => (
-                  <motion.div key={url} className="relative" variants={itemVariants}>
-                    <img src={url} alt={`Profile ${index + 1}`} className="w-24 h-24 object-cover rounded-lg shadow-md" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
-                    >
-                      ×
-                    </button>
-                  </motion.div>
-                ))}
-                <Button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="h-24 w-24"
-                >
-                  {isUploading ? "Uploading..." : "Insert image"}
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                  multiple
-                  className="hidden"
+            <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
+                  Profile Pictures
+                </Label>
+                <div className="flex flex-wrap items-center gap-4">
+                  {profileData.profile_pictures.map((url, index) => (
+                    <motion.div key={url} className="relative" variants={itemVariants}>
+                      <img src={url} alt={`Profile ${index + 1}`} className="w-24 h-24 object-cover rounded-lg shadow-md" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </motion.div>
+                  ))}
+                  <Button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="h-24 w-24"
+                  >
+                    {isUploading ? "Uploading..." : "Insert image"}
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="name" className="text-sm font-medium mb-2 block">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={profileData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  maxLength={255}
+                  required
+                  className="w-full"
                 />
-              </div>
-            </motion.div>
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label htmlFor="name" className="text-sm font-medium mb-2 block">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={profileData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                maxLength={255}
-                required
-                className="w-full"
-              />
-            </motion.div>
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="bio" className="text-sm font-medium mb-2 block">
+                  Bio
+                </Label>
+                <Textarea
+                  id="bio"
+                  value={profileData.bio || ""}
+                  onChange={(e) => handleChange("bio", e.target.value)}
+                  className="w-full min-h-[100px]"
+                />
+              </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <Label htmlFor="bio" className="text-sm font-medium mb-2 block">
-                Bio
-              </Label>
-              <Textarea
-                id="bio"
-                value={profileData.bio || ""}
-                onChange={(e) => handleChange("bio", e.target.value)}
-                className="w-full min-h-[100px]"
-              />
-            </motion.div>
+              <motion.div className="mt-6 gap-3" variants={itemVariants}>
+                <Label className="text-sm font-medium block">World ID</Label>
+                {!profileData.verified ? (
+                  <Button className="bg-transparent p-0 m-0 pt-3" onClick={handleWorldIDClick}>
+                    <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={false} />
+                  </Button>
+                ) : (
+                  <p className="text-md pt-1 text-green-500">Already Verified</p>
+                )}
+              </motion.div>
 
-            <motion.div className="mt-6 gap-3" variants={itemVariants}>
-              <Label className="text-sm font-medium block">World ID</Label>
-              {!profileData.verified ? (
-                <Button className="bg-transparent p-0 m-0 pt-3" onClick={handleWorldIDClick}>
-                  <WorldIDVerification onVerificationSuccess={handleWorldIDSuccess} redirect={false} />
+              {/* Talent score */}
+              <motion.div className="flex items-center mt-6 gap-2" variants={itemVariants}>
+                <Label className="text-md font-medium block items-center justify-center underline">
+                  <a
+                    href="https://talentprotocol.notion.site/Builder-Score-FAQ-4e07c8df13514ce79661ed0d776d4741"
+                    target="_blank"
+                  >
+                    Talent Score:
+                  </a>
+                </Label>
+                <span className={"text-md mr-3 text-primary"}>{profileData.talent_score ?? "N/A"}</span>
+                <button className="flex items-center hover:text-primary" onClick={handleUpdateTalentScore}>
+                  <RefreshCcw />
+                  <span className="text-xs ml-1">Update</span>
+                </button>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label className="text-sm font-medium mb-2 block">Tags</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {availableTags.map((tag) => (
+                    <div key={tag} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={tag}
+                        checked={profileData.tags.includes(tag)}
+                        onCheckedChange={() => handleTagToggle(tag)}
+                      />
+                      <label htmlFor={tag} className="text-sm cursor-pointer">
+                        {tag}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-4">
+                <Input
+                  placeholder="GitHub"
+                  value={profileData.github_link || ""}
+                  onChange={(e) => handleChange("github_link", e.target.value)}
+                  maxLength={255}
+                />
+                <Input
+                  placeholder="X (Twitter)"
+                  value={profileData.twitter_link || ""}
+                  onChange={(e) => handleChange("twitter_link", e.target.value)}
+                  maxLength={255}
+                />
+                <Input
+                  placeholder="Farcaster"
+                  value={profileData.farcaster_link || ""}
+                  onChange={(e) => handleChange("farcaster_link", e.target.value)}
+                  maxLength={255}
+                />
+                <Input
+                  placeholder="Other link"
+                  value={profileData.other_link || ""}
+                  onChange={(e) => handleChange("other_link", e.target.value)}
+                  maxLength={255}
+                />
+              </motion.div>
+
+              <motion.div className="mt-6" variants={itemVariants}>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save changes"}
                 </Button>
-              ) : (
-                <p className="text-md pt-1 text-green-500">Already Verified</p>
-              )}
-            </motion.div>
+              </motion.div>
+            </form>
+          </div>
+        </motion.main>
 
-            {/* Talent score */}
-            <motion.div className="flex items-center mt-6 gap-2" variants={itemVariants}>
-              <Label className="text-md font-medium block items-center justify-center underline">
-                <a
-                  href="https://talentprotocol.notion.site/Builder-Score-FAQ-4e07c8df13514ce79661ed0d776d4741"
-                  target="_blank"
-                >
-                  Talent Score:
-                </a>
-              </Label>
-              <span className={"text-md mr-3 text-primary"}>{profileData.talent_score ?? "N/A"}</span>
-              <button className="flex items-center hover:text-primary" onClick={handleUpdateTalentScore}>
-                <RefreshCcw />
-                <span className="text-xs ml-1">Update</span>
-              </button>
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <Label className="text-sm font-medium mb-2 block">Tags</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {availableTags.map((tag) => (
-                  <div key={tag} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={tag}
-                      checked={profileData.tags.includes(tag)}
-                      onCheckedChange={() => handleTagToggle(tag)}
-                    />
-                    <label htmlFor={tag} className="text-sm cursor-pointer">
-                      {tag}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="space-y-4">
-              <Input
-                placeholder="GitHub"
-                value={profileData.github_link || ""}
-                onChange={(e) => handleChange("github_link", e.target.value)}
-                maxLength={255}
-              />
-              <Input
-                placeholder="X (Twitter)"
-                value={profileData.twitter_link || ""}
-                onChange={(e) => handleChange("twitter_link", e.target.value)}
-                maxLength={255}
-              />
-              <Input
-                placeholder="Farcaster"
-                value={profileData.farcaster_link || ""}
-                onChange={(e) => handleChange("farcaster_link", e.target.value)}
-                maxLength={255}
-              />
-              <Input
-                placeholder="Other link"
-                value={profileData.other_link || ""}
-                onChange={(e) => handleChange("other_link", e.target.value)}
-                maxLength={255}
-              />
-            </motion.div>
-
-            <motion.div className="mt-6" variants={itemVariants}>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save changes"}
-              </Button>
-            </motion.div>
-          </form>
-        </div>
-      </motion.main>
-
-      {/* Navigation */}
-      <BottomNavigationBar />
-    </>
-  ) : (
-    <NotAuthenticated />
-  );
+        {/* Navigation */}
+        <BottomNavigationBar />
+      </>
+    );
+  } else {
+    return <LoadingSpinner />;
+  }
 };
 
 export default ProfilePage;

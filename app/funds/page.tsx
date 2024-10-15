@@ -1,11 +1,12 @@
-import { GetTUSDC } from '@/components/funds/getTusdc'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import React from 'react'
+import { GetTUSDC } from "@/components/funds/getTusdc";
+import React from "react";
 
 const Page = () => {
-    return (
-        <div className='grid grid-cols-1'><GetTUSDC /><ConnectButton /></div>
-    )
-}
+  return (
+    <div className="grid grid-cols-1">
+      <GetTUSDC />
+    </div>
+  );
+};
 
-export default Page
+export default Page;

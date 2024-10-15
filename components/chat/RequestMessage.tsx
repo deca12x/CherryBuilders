@@ -1,23 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button"
-import { RequestNetwork } from '@requestnetwork/request-client.js';
-import {
-  approveErc20,
-  hasErc20Approval,
-  hasSufficientFunds,
-  payRequest,
-} from "@requestnetwork/payment-processor";
-import { useAccount, useWalletClient } from 'wagmi';
-import {
-  Types,
-  Utils,
-} from "@requestnetwork/request-client.js";
-import { walletClientToSigner } from '@/utils/request/wallet-utils';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { RequestNetwork } from "@requestnetwork/request-client.js";
+import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
+import { useAccount, useWalletClient } from "wagmi";
+import { Types, Utils } from "@requestnetwork/request-client.js";
+import { walletClientToSigner } from "@/utils/request/wallet-utils";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
-import { useToast } from '@/hooks/use-toast';
-import { CheckCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-
+import { useToast } from "@/hooks/use-toast";
+import { CheckCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface RequestMessageProps {
   message: string;
@@ -38,13 +29,20 @@ enum APP_STATUS {
   ERROR_OCCURRED = "error occurred",
 }
 
-const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurrentUser, onPay, requestId, hasBeenPaid }) => {
+const RequestMessage: React.FC<RequestMessageProps> = ({
+  message,
+  amount,
+  isCurrentUser,
+  onPay,
+  requestId,
+  hasBeenPaid,
+}) => {
   const { data: walletClient } = useWalletClient();
   const { address } = useAccount();
   const [status, setStatus] = useState<APP_STATUS>(APP_STATUS.AWAITING_INPUT);
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchRequestData = async () => {
@@ -52,7 +50,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
         setStatus(APP_STATUS.AWAITING_INPUT);
         const requestClient = new RequestNetwork({
           nodeConnectionConfig: {
-            baseURL: 'https://sepolia.gateway.request.network',
+            baseURL: "https://sepolia.gateway.request.network",
           },
         });
 
@@ -60,7 +58,6 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
         const _requestData = _request.getData();
         setRequestData(_requestData);
         setStatus(APP_STATUS.REQUEST_CONFIRMED);
-   
       } catch (err) {
         console.error("Error fetching request data:", err);
         setError("Failed to fetch request data. Please try again.");
@@ -69,7 +66,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
           variant: "destructive",
           title: "Error",
           description: "Failed to fetch request data. Please try again.",
-        })
+        });
       }
     };
 
@@ -84,7 +81,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
       toast({
         title: "Approval Initiated",
         description: "Please confirm the approval transaction in your wallet.",
-      })
+      });
       const _request = await new RequestNetwork({
         nodeConnectionConfig: { baseURL: "https://sepolia.gateway.request.network/" },
       }).fromRequestId(requestData.requestId);
@@ -96,7 +93,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
         toast({
           title: "Approval Submitted",
           description: "Waiting for confirmation...",
-        })
+        });
         await approvalTx.wait(2);
       }
 
@@ -104,17 +101,17 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
       toast({
         title: "Approval Confirmed",
         description: "Your approval has been confirmed on the blockchain.",
-      })
+      });
       return true;
     } catch (err) {
-      console.error('Error in approve:', err);
+      console.error("Error in approve:", err);
       setError("Approval failed. Please try again.");
       setStatus(APP_STATUS.ERROR_OCCURRED);
       toast({
         variant: "destructive",
         title: "Approval Failed",
         description: "There was an error during the approval process. Please try again.",
-      })
+      });
       return false;
     }
   };
@@ -155,13 +152,10 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
       onPay(amount);
 
       // Update Supabase
-      const { data, error } = await supabase
-        .from('messages')
-        .update({ paid: true })
-        .eq('requestId', requestId);
+      const { data, error } = await supabase.from("messages").update({ paid: true }).eq("requestId", requestId);
 
       if (error) {
-        console.error('Error updating Supabase:', error);
+        console.error("Error updating Supabase:", error);
         toast({
           variant: "destructive",
           title: "Database Update Failed",
@@ -176,7 +170,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
 
       return true;
     } catch (err) {
-      console.error('Error in payTheRequest:', err);
+      console.error("Error in payTheRequest:", err);
       setError("Payment failed. Please try again.");
       setStatus(APP_STATUS.ERROR_OCCURRED);
       toast({
@@ -198,14 +192,14 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
         await payTheRequest();
       }
     } catch (err) {
-      console.error('Error in handlePayAndApprove:', err);
+      console.error("Error in handlePayAndApprove:", err);
       setError("An unexpected error occurred. Please try again.");
       setStatus(APP_STATUS.ERROR_OCCURRED);
       toast({
         variant: "destructive",
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
-      })
+      });
     }
   };
 
@@ -228,19 +222,15 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
     <div
       className={`rounded-lg p-3 max-w-xs flex flex-col items-start ${
         isCurrentUser
-          ? 'bg-gradient-to-r from-green-500 to-green-700 text-white'
-          : 'bg-gradient-to-r from-green-400 to-green-800 text-white'
+          ? "bg-gradient-to-r from-green-500 to-green-700 text-white"
+          : "bg-gradient-to-r from-green-400 to-green-800 text-white"
       }`}
     >
       <p className="font-semibold">{message}</p>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      {!isCurrentUser && (
-        hasBeenPaid ? (
-          <Button
-            className="mt-2 bg-green-500 text-white hover:bg-green-600"
-            size="sm"
-            disabled
-          >
+      {!isCurrentUser &&
+        (hasBeenPaid ? (
+          <Button className="mt-2 bg-green-500 text-white hover:bg-green-600" size="sm" disabled>
             <CheckCircle className="mr-2 h-4 w-4" />
             Paid {amount}
           </Button>
@@ -253,8 +243,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({ message, amount, isCurr
           >
             {getButtonText()}
           </Button>
-        )
-      )}
+        ))}
     </div>
   );
 };

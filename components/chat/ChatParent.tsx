@@ -11,13 +11,14 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
+import { fetchUserData } from "@/lib/supabase/utils";
 
 export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
   const [message, setMessage] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const channelRef = useRef<any>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   useEffect(() => {
     console.log("ChatParent: Component mounted or chatId/userAddress changed");
     console.log("Current userAddress:", userAddress);
@@ -65,12 +66,13 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       console.log("Chat data:", data);
       console.log(data);
       const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1;
+      const otherUserData = await fetchUserData(otherUserAddress);
       console.log("Determined other user address:", otherUserAddress);
 
       // Set the otherUser state with the address, even if we can't fetch the name
       setOtherUser({
         address: otherUserAddress,
-        name: otherUserAddress,
+        name: otherUserData?.name || otherUserAddress,
       });
     } else {
       console.log("No chat data found for chat ID:", chatId);
@@ -197,11 +199,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       {/* Chat Area */}
       <div className="flex-1 flex flex-col p-2 pb-12">
         <ChatHeader name={otherUser?.name || "Loading..."} />
-        <MessageList
-          key={currentChat.length}
-          messages={currentChat}
-          currentUserAddress={userAddress}
-        />
+        <MessageList key={currentChat.length} messages={currentChat} currentUserAddress={userAddress} />
         <MessageInput
           payeeAddress={userAddress}
           payerAddress={otherUser?.address as string}
@@ -209,9 +207,8 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
           setMessage={setMessage}
           handleSend={handleSend}
         />
-           
       </div>
       <BottomNavigationBar />
     </div>
-  )
+  );
 }
