@@ -15,6 +15,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { isUserInDatabase } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/loadingSpinner";
+import { useSearchParams } from 'next/navigation';
 
 const ProfilePage: React.FC = () => {
   const { user, ready } = usePrivy();
@@ -37,6 +38,8 @@ const ProfilePage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const isNewUser = searchParams.get('newUser') === 'true';
 
   const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
 
@@ -49,6 +52,12 @@ const ProfilePage: React.FC = () => {
       // If no address or no user are found, push the user to log in
       if (!user || !address) {
         router.push("/");
+        return;
+      }
+
+      // If it's a new user, unlock the page immediately
+      if (isNewUser) {
+        setUnlockPage(true);
         return;
       }
 
@@ -67,7 +76,7 @@ const ProfilePage: React.FC = () => {
     };
 
     fetchExistingProfile();
-  }, [address, user, ready, router]);
+  }, [address, user, ready, router, isNewUser]);
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));

@@ -8,21 +8,27 @@ import { UserData } from "./types";
  **/
 export const isUserInDatabase = async (address: string): Promise<{ data: any | null; error: boolean }> => {
   try {
-    const { data, error } = await supabase.from("user_data").select("*").eq("evm_address", address).single();
+    const { data, error } = await supabase
+      .from("user_data")
+      .select("*")
+      .eq("evm_address", address)
+      .single();
 
-    if (error) throw error;
-
-    if (data) {
-      return {
-        data,
-        error: false,
-      };
-    } else {
-      return {
-        data: null,
-        error: false,
-      };
+    if (error) {
+      // Check if the error is due to no rows found
+      if (error.code === "PGRST116") {
+        return {
+          data: null,
+          error: false,
+        };
+      }
+      throw error;
     }
+
+    return {
+      data,
+      error: false,
+    };
   } catch (error) {
     console.error("Error checking address:", error);
     return {

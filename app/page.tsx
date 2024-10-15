@@ -24,10 +24,10 @@ export default function Home() {
       const { data, error } = await isUserInDatabase(address);
       if (error) {
         setError(true);
-      } else if (data && !error) {
+      } else if (data) {
         router.push("/matching");
       } else {
-        router.push("profile/creation");
+        router.push("/profile/creation?newUser=true");
       }
     };
 
