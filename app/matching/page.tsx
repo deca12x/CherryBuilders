@@ -23,7 +23,14 @@ import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/loadingSpinner";
-import { createChat, createMatch, getSpecificChat, isUserInDatabase, updateMatch } from "@/lib/supabase/utils";
+import {
+  createChat,
+  createMatch,
+  getPartialMatch,
+  getSpecificChat,
+  isUserInDatabase,
+  updateMatch,
+} from "@/lib/supabase/utils";
 import { cn } from "@/lib/utils";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
@@ -101,26 +108,21 @@ export default function Matching() {
     if (!address || !currentUser) return;
 
     try {
-      const response = await fetch(
-        `/api/matches/partial?user_1_address=${currentUser.evm_address}&user_2_address=${address}`
-      );
+      const partialMatch = await getPartialMatch(currentUser.evm_address, address);
 
-      const responseJson = await response.json();
-      console.log(responseJson);
+      if (!partialMatch.success) throw new Error(partialMatch.error);
+      console.log(partialMatch.data);
 
-      if (!response.ok) throw new Error(responseJson.error);
-
-      // If no match is found create one
-      if (responseJson.data.length === 0) {
+      // If no partial match is found create one
+      if (partialMatch.data.length === 0) {
         console.log("No matches found, creating a new match if it doesn't exist");
         const newMatch = await createMatch(address, currentUser.evm_address);
         if (!newMatch.success) throw Error(newMatch.error);
       }
 
       // If a match is found, update it
-      else if (responseJson.data.length > 0) {
+      else if (partialMatch.data.length > 0) {
         console.log("Match exists, update it");
-
         const updatedMatch = await updateMatch(currentUser.evm_address, address, true);
         if (!updatedMatch.success) throw Error(updatedMatch.error);
 

@@ -50,6 +50,34 @@ export const fetchUserData = async (address: string): Promise<UserData | null> =
 };
 
 /**
+ * A utility function to get a specific partial match from the database
+ * @param user_1_address - The address of the first user of the match
+ * @param user_2_address - The address of the second user of the match
+ * @returns An object representing the response { success: boolean; data: any | null; error: string | undefined }
+ */
+export const getPartialMatch = async (
+  user_1_address: string,
+  user_2_address: string
+): Promise<{ success: boolean; data: any | null; error: string | undefined }> => {
+  const response = await fetch(`/api/matches/partial?user_1_address=${user_1_address}&user_2_address=${user_2_address}`);
+
+  const responseJson = await response.json();
+
+  if (!responseJson.ok)
+    return {
+      success: false,
+      data: null,
+      error: responseJson.error,
+    };
+
+  return {
+    success: true,
+    data: responseJson.data,
+    error: undefined,
+  };
+};
+
+/**
  * A utility function to update a match inside the database
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
