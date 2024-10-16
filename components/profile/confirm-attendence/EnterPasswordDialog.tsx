@@ -17,7 +17,11 @@ import { useAccount } from 'wagmi'
 import LannaHackathonConfirmation from './LannaHackathonConfirmation'
 
 
-export default function EnterPasswordDialog() {
+type EnterPasswordDialogProps = {
+  onSuccess?: () => void;
+}
+
+export default function EnterPasswordDialog({ onSuccess }: EnterPasswordDialogProps) {
   const [open, setOpen] = useState(false)
   const [pin, setPin] = useState('')
   const [isLoading, setIsLoading] = useState(false)

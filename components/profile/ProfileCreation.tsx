@@ -156,7 +156,7 @@ const ProfileCreation: React.FC = () => {
         description: "Profile saved successfully.",
         variant: "default",
       });
-      router.push("/matching");
+      router.push("/profile/creation/confirm-Hackathon");
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -315,7 +315,7 @@ const ProfileCreation: React.FC = () => {
             </motion.div>
 
 
-            <EnterPasswordDialog />
+            {/* <EnterPasswordDialog /> */}
 
             <motion.div variants={itemVariants} className="space-y-4">
               <Input

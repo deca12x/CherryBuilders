@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const { hackathon, otp, evmAddress } = await request.json();
 
     // Check if the hackathon is supported
-    if (hackathon !== 'Lanna_2024') {
+    if (hackathon !== 'LANNA_2024') {
       return NextResponse.json({ error: 'Unsupported hackathon' }, { status: 400 });
     }
 
