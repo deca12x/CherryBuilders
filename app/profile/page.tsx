@@ -19,6 +19,7 @@ import LoadingSpinner from "@/components/loadingSpinner";
 import { useRouter } from "next/navigation";
 import { isUserInDatabase } from "@/lib/supabase/utils";
 import EnterPasswordDialog from "@/components/profile/confirm-attendence/EnterPasswordDialog";
+import OnlyLannaHackers from "@/components/profile/confirm-attendence/OnlyLannaHackers";
 
 const ProfilePage: React.FC = () => {
   const { user, ready } = usePrivy();
@@ -325,6 +326,10 @@ const ProfilePage: React.FC = () => {
 
               <motion.div className="mt-6 gap-3" variants={itemVariants}>
               <EnterPasswordDialog />
+
+              {profileData.ONLY_LANNA_HACKERS && <OnlyLannaHackers />}
+      
+          
               </motion.div>
 
               {/* Talent score */}

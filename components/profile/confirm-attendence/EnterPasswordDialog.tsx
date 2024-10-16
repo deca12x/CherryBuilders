@@ -21,9 +21,10 @@ import { useRouter } from 'next/navigation'
 type EnterPasswordDialogProps = {
   onSuccess?: () => void;
   isFromCreation?: boolean;
+  setSuccessParentState?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function EnterPasswordDialog({ onSuccess, isFromCreation }: EnterPasswordDialogProps) {
+export default function EnterPasswordDialog({ onSuccess, isFromCreation, setSuccessParentState }: EnterPasswordDialogProps) {
   const [open, setOpen] = useState(false)
   const [pin, setPin] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -36,7 +37,7 @@ export default function EnterPasswordDialog({ onSuccess, isFromCreation }: Enter
       if (address) {
         try {
           const response = await fetch(`/api/checkHackathonAttendance?hackathon=LANNA_2024&evmAddress=${address}`);
-          
+
           if (!response.ok) {
             throw new Error('Failed to fetch attendance status');
           }
@@ -44,7 +45,7 @@ export default function EnterPasswordDialog({ onSuccess, isFromCreation }: Enter
           const data = await response.json();
           setIsConfirmed(data.isConfirmed);
 
-     
+
           if (!data.isConfirmed) {
             console.log("No Lanna confirmation");
           }
@@ -71,10 +72,10 @@ export default function EnterPasswordDialog({ onSuccess, isFromCreation }: Enter
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            hackathon: 'LANNA_2024', 
+          body: JSON.stringify({
+            hackathon: 'LANNA_2024',
             otp: pin,
-            evmAddress: address 
+            evmAddress: address
           }),
         });
 
@@ -92,8 +93,8 @@ export default function EnterPasswordDialog({ onSuccess, isFromCreation }: Enter
           setOpen(false)
           setPin('')
           setIsConfirmed(true)
-          if(isFromCreation){
-            router.push('/matching')
+          if (isFromCreation) {
+            setSuccessParentState && setSuccessParentState(true)
           }
         } else {
           toast({
