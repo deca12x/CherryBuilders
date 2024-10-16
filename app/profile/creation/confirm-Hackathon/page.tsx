@@ -15,7 +15,7 @@ const Page = () => {
         </CardHeader>
         <CardContent>
             <div className='flex items-center justify-center'>
-          <EnterPasswordDialog />
+          <EnterPasswordDialog isFromCreation={true} />
           </div>
         </CardContent>
         <CardFooter className="flex justify-center ">

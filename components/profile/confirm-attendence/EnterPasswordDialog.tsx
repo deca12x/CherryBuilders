@@ -15,18 +15,21 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/comp
 import { toast } from '@/hooks/use-toast'
 import { useAccount } from 'wagmi'
 import LannaHackathonConfirmation from './LannaHackathonConfirmation'
+import { useRouter } from 'next/navigation'
 
 
 type EnterPasswordDialogProps = {
   onSuccess?: () => void;
+  isFromCreation?: boolean;
 }
 
-export default function EnterPasswordDialog({ onSuccess }: EnterPasswordDialogProps) {
+export default function EnterPasswordDialog({ onSuccess, isFromCreation }: EnterPasswordDialogProps) {
   const [open, setOpen] = useState(false)
   const [pin, setPin] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
   const { address } = useAccount()
+  const router = useRouter()
 
   useEffect(() => {
     const checkAttendance = async () => {
@@ -40,6 +43,8 @@ export default function EnterPasswordDialog({ onSuccess }: EnterPasswordDialogPr
 
           const data = await response.json();
           setIsConfirmed(data.isConfirmed);
+
+     
           if (!data.isConfirmed) {
             console.log("No Lanna confirmation");
           }
@@ -87,6 +92,9 @@ export default function EnterPasswordDialog({ onSuccess }: EnterPasswordDialogPr
           setOpen(false)
           setPin('')
           setIsConfirmed(true)
+          if(isFromCreation){
+            router.push('/matching')
+          }
         } else {
           toast({
             title: "Verification Failed",
