@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import WorldIDVerification from "@/components/verify";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +15,9 @@ import { useRouter } from "next/navigation";
 import { isUserInDatabase } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/loadingSpinner";
 import { useSearchParams } from 'next/navigation';
+import LannaHackathonConfirmation from "./confirm-attendence/LannaHackathonConfirmation";
+import EnterPasswordDialog from "./confirm-attendence/EnterPasswordDialog";
+
 
 const ProfileCreation: React.FC = () => {
   const { user, ready } = usePrivy();
@@ -35,6 +37,7 @@ const ProfileCreation: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(false);
+  const [isLannaConfirmed, setIsLannaConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -49,20 +52,16 @@ const ProfileCreation: React.FC = () => {
     const fetchExistingProfile = async () => {
       if (!ready) return;
 
-      // If no address or no user are found, push the user to log in
       if (!user || !address) {
         router.push("/");
         return;
       }
 
-      // If it's a new user, unlock the page immediately
       if (isNewUser) {
         setUnlockPage(true);
         return;
       }
 
-      // If no error occurs and the user is in the database
-      // push it toward the matching page
       const { data, error } = await isUserInDatabase(address);
       if (error) {
         setError(true);
@@ -77,6 +76,9 @@ const ProfileCreation: React.FC = () => {
 
     fetchExistingProfile();
   }, [address, user, ready, router, isNewUser]);
+
+
+
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
@@ -154,7 +156,7 @@ const ProfileCreation: React.FC = () => {
         description: "Profile saved successfully.",
         variant: "default",
       });
-      router.push("/matching");
+      router.push("/profile/creation/confirm-Hackathon");
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -190,15 +192,6 @@ const ProfileCreation: React.FC = () => {
 
     if (error) throw error;
   }
-
-  // const handleWorldIDSuccess = () => {
-  //   toast({
-  //     title: "Verification Successful",
-  //     description: "Your profile is now complete with World ID verification!",
-  //     variant: "default",
-  //   });
-  //   // Optionally, you can redirect the user or perform any other action here
-  // };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -237,6 +230,8 @@ const ProfileCreation: React.FC = () => {
             Create Your Profile
           </motion.h1>
           <ConnectButton />
+
+    
 
           <form onSubmit={(e) => { e.preventDefault(); handleSaveAndContinue(); }} className="space-y-6 mt-6">
             <motion.div variants={itemVariants}>
@@ -318,6 +313,9 @@ const ProfileCreation: React.FC = () => {
                 ))}
               </div>
             </motion.div>
+
+
+            {/* <EnterPasswordDialog /> */}
 
             <motion.div variants={itemVariants} className="space-y-4">
               <Input
