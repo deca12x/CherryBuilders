@@ -13,6 +13,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/loadingSpinner";
 import { isUserInDatabase } from "@/lib/supabase/utils";
+import { cn } from "@/lib/utils";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -231,20 +232,11 @@ export default function Matching() {
                 <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
                   <div className="flex flex-col w-full p-2 gap-1">
-                    <h2 className={`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`}>
+                    <h2 className={cn(
+                      `flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`,
+                      user.LANNA_2024 && "bg-clip-text text-transparent bg-gradient-to-r from-[#f5acac] to-[#8ec5d4]"
+                    )}>
                       <span className="mb-1">{user.name}</span>
-                      {/* {user.verified && (
-                        <>
-                          <Image
-                            src={"/images/worldcoinlogo.png"}
-                            width={20}
-                            height={20}
-                            alt="logo"
-                            className="ml-2 h-8 w-8 rounded-full"
-                          />
-                          <VerifiedIcon className="-mt-5 h-4 w-4" />
-                        </>
-                      )} */}
                     </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
@@ -253,6 +245,11 @@ export default function Matching() {
                           {tag.charAt(0).toUpperCase() + tag.slice(1)}
                         </span>
                       ))}
+                      {user.LANNA_2024 && (
+                        <span className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm">
+                          LANNA 2024
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

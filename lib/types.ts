@@ -14,6 +14,7 @@ export interface UserType {
   other_link?: string;
   created_at?: string;
   updated_at?: string;
+  LANNA_2024?: boolean;
 }
 
 export interface ChatMessage {

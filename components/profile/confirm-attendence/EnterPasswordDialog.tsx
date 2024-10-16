@@ -36,13 +36,12 @@ export default function EnterPasswordDialog() {
 
           const data = await response.json();
           setIsConfirmed(data.isConfirmed);
+          if (!data.isConfirmed) {
+            console.log("No Lanna confirmation");
+          }
         } catch (error) {
           console.error('Error checking attendance:', error);
-          toast({
-            title: "Error",
-            description: "Failed to check attendance status. Please try again later.",
-            variant: "destructive",
-          });
+          // Removed the error toast
         }
       }
     };
@@ -120,6 +119,7 @@ export default function EnterPasswordDialog() {
     return <LannaHackathonConfirmation />
   }
 
+  // Show the dialog button when not confirmed
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
