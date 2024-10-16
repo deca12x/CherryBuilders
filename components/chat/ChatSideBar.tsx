@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Menu } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { supabase } from "@/lib/supabase";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "../ui/button";
 
 type ChatHistoryItem = {
   id: string;
@@ -101,7 +98,6 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
     router.push(`/chat/${chatId}`);
 
     setIsOpen(false);
-
   };
 
   const ChatList = () => (

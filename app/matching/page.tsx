@@ -1,21 +1,24 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon, Smile, Frown } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
-import { useAccount } from "wagmi";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import Image from "next/image";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
+import LoadingSpinner from "@/components/loadingSpinner";
+import { isUserInDatabase } from "@/lib/supabase/utils";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 export default function Matching() {
   const [users, setUsers] = useState<UserType[]>([]);
+  const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,12 +26,36 @@ export default function Matching() {
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingAction, setProcessingAction] = useState<'accept' | 'reject' | null>(null);
 
-  const { address } = useAccount();
+  const { user, ready } = usePrivy();
+
+  const router = useRouter();
+
+  const address = user?.wallet?.address;
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (!address) return;
+      if (!ready) return;
+
+      // If no address or no user are found, push the user to log in
+      if (!user || !address) {
+        router.push("/");
+        return;
+      }
+
+      // If no error occurs but the user is not in the database
+      // push it toward the profile creation page
+      const { data, error } = await isUserInDatabase(address);
+      if (error) {
+        setError(true);
+        return;
+      } else if (!data) {
+        router.push("profile/creation");
+        return;
+      }
+
       setIsLoading(true);
 
       try {
@@ -52,7 +79,7 @@ export default function Matching() {
     };
 
     fetchUsers();
-  }, [address]);
+  }, [user, router, ready]);
 
   const currentUser = users[currentUserIndex];
 
@@ -117,9 +144,11 @@ export default function Matching() {
     }
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (users.length === 0) return;
-    checkMatch();
+    setIsProcessing(true);
+    setProcessingAction('accept');
+    await checkMatch();
     // If the current user is the last user in the list, do not animate
     if (currentUserIndex !== users.length - 1) {
       setAnimateFrame(true);
@@ -128,17 +157,24 @@ export default function Matching() {
     } else {
       setIsProfilesEndedModalOpen(true);
     }
+    setIsProcessing(false);
+    setProcessingAction(null);
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
+    setIsProcessing(true);
+    setProcessingAction('reject');
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     if (users.length === 0 || currentUserIndex === users.length - 1) {
       setIsProfilesEndedModalOpen(true);
     } else {
       setAnimateFrame(true);
       setCurrentUserIndex((prev) => prev + 1);
-      //setCurrentUserIndex((prev) => (prev - 1 + users.length) % users.length);
       setCurrentImageIndex(0);
     }
+    setIsProcessing(false);
+    setProcessingAction(null);
   };
 
   const handleImageNext = () => {
@@ -162,6 +198,21 @@ export default function Matching() {
   }) => (
     <div className="w-full max-w-xl bg-background shadow-lg overflow-hidden relative flex-grow pb-28">
       <AnimatePresence>
+        {isProcessing ? (
+          <motion.div
+            key="processing"
+            className="absolute inset-0 flex items-center justify-center bg-background/80 z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {processingAction === 'accept' ? (
+              <Smile size={64} className="text-green-500" />
+            ) : (
+              <Frown size={64} className="text-gray-500" />
+            )}
+          </motion.div>
+        ) : null}
         <motion.div
           key="1"
           className="w-full"
@@ -182,7 +233,7 @@ export default function Matching() {
                   <div className="flex flex-col w-full p-2 gap-1">
                     <h2 className={`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`}>
                       <span className="mb-1">{user.name}</span>
-                      {user.verified && (
+                      {/* {user.verified && (
                         <>
                           <Image
                             src={"/images/worldcoinlogo.png"}
@@ -193,7 +244,7 @@ export default function Matching() {
                           />
                           <VerifiedIcon className="-mt-5 h-4 w-4" />
                         </>
-                      )}
+                      )} */}
                     </h2>
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
@@ -275,14 +326,14 @@ export default function Matching() {
           ) : user ? (
             <div className="flex flex-col p-4 gap-3">
               {/* Stats */}
-              <div className="flex flex-row gap-3">
+              <div className="w-full gap-3">
                 {/* Worldcoin ID */}
-                <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
+                {/* <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
                   <p className="font-bold text-foreground">Worldcoin ID</p>
                   <p className={user.verified ? "text-green-500" : "text-red-500"}>
                     {user.verified ? "Confirmed" : "Unconfirmed"}
                   </p>
-                </div>
+                </div> */}
                 {/* Talent score */}
                 <div className="flex flex-col items-center bg-card rounded-xl p-3">
                   <p className="font-bold text-foreground">Talent Score</p>
@@ -346,43 +397,53 @@ export default function Matching() {
     </div>
   );
 
-  return (
-    <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
-      {/* Profile Card */}
-      <div className="flex-grow flex justify-center items-center">
-        <div className="w-full max-w-xl">
-          <ProfileCard user={users[currentUserIndex] || null} imageIndex={currentImageIndex} isLoading={isLoading} />
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
+        An unexpected error occured, please try again!
+      </div>
+    );
+  } else if (user && address && ready) {
+    return (
+      <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
+        {/* Profile Card */}
+        <div className="flex-grow flex justify-center items-center">
+          <div className="w-full max-w-xl">
+            <ProfileCard user={users[currentUserIndex] || null} imageIndex={currentImageIndex} isLoading={isLoading} />
+          </div>
         </div>
+
+        {/* Buttons */}
+        <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
+          <button
+            onClick={handleReject}
+            className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            aria-label="Dislike"
+            disabled={isLoading || users.length === 0}
+          >
+            <X size={24} />
+          </button>
+          <button
+            onClick={handleAccept}
+            className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
+            aria-label="Like"
+            disabled={isLoading || users.length === 0}
+          >
+            <Heart size={24} />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <BottomNavigationBar />
+
+        {/* Match Modal */}
+        <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
+
+        {/* Profiles Ended Modal */}
+        <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
       </div>
-
-      {/* Buttons */}
-      <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
-        <button
-          onClick={handleReject}
-          className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-          aria-label="Dislike"
-          disabled={isLoading || users.length === 0}
-        >
-          <X size={24} />
-        </button>
-        <button
-          onClick={handleAccept}
-          className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
-          aria-label="Like"
-          disabled={isLoading || users.length === 0}
-        >
-          <Heart size={24} />
-        </button>
-      </div>
-
-      {/* Navigation */}
-      <BottomNavigationBar />
-
-      {/* Match Modal */}
-      <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
-
-      {/* Profiles Ended Modal */}
-      <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
-    </div>
-  );
+    );
+  } else {
+    return <LoadingSpinner />;
+  }
 }

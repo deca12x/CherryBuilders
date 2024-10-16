@@ -1,9 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	webpack: config => {
-		config.resolve.fallback = { fs: false, net: false, tls: false }
-		return config
+	reactStrictMode: true,
+	experimental: {
+	  serverComponentsExternalPackages: ['pdfkit', 'canvas'],
 	},
-}
-
-module.exports = nextConfig
+	webpack: (config, { isServer }) => {
+	  if (!isServer) {
+		config.resolve.fallback = {
+		  ...config.resolve.fallback,
+		  fs: false,
+		  stream: false,
+		  canvas: false,
+		};
+	  }
+	  config.externals.push('pino-pretty', 'lokijs', 'encoding');
+	  return config;
+	},
+  };
+  
+module.exports = nextConfig;
