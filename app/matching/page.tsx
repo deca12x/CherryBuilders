@@ -58,9 +58,11 @@ export default function Matching() {
       }
 
       setIsLoading(true);
-
+       const URL = data.ONLY_LANNA_HACKERS ? "/api/get-users-in-lanna-2024" : "/api/get-random-users"
       try {
-        const response = await fetch("/api/get-random-users", {
+
+
+        const response = await fetch(URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ address }),
@@ -72,6 +74,8 @@ export default function Matching() {
 
         const data = await response.json();
         setUsers(data);
+        console.log("-------USER DATA -------")
+        console.log(data)
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {

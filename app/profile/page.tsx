@@ -327,7 +327,7 @@ const ProfilePage: React.FC = () => {
               <motion.div className="mt-6 gap-3" variants={itemVariants}>
               <EnterPasswordDialog />
 
-              {profileData.ONLY_LANNA_HACKERS && <OnlyLannaHackers />}
+              {profileData.LANNA_2024 && <OnlyLannaHackers />}
       
           
               </motion.div>

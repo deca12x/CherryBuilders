@@ -10,7 +10,7 @@ function shuffleArray(array: UserType[]): UserType[] {
   return array;
 }
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     // Get the user's address from the request body
     const { address } = await req.json();
@@ -25,12 +25,14 @@ export async function GET(req: NextRequest) {
       .from("user_data")
       .select("*")
       .neq("evm_address", address)
-      .eq("LANNA_2024", true)
-      .limit(20);
+      .eq("ONLY_LANNA_HACKERS", true);
 
     if (userError) {
-      return NextResponse.json({ error: "Error fetching users" }, { status: 500 });
+      return NextResponse.json({ error: "Error fetching users", details: userError }, { status: 500 });
     }
+
+    console.log("Total users fetched:", userData.length);
+    console.log("Fetched user data:", userData);
 
     // Get all the users that are not already matched with the given user
     const data: UserType[] = userData
@@ -49,7 +51,7 @@ export async function GET(req: NextRequest) {
       })
       .filter((user) => user !== null);
 
-    const shuffledData = shuffleArray(data);
+    const shuffledData = shuffleArray(userData);
     return NextResponse.json(shuffledData, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
