@@ -50,6 +50,9 @@ export default function Home() {
           <h1 className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}>Cherry 🍒</h1>
           <div className="flex flex-col justify-center items-center mt-8 gap-3">
             <ConnectButton />
+            <p className="text-sm text-center text-muted-foreground mt-4">
+              Cherry is currently under development, use at your own discretion
+            </p>
           </div>
         </CardContent>
       </Card>
