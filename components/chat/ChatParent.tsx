@@ -23,7 +23,6 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
     console.log("ChatParent: Component mounted or chatId/userAddress changed");
     console.log("Current userAddress:", userAddress);
     console.log("Current chatId:", chatId);
-    console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
     console.log("Supabase connection status:", supabase.getChannels().length > 0 ? "Connected" : "Disconnected");
 
     const initializeChat = async () => {

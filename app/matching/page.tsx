@@ -1,6 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, Link, VerifiedIcon, Smile, Frown, CheckCheckIcon, CheckCircle2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Heart,
+  Link,
+  VerifiedIcon,
+  Smile,
+  Frown,
+  CheckCheckIcon,
+  CheckCircle2,
+} from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
@@ -12,7 +23,7 @@ import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/loadingSpinner";
-import { isUserInDatabase } from "@/lib/supabase/utils";
+import { createChat, createMatch, getSpecificChat, isUserInDatabase, updateMatch } from "@/lib/supabase/utils";
 import { cn } from "@/lib/utils";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
@@ -28,7 +39,7 @@ export default function Matching() {
   const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingAction, setProcessingAction] = useState<'accept' | 'reject' | null>(null);
+  const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
 
   const { user, ready } = usePrivy();
 
@@ -58,10 +69,8 @@ export default function Matching() {
       }
 
       setIsLoading(true);
-       const URL = data.ONLY_LANNA_HACKERS ? "/api/get-users-in-lanna-2024" : "/api/get-random-users"
+      const URL = data.ONLY_LANNA_HACKERS ? "/api/get-users-in-lanna-2024" : "/api/get-random-users";
       try {
-
-
         const response = await fetch(URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -74,8 +83,8 @@ export default function Matching() {
 
         const data = await response.json();
         setUsers(data);
-        console.log("-------USER DATA -------")
-        console.log(data)
+        console.log("-------USER DATA -------");
+        console.log(data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -92,57 +101,40 @@ export default function Matching() {
     if (!address || !currentUser) return;
 
     try {
-      const { data, error } = await supabase
-        .from("matches")
-        .select("*")
-        .eq("user_2", address)
-        .eq("user_1", currentUser.evm_address)
-        .or("matched.is.null,matched.eq.false");
+      const response = await fetch(
+        `/api/matches/partial?user_1_address=${currentUser.evm_address}&user_2_address=${address}`
+      );
 
-      console.log(data);
+      const responseJson = await response.json();
+      console.log(responseJson);
 
-      if (error) throw error;
+      if (!response.ok) throw new Error(responseJson.error);
 
-      if (data.length === 0) {
+      // If no match is found create one
+      if (responseJson.data.length === 0) {
         console.log("No matches found, creating a new match if it doesn't exist");
-        const { error: insertError } = await supabase
-          .from("matches")
-          .upsert([{ user_1: address, user_2: currentUser.evm_address, matched: false }]);
+        const newMatch = await createMatch(address, currentUser.evm_address);
+        if (!newMatch.success) throw Error(newMatch.error);
+      }
 
-        if (insertError) throw insertError;
-      } else if (data.length > 0) {
-        console.log("Match exists");
-        const { error: updateError } = await supabase
-          .from("matches")
-          .update({ matched: true })
-          .eq("user_1", currentUser.evm_address)
-          .eq("user_2", address);
+      // If a match is found, update it
+      else if (responseJson.data.length > 0) {
+        console.log("Match exists, update it");
 
-        if (updateError) throw updateError;
+        const updatedMatch = await updateMatch(currentUser.evm_address, address, true);
+        if (!updatedMatch.success) throw Error(updatedMatch.error);
 
         // Create a chat between the two users
-        const { error: chatError } = await supabase
-          .from("chats")
-          .insert([{ user_1: address, user_2: currentUser.evm_address }]);
-
-        if (chatError) throw chatError;
+        const newChat = await createChat(address, currentUser.evm_address);
+        if (!newChat.success) throw Error(newChat.error);
 
         // Get the chat ID
-        const { data: chatData, error: chatDataError } = await supabase
-          .from("chats")
-          .select("id")
-          .eq("user_1", address)
-          .eq("user_2", currentUser.evm_address)
-          .limit(1)
-          .single();
-
-        if (chatDataError) throw chatDataError;
+        const specificChat = await getSpecificChat(address, currentUser.evm_address);
+        if (!specificChat.success) throw new Error(specificChat.error);
 
         setIsMatchModalOpen(true);
         setIsProfilesEndedModalOpen(false);
-        setMatchedChatId(chatData?.id);
-
-        if (chatError) throw chatError;
+        setMatchedChatId(specificChat.data?.id);
       }
     } catch (error) {
       console.error("Error in checkMatch:", error);
@@ -152,7 +144,7 @@ export default function Matching() {
   const handleAccept = async () => {
     if (users.length === 0) return;
     setIsProcessing(true);
-    setProcessingAction('accept');
+    setProcessingAction("accept");
     await checkMatch();
     // If the current user is the last user in the list, do not animate
     if (currentUserIndex !== users.length - 1) {
@@ -168,9 +160,9 @@ export default function Matching() {
 
   const handleReject = async () => {
     setIsProcessing(true);
-    setProcessingAction('reject');
+    setProcessingAction("reject");
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     if (users.length === 0 || currentUserIndex === users.length - 1) {
       setIsProfilesEndedModalOpen(true);
     } else {
@@ -211,7 +203,7 @@ export default function Matching() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {processingAction === 'accept' ? (
+            {processingAction === "accept" ? (
               <Smile size={64} className="text-green-500" />
             ) : (
               <Frown size={64} className="text-gray-500" />
@@ -236,10 +228,7 @@ export default function Matching() {
                 <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
                   <div className="flex flex-col w-full p-2 gap-1">
-                    <h2 className={cn(
-                      `flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`
-         
-                    )}>
+                    <h2 className={cn(`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`)}>
                       <span className="mb-1">{user.name}</span>
                     </h2>
                     {/* Tags */}
@@ -251,7 +240,7 @@ export default function Matching() {
                       ))}
                       {user.LANNA_2024 && (
                         <span className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm flex">
-                          <CheckCircle2  className="mr-2 h-5 w-5" />
+                          <CheckCircle2 className="mr-2 h-5 w-5" />
                           <p className="font-bold">Lanna 2024 Confirmed</p>
                         </span>
                       )}
