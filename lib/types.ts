@@ -15,6 +15,7 @@ export interface UserType {
   created_at?: string;
   updated_at?: string;
   LANNA_2024?: boolean;
+  ONLY_LANNA_HACKERS?: boolean
 }
 
 export interface ChatMessage {
