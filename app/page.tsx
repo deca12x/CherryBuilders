@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { K2D } from "next/font/google";
 import { Card, CardContent } from "@/components/ui/card";
 import ConnectButton from "@/components/ui/connectButton";
-import { useAccount } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import { isUserInDatabase } from "@/lib/supabase/utils";
 

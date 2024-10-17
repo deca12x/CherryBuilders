@@ -1,12 +1,10 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-import { useAccount } from "wagmi";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import WorldIDVerification from "@/components/verify";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
@@ -14,10 +12,9 @@ import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { RefreshCcw } from "lucide-react";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import { supabase } from "@/lib/supabase";
 import LoadingSpinner from "@/components/loadingSpinner";
 import { useRouter } from "next/navigation";
-import { isUserInDatabase } from "@/lib/supabase/utils";
+import { getProfilePicturePublicUrl, isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import EnterPasswordDialog from "@/components/profile/confirm-attendence/EnterPasswordDialog";
 import OnlyLannaHackers from "@/components/profile/confirm-attendence/OnlyLannaHackers";
 
@@ -92,15 +89,12 @@ const ProfilePage: React.FC = () => {
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileExt = file.name.split(".").pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const { error } = await supabase.storage.from("profile-pictures").upload(`${address}/${fileName}`, file);
 
-        if (error) throw error;
+        // Uploading the file of the profile picture to the database
+        const uploadedFile = await uploadProfilePicture(address, fileName, file);
+        if (!uploadedFile.success) throw Error(uploadedFile.error);
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("profile-pictures").getPublicUrl(`${address}/${fileName}`);
-
-        return publicUrl;
+        return getProfilePicturePublicUrl(address, fileName);
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
@@ -145,7 +139,8 @@ const ProfilePage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await updateProfileData(address, profileData);
+      const updatedUser = await updateUser(address, profileData);
+      if (!updatedUser.success) throw Error(updatedUser.error);
       toast({
         title: "Success",
         description: "Profile saved successfully.",
@@ -162,20 +157,6 @@ const ProfilePage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  async function updateProfileData(address: string, profileData: UserType): Promise<void> {
-    const { error } = await supabase.from("user_data").upsert(
-      {
-        ...profileData,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "evm_address",
-      }
-    );
-
-    if (error) throw error;
-  }
 
   const handleWorldIDSuccess = () => {
     toast({
@@ -325,11 +306,9 @@ const ProfilePage: React.FC = () => {
               </motion.div>
 
               <motion.div className="mt-6 gap-3" variants={itemVariants}>
-              <EnterPasswordDialog />
+                <EnterPasswordDialog />
 
-              {profileData.LANNA_2024 && <OnlyLannaHackers />}
-      
-          
+                {profileData.LANNA_2024 && <OnlyLannaHackers />}
               </motion.div>
 
               {/* Talent score */}

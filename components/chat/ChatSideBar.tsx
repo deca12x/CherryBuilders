@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { getChatsFromUserAddress, getLastChatMessage, getUser } from "@/lib/supabase/utils";
 
 type ChatHistoryItem = {
   id: string;
@@ -33,38 +33,23 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
     fetchChatHistory();
   }, [userAddress]);
 
-  const fetchUserData = async (address: string): Promise<UserData | null> => {
-    const { data, error } = await supabase
-      .from("user_data")
-      .select("name, profile_pictures")
-      .eq("evm_address", address)
-      .single();
-
-    if (error) {
-      console.error("Error fetching user data:", error);
-      return null;
-    }
-
-    return data;
-  };
-
   const fetchChatHistory = async () => {
     setIsLoading(true);
     console.log("Fetching chat history for user:", userAddress);
-    const { data, error } = await supabase.from("chats").select("*").or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
+    const foundChats = await getChatsFromUserAddress(userAddress);
 
-    if (error) {
-      console.error("Error fetching chat history:", error);
+    if (!foundChats.success) {
+      console.error("Error fetching chat history:", foundChats.error);
       setIsLoading(false);
       return;
     }
 
-    console.log("Fetched chat history:", data);
+    console.log("Fetched chat history:", foundChats.data);
     const history: ChatHistoryItem[] = await Promise.all(
-      data.map(async (chat) => {
+      foundChats.data.map(async (chat: any) => {
         const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
         const lastMessage = await fetchLastMessage(chat.id);
-        const userData = await fetchUserData(otherUserAddress);
+        const userData = (await getUser(otherUserAddress)).data;
         return {
           id: chat.id,
           name: userData?.name || `User ${otherUserAddress.slice(0, 6)}...`,
@@ -80,18 +65,13 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   };
 
   const fetchLastMessage = async (chatId: string): Promise<{ message: string } | null> => {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("message")
-      .eq("chat_id", chatId)
-      .order("created_at", { ascending: false })
-      .limit(1);
+    const lastMessage = await getLastChatMessage(chatId);
 
-    if (error) {
-      console.error("Error fetching last message:", error);
+    if (!lastMessage.success) {
+      console.error("Error fetching last message:", lastMessage.error);
       return null;
     }
-    return data[0] || null;
+    return lastMessage.data[0] || null;
   };
 
   const handleChatClick = (chatId: string) => {

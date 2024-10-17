@@ -39,10 +39,7 @@ export async function PUT(req: NextRequest) {
       .eq("user_1", user_1_address)
       .eq("user_2", user_2_address);
 
-    if (error) {
-      console.error("Error updating match in database:", error);
-      return NextResponse.json({ error: "Error updating record in database" }, { status: 500 });
-    }
+    if (error) throw error;
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

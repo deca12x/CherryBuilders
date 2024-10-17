@@ -1,25 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Heart,
-  Link,
-  VerifiedIcon,
-  Smile,
-  Frown,
-  CheckCheckIcon,
-  CheckCircle2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Heart, Link, Smile, Frown, CheckCircle2 } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserTag, UserType } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
-import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/loadingSpinner";
@@ -37,6 +24,8 @@ const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 export default function Matching() {
   const [users, setUsers] = useState<UserType[]>([]);
+  const { user, ready } = usePrivy();
+  const router = useRouter();
   const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -47,10 +36,6 @@ export default function Matching() {
   const [matchedChatId, setMatchedChatId] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
-
-  const { user, ready } = usePrivy();
-
-  const router = useRouter();
 
   const address = user?.wallet?.address;
 

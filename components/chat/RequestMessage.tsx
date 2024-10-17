@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RequestNetwork } from "@requestnetwork/request-client.js";
-import { approveErc20, hasErc20Approval, hasSufficientFunds, payRequest } from "@requestnetwork/payment-processor";
+import { approveErc20, payRequest } from "@requestnetwork/payment-processor";
 import { useAccount, useWalletClient } from "wagmi";
-import { Types, Utils } from "@requestnetwork/request-client.js";
+import { Types } from "@requestnetwork/request-client.js";
 import { walletClientToSigner } from "@/utils/request/wallet-utils";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { updateRequestMessage } from "@/lib/supabase/utils";
 
 interface RequestMessageProps {
   message: string;
@@ -151,11 +151,11 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
       setStatus(APP_STATUS.REQUEST_PAID);
       onPay(amount);
 
-      // Update Supabase
-      const { data, error } = await supabase.from("messages").update({ paid: true }).eq("requestId", requestId);
+      // Update request message inside the database
+      const updatedRequestMessage = await updateRequestMessage(requestId, true);
 
-      if (error) {
-        console.error("Error updating Supabase:", error);
+      if (!updatedRequestMessage.success) {
+        console.error("Error updating Supabase:", updatedRequestMessage.error);
         toast({
           variant: "destructive",
           title: "Database Update Failed",

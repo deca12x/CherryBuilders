@@ -4,9 +4,9 @@ import React from "react";
 import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
 import { useAccount } from "wagmi";
 import { Button } from "./ui/button";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { updateUser } from "@/lib/supabase/utils";
 
 const WorldIDVerification: React.FC<{ onVerificationSuccess: () => void; redirect: boolean }> = ({
   onVerificationSuccess,
@@ -49,14 +49,11 @@ const WorldIDVerification: React.FC<{ onVerificationSuccess: () => void; redirec
 
   async function updateVerificationStatus(address: string, isVerified: boolean): Promise<void> {
     try {
-      const { error } = await supabase
-        .from("user_data")
-        .update({ verified: isVerified, updated_at: new Date().toISOString() })
-        .eq("evm_address", address);
+      const updatedUser = await updateUser(address, { verified: isVerified });
       if (redirect) {
         router.push("/matching");
       }
-      if (error) throw error;
+      if (!updatedUser.success) throw Error(updatedUser.error);
 
       console.log("Verification status updated successfully");
     } catch (error) {

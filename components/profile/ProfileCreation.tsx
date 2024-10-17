@@ -6,18 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { isUserInDatabase } from "@/lib/supabase/utils";
+import { getProfilePicturePublicUrl, isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/loadingSpinner";
-import { useSearchParams } from 'next/navigation';
-import LannaHackathonConfirmation from "./confirm-attendence/LannaHackathonConfirmation";
-import EnterPasswordDialog from "./confirm-attendence/EnterPasswordDialog";
-
+import { useSearchParams } from "next/navigation";
 
 const ProfileCreation: React.FC = () => {
   const { user, ready } = usePrivy();
@@ -42,7 +38,7 @@ const ProfileCreation: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const isNewUser = searchParams.get('newUser') === 'true';
+  const isNewUser = searchParams.get("newUser") === "true";
 
   const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
 
@@ -77,9 +73,6 @@ const ProfileCreation: React.FC = () => {
     fetchExistingProfile();
   }, [address, user, ready, router, isNewUser]);
 
-
-
-
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
@@ -98,15 +91,12 @@ const ProfileCreation: React.FC = () => {
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileExt = file.name.split(".").pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const { error } = await supabase.storage.from("profile-pictures").upload(`${address}/${fileName}`, file);
 
-        if (error) throw error;
+        // Uploading the file of the profile picture to the database
+        const uploadedFile = await uploadProfilePicture(address, fileName, file);
+        if (!uploadedFile.success) throw Error(uploadedFile.error);
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("profile-pictures").getPublicUrl(`${address}/${fileName}`);
-
-        return publicUrl;
+        return getProfilePicturePublicUrl(address, fileName);
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
@@ -178,19 +168,13 @@ const ProfileCreation: React.FC = () => {
     });
     const passportScore: number = response.ok ? await response.json() : 0;
 
-    const { error } = await supabase.from("user_data").upsert(
-      {
-        ...profileData,
-        evm_address: address,
-        talent_score: passportScore || 0,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "evm_address",
-      }
-    );
+    const updatedUser = await updateUser(address, {
+      ...profileData,
+      evm_address: address,
+      talent_score: passportScore || 0,
+    });
 
-    if (error) throw error;
+    if (!updatedUser.success) throw updatedUser.error;
   }
 
   const containerVariants = {
@@ -231,9 +215,13 @@ const ProfileCreation: React.FC = () => {
           </motion.h1>
           <ConnectButton />
 
-    
-
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveAndContinue(); }} className="space-y-6 mt-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveAndContinue();
+            }}
+            className="space-y-6 mt-6"
+          >
             <motion.div variants={itemVariants}>
               <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
                 Profile Pictures
@@ -313,7 +301,6 @@ const ProfileCreation: React.FC = () => {
                 ))}
               </div>
             </motion.div>
-
 
             {/* <EnterPasswordDialog /> */}
 

@@ -18,10 +18,7 @@ export async function GET(req: NextRequest) {
       .eq("user_1", user_1_address)
       .or("matched.is.null,matched.eq.false");
 
-    if (error) {
-      console.log("Error fetching partial match from database:", error);
-      return NextResponse.json({ error: "Error fetching from database" }, { status: 500 });
-    }
+    if (error) throw error;
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {

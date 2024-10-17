@@ -1,23 +1,18 @@
 import { supabase } from "@/lib/supabase";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
-  const user_1_address = searchParams.get("user_1_address");
-  const user_2_address = searchParams.get("user_2_address");
-
-  if (!user_1_address || !user_2_address) {
+export async function GET({ param: { chatId } }: { param: { chatId: string } }) {
+  if (!chatId) {
     return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
   }
 
   try {
     const { data, error } = await supabase
-      .from("chats")
-      .select("id")
-      .eq("user_1", user_1_address)
-      .eq("user_2", user_2_address)
-      .limit(1)
-      .single();
+      .from("messages")
+      .select("message")
+      .eq("chat_id", chatId)
+      .order("created_at", { ascending: false })
+      .limit(1);
 
     if (error) throw error;
 

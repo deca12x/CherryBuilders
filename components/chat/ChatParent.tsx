@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
-import { fetchUserData } from "@/lib/supabase/utils";
+import { createMessage, getChatFromId, getChatMessages, getUser } from "@/lib/supabase/utils";
 
 export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
   const [message, setMessage] = useState("");
@@ -54,24 +54,27 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   const fetchChatDetails = async () => {
     console.log("Fetching chat details for chat ID:", chatId);
-    const { data, error } = await supabase.from("chats").select("*").eq("id", chatId).single();
+    const foundChat = await getChatFromId(chatId);
 
-    if (error) {
-      console.error("Error fetching chat details:", error);
+    if (!foundChat.success) {
+      console.error("Error fetching chat details:", foundChat.error);
       return;
     }
+
+    // Get the data payload from the api call response
+    const data = foundChat.data;
 
     if (data) {
       console.log("Chat data:", data);
       console.log(data);
       const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1;
-      const otherUserData = await fetchUserData(otherUserAddress);
+      const otherUserData = await getUser(otherUserAddress);
       console.log("Determined other user address:", otherUserAddress);
 
       // Set the otherUser state with the address, even if we can't fetch the name
       setOtherUser({
         address: otherUserAddress,
-        name: otherUserData?.name || otherUserAddress,
+        name: otherUserData?.data.name || otherUserAddress,
       });
     } else {
       console.log("No chat data found for chat ID:", chatId);
@@ -80,17 +83,13 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   const fetchMessages = async () => {
     console.log("Fetching messages for chat:", chatId);
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("chat_id", chatId)
-      .order("created_at", { ascending: true });
+    const foundMessages = await getChatMessages(chatId, true);
 
-    if (error) {
-      console.error("Error fetching messages:", error);
+    if (!foundMessages.success) {
+      console.error("Error fetching messages:", foundMessages.error);
     } else {
-      console.log("Fetched messages:", data);
-      setCurrentChat(data as ChatMessage[]);
+      console.log("Fetched messages:", foundMessages.data);
+      setCurrentChat(foundMessages.data as ChatMessage[]);
     }
   };
 
@@ -157,15 +156,17 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       });
       setMessage("");
 
-      const { data, error } = await supabase.from("messages").insert(newMessage).select();
+      const newMessageRes = await createMessage(newMessage);
 
-      if (error) {
-        console.error("Error sending message:", error);
+      if (!newMessageRes.success) {
+        console.error("Error sending message:", newMessageRes.error);
         console.log("Reverting UI update");
         setCurrentChat((prevMessages) => prevMessages.filter((msg) => msg.id !== newMessage.id));
-      } else if (data) {
-        console.log("Message sent successfully to Supabase:", data[0]);
-        setCurrentChat((prevMessages) => prevMessages.map((msg) => (msg.id === newMessage.id ? data[0] : msg)));
+      } else if (newMessageRes.data) {
+        console.log("Message sent successfully to Supabase:", newMessageRes.data[0]);
+        setCurrentChat((prevMessages) =>
+          prevMessages.map((msg) => (msg.id === newMessage.id ? newMessageRes.data[0] : msg))
+        );
 
         if (type === "request" && requestId) {
           console.log("Request message stored with requestId:", requestId);
