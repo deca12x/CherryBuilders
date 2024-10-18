@@ -1,20 +1,5 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
-
-export async function GET(req: NextRequest, { params: { address } }: { params: { address: string } }) {
-  const searchParams = req.nextUrl.searchParams;
-  const fileName = searchParams.get("fileName");
-
-  if (!address || !fileName) {
-    return NextResponse.json({ error: "Incorrect payload format" }, { status: 400 });
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("profile-pictures").getPublicUrl(`${address}/${fileName}`);
-
-  return NextResponse.json({ publicUrl }, { status: 200 });
-}
 
 export async function POST(req: NextRequest, { params: { address } }: { params: { address: string } }) {
   const { fileName, file } = await req.json();

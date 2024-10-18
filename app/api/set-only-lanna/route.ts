@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

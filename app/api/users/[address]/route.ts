@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET({ param: { address } }: { param: { address: string } }) {

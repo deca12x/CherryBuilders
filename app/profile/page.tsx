@@ -14,7 +14,8 @@ import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import LoadingSpinner from "@/components/loadingSpinner";
 import { useRouter } from "next/navigation";
-import { getProfilePicturePublicUrl, isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
+import { supabaseAnonClient as supabase } from "@/lib/supabase";
+import { isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import EnterPasswordDialog from "@/components/profile/confirm-attendence/EnterPasswordDialog";
 import OnlyLannaHackers from "@/components/profile/confirm-attendence/OnlyLannaHackers";
 
@@ -94,7 +95,11 @@ const ProfilePage: React.FC = () => {
         const uploadedFile = await uploadProfilePicture(address, fileName, file);
         if (!uploadedFile.success) throw Error(uploadedFile.error);
 
-        return getProfilePicturePublicUrl(address, fileName);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("profile-pictures").getPublicUrl(`${address}/${fileName}`);
+
+        return publicUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);

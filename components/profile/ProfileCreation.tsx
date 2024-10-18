@@ -8,10 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
+import { supabaseAnonClient as supabase } from "@/lib/supabase";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { getProfilePicturePublicUrl, isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
+import { isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/loadingSpinner";
 import { useSearchParams } from "next/navigation";
 
@@ -96,7 +97,11 @@ const ProfileCreation: React.FC = () => {
         const uploadedFile = await uploadProfilePicture(address, fileName, file);
         if (!uploadedFile.success) throw Error(uploadedFile.error);
 
-        return getProfilePicturePublicUrl(address, fileName);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("profile-pictures").getPublicUrl(`${address}/${fileName}`);
+
+        return publicUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);

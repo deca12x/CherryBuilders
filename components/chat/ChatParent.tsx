@@ -5,7 +5,7 @@ import ChatHeader from "@/components/chat/ChatHeader";
 import ChatSidebar from "@/components/chat/ChatSideBar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
-import { supabase } from "@/lib/supabase";
+import { supabaseAnonClient as supabase } from "@/lib/supabase";
 import { ChatMessage, ChatParentProps, User } from "@/lib/types";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";

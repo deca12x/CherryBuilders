@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
 import { ChatMessage } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -1,18 +1,18 @@
-import { supabase } from '@/lib/supabase';
-import { NextResponse } from 'next/server';
+import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const { address } = await request.json();
 
   if (!address) {
-    return NextResponse.json({ error: 'Address is required' }, { status: 400 });
+    return NextResponse.json({ error: "Address is required" }, { status: 400 });
   }
 
   try {
     const { data, error } = await supabase
-      .from('user_data')
-      .select('ONLY_LANNA_HACKERS')
-      .eq('evm_address', address)
+      .from("user_data")
+      .select("ONLY_LANNA_HACKERS")
+      .eq("evm_address", address)
       .single();
 
     if (error) {
@@ -25,8 +25,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ONLY_LANNA_HACKERS: data.ONLY_LANNA_HACKERS });
   } catch (error) {
-    console.error('Error fetching ONLY_LANNA_HACKERS preference:', error);
-    return NextResponse.json({ error: 'Failed to fetch preference' }, { status: 500 });
+    console.error("Error fetching ONLY_LANNA_HACKERS preference:", error);
+    return NextResponse.json({ error: "Failed to fetch preference" }, { status: 500 });
   }
 }
-
