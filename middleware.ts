@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
   // Get the Privy token from the headers
   const authToken = req.headers.get("Authorization");
 
-  console.log("Authorization: ", authToken);
+  //console.log("Authorization: ", authToken);
 
   if (!authToken) {
     console.error("\nMissing auth token\n");

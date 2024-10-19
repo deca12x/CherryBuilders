@@ -34,6 +34,7 @@ const ProfilePage: React.FC = () => {
   });
   const [wasUserChecked, setWasUserChecked] = useState(false);
   const [jwt, setJwt] = useState<string | null>(null);
+  const [updateTalentScoreLoading, setUpdateTalentScoreLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(false);
@@ -169,11 +170,12 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleUpdateTalentScore = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    setUpdateTalentScoreLoading(true);
     event.preventDefault();
     // Fetch Talent Passport from /api/talent as a POST request
     const response = await fetch("/api/talent", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
       body: JSON.stringify({ address }),
     });
 
@@ -183,6 +185,7 @@ const ProfilePage: React.FC = () => {
         description: "No Talent Passport found for this address.",
         variant: "destructive",
       });
+      setUpdateTalentScoreLoading(false);
       return;
     }
 
@@ -195,10 +198,12 @@ const ProfilePage: React.FC = () => {
         description: "No Talent Passport found for this address.",
         variant: "destructive",
       });
+      setUpdateTalentScoreLoading(false);
       return;
     }
 
     handleChange("talent_score", passportScore.toString());
+    setUpdateTalentScoreLoading(false);
   };
 
   const containerVariants = {
@@ -315,7 +320,7 @@ const ProfilePage: React.FC = () => {
                 </Label>
                 <span className={"text-md mr-3 text-primary"}>{profileData.talent_score ?? "N/A"}</span>
                 <button className="flex items-center hover:text-primary" onClick={handleUpdateTalentScore}>
-                  <RefreshCcw />
+                  <RefreshCcw className={updateTalentScoreLoading ? "animate-reverse-spin" : ""} />
                   <span className="text-xs ml-1">Update</span>
                 </button>
               </motion.div>

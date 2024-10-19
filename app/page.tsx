@@ -57,8 +57,15 @@ export default function Home() {
         <CardContent className="pt-6">
           <h1 className={`text-3xl font-bold text-center text-primary ${k2d.className}`}>Welcome to</h1>
           <h1 className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}>Cherry 🍒</h1>
-          <div className="flex flex-col justify-center items-center mt-8 gap-3">
-            <ConnectButton />
+          <div className="flex flex-col justify-center items-center mt-7 gap-3">
+            {user && address && ready && jwt ? (
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-center text-lg text-primary-foreground">Wallet connected!</p>
+                <p className="text-center text-lg text-primary-foreground">Redirecting...</p>
+              </div>
+            ) : (
+              <ConnectButton />
+            )}
             <p className="text-sm text-center text-muted-foreground mt-4">
               Cherry is currently under development, use at your own discretion
             </p>

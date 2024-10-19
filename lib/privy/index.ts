@@ -16,16 +16,27 @@ export const verifyAuthToken = async (
   user?: User;
   isValid: boolean;
 }> => {
-  try {
-    const verifiedClaims = await privy.verifyAuthToken(authToken);
-    const user = await privy.getUser(verifiedClaims.userId);
-    return {
-      isValid: true,
-      user,
-    };
-  } catch (error: any) {
-    return {
-      isValid: false,
-    };
+  let retries = 0;
+
+  while (retries < 5) {
+    try {
+      const verifiedClaims = await privy.verifyAuthToken(authToken);
+      //console.log("Verified claims: ", verifiedClaims);
+      const user = await privy.getUserById(verifiedClaims.userId);
+      //console.log("User: ", user);
+      return {
+        isValid: true,
+        user,
+      };
+    } catch (error: any) {
+      console.log(`\nError verifying token at try #${retries + 1}: ${error.message}\n`);
+      // wait for 1.5 seconds before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      retries++;
+    }
   }
+  // If this doesn't work after 5 retries, return that the token is invalid
+  return {
+    isValid: false,
+  };
 };
