@@ -5,20 +5,23 @@ import ChatHeader from "@/components/chat/ChatHeader";
 import ChatSidebar from "@/components/chat/ChatSideBar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
-import { supabaseAnonClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { ChatMessage, ChatParentProps, User } from "@/lib/types";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
 import { createMessage, getChatFromId, getChatMessages, getUser } from "@/lib/supabase/utils";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
+  const { getAccessToken } = usePrivy();
   const [message, setMessage] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const channelRef = useRef<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   useEffect(() => {
     console.log("ChatParent: Component mounted or chatId/userAddress changed");
     console.log("Current userAddress:", userAddress);
@@ -54,7 +57,8 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   const fetchChatDetails = async () => {
     console.log("Fetching chat details for chat ID:", chatId);
-    const foundChat = await getChatFromId(chatId);
+    const jwt = await getAccessToken();
+    const foundChat = await getChatFromId(chatId, jwt);
 
     if (!foundChat.success) {
       console.error("Error fetching chat details:", foundChat.error);
@@ -68,7 +72,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       console.log("Chat data:", data);
       console.log(data);
       const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1;
-      const otherUserData = await getUser(otherUserAddress);
+      const otherUserData = await getUser(otherUserAddress, jwt);
       console.log("Determined other user address:", otherUserAddress);
 
       // Set the otherUser state with the address, even if we can't fetch the name
@@ -83,7 +87,8 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   const fetchMessages = async () => {
     console.log("Fetching messages for chat:", chatId);
-    const foundMessages = await getChatMessages(chatId, true);
+    const jwt = await getAccessToken();
+    const foundMessages = await getChatMessages(chatId, true, jwt);
 
     if (!foundMessages.success) {
       console.error("Error fetching messages:", foundMessages.error);
@@ -135,6 +140,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
   };
 
   const handleSend = async (messageText: string, type?: string, requestId?: string) => {
+    const jwt = await getAccessToken();
     if (messageText.trim()) {
       console.log("Sending message:", messageText, "Type:", type, "RequestId:", requestId);
       const newMessage: ChatMessage = {
@@ -156,7 +162,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       });
       setMessage("");
 
-      const newMessageRes = await createMessage(newMessage);
+      const newMessageRes = await createMessage(newMessage, jwt);
 
       if (!newMessageRes.success) {
         console.error("Error sending message:", newMessageRes.error);

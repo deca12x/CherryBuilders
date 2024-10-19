@@ -9,13 +9,14 @@ import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import LoadingSpinner from "@/components/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loadingSpinner";
 import {
   createChat,
   createMatch,
   getPartialMatch,
+  getRandomUsers,
   getSpecificChat,
-  isUserInDatabase,
+  getUser,
   updateMatch,
 } from "@/lib/supabase/utils";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 export default function Matching() {
   const [users, setUsers] = useState<UserType[]>([]);
-  const { user, ready } = usePrivy();
+  const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
   const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
@@ -49,34 +50,31 @@ export default function Matching() {
         return;
       }
 
+      const jwt = await getAccessToken();
+
       // If no error occurs but the user is not in the database
       // push it toward the profile creation page
-      const { data, error } = await isUserInDatabase(address);
-      if (error) {
+      const { success, data, error } = await getUser(address, jwt);
+      if (!success && error) {
         setError(true);
         return;
       } else if (!data) {
-        router.push("profile/creation");
+        router.push("/profile/creation");
         return;
       }
 
+      console.log("\n user: ", user);
+      console.log("router: ", router);
+      console.log("ready: " + ready + "\n");
+
       setIsLoading(true);
-      const URL = data.ONLY_LANNA_HACKERS ? "/api/get-users-in-lanna-2024" : "/api/get-random-users";
       try {
-        const response = await fetch(URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address }),
-        });
+        const foundRandomUsers = await getRandomUsers(false, 20, jwt);
+        if (!foundRandomUsers.success) throw foundRandomUsers.error;
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setUsers(data);
+        setUsers(foundRandomUsers.data);
         console.log("-------USER DATA -------");
-        console.log(data);
+        console.log(foundRandomUsers.data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -85,38 +83,40 @@ export default function Matching() {
     };
 
     fetchUsers();
-  }, [user, router, ready]);
+  }, [user, ready]);
 
   const currentUser = users[currentUserIndex];
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;
 
-    try {
-      const partialMatch = await getPartialMatch(currentUser.evm_address, address);
+    const jwt = await getAccessToken();
 
-      if (!partialMatch.success) throw new Error(partialMatch.error);
+    try {
+      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
+
+      if (!partialMatch.success && partialMatch.error.code !== "PGRST116") throw new Error(partialMatch.error);
       console.log(partialMatch.data);
 
       // If no partial match is found create one
       if (partialMatch.data.length === 0) {
         console.log("No matches found, creating a new match if it doesn't exist");
-        const newMatch = await createMatch(address, currentUser.evm_address);
+        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
         if (!newMatch.success) throw Error(newMatch.error);
       }
 
       // If a match is found, update it
       else if (partialMatch.data.length > 0) {
         console.log("Match exists, update it");
-        const updatedMatch = await updateMatch(currentUser.evm_address, address, true);
+        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
         if (!updatedMatch.success) throw Error(updatedMatch.error);
 
         // Create a chat between the two users
-        const newChat = await createChat(address, currentUser.evm_address);
+        const newChat = await createChat(address, currentUser.evm_address, jwt);
         if (!newChat.success) throw Error(newChat.error);
 
         // Get the chat ID
-        const specificChat = await getSpecificChat(address, currentUser.evm_address);
+        const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
         if (!specificChat.success) throw new Error(specificChat.error);
 
         setIsMatchModalOpen(true);
@@ -305,13 +305,6 @@ export default function Matching() {
             <div className="flex flex-col p-4 gap-3">
               {/* Stats */}
               <div className="w-full gap-3">
-                {/* Worldcoin ID */}
-                {/* <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
-                  <p className="font-bold text-foreground">Worldcoin ID</p>
-                  <p className={user.verified ? "text-green-500" : "text-red-500"}>
-                    {user.verified ? "Confirmed" : "Unconfirmed"}
-                  </p>
-                </div> */}
                 {/* Talent score */}
                 <div className="flex flex-col items-center bg-card rounded-xl p-3">
                   <p className="font-bold text-foreground">Talent Score</p>

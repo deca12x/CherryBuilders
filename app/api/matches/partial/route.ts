@@ -1,4 +1,4 @@
-import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -18,7 +18,19 @@ export async function GET(req: NextRequest) {
       .eq("user_1", user_1_address)
       .or("matched.is.null,matched.eq.false");
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No partial match found in database
+        console.log("No partial match found in database");
+        return NextResponse.json({ data }, { status: 404 });
+      }
+      throw error;
+    }
+
+    if (!data) {
+      console.log("No partial match found in database");
+      return NextResponse.json({ data }, { status: 404 });
+    }
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {

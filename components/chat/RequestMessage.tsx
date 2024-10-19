@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RequestNetwork } from "@requestnetwork/request-client.js";
 import { approveErc20, payRequest } from "@requestnetwork/payment-processor";
-import { useAccount, useWalletClient } from "wagmi";
+import { useWalletClient } from "wagmi";
 import { Types } from "@requestnetwork/request-client.js";
 import { walletClientToSigner } from "@/utils/request/wallet-utils";
 import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
 import { updateRequestMessage } from "@/lib/supabase/utils";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface RequestMessageProps {
   message: string;
@@ -38,7 +39,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
   hasBeenPaid,
 }) => {
   const { data: walletClient } = useWalletClient();
-  const { address } = useAccount();
+  const { getAccessToken } = usePrivy();
   const [status, setStatus] = useState<APP_STATUS>(APP_STATUS.AWAITING_INPUT);
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +153,8 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
       onPay(amount);
 
       // Update request message inside the database
-      const updatedRequestMessage = await updateRequestMessage(requestId, true);
+      const jwt = await getAccessToken();
+      const updatedRequestMessage = await updateRequestMessage(requestId, true, jwt);
 
       if (!updatedRequestMessage.success) {
         console.error("Error updating Supabase:", updatedRequestMessage.error);

@@ -5,12 +5,12 @@ import { K2D } from "next/font/google";
 import { Card, CardContent } from "@/components/ui/card";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import { isUserInDatabase } from "@/lib/supabase/utils";
+import { getUser } from "@/lib/supabase/utils";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 export default function Home() {
-  const { user, ready } = usePrivy();
+  const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
 
   const [error, setError] = useState(false);
@@ -20,13 +20,14 @@ export default function Home() {
   useEffect(() => {
     const checkUser = async () => {
       if (!address || !user || !ready) return;
-      const { data, error } = await isUserInDatabase(address);
-      if (error) {
+      const jwt = await getAccessToken();
+      const { success, data, error } = await getUser(address, jwt);
+      if (!success && error) {
         setError(true);
       } else if (data) {
         router.push("/matching");
       } else {
-        router.push("/profile/creation?newUser=true");
+        router.push("/profile/creation");
       }
     };
 

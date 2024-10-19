@@ -1,7 +1,7 @@
-import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
-import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase/supabase-server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET({ param: { chatId } }: { param: { chatId: string } }) {
+export async function GET(req: NextRequest, { params: { chatId } }: { params: { chatId: string } }) {
   if (!chatId) {
     return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
   }
@@ -9,7 +9,19 @@ export async function GET({ param: { chatId } }: { param: { chatId: string } }) 
   try {
     const { data, error } = await supabase.from("chats").select("*").eq("id", chatId).single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No chat found in database
+        console.log("No chat found in database");
+        return NextResponse.json({ data }, { status: 404 });
+      }
+      throw error;
+    }
+
+    if (!data) {
+      console.log("No chat found in database");
+      return NextResponse.json({ data }, { status: 404 });
+    }
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {

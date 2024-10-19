@@ -1,8 +1,10 @@
-import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest, { params: { address } }: { params: { address: string } }) {
-  const { fileName, file } = await req.json();
+  const formData = await req.formData();
+  const fileName = formData.get("fileName") as string;
+  const file = formData.get("file") as File;
 
   if (!address || !fileName || !file) {
     return NextResponse.json({ error: "Incorrect payload format" }, { status: 400 });

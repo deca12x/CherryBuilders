@@ -1,64 +1,43 @@
-import { RealtimeChannel } from "@supabase/supabase-js";
 import { ChatMessage, UserType } from "../types";
-import { MutableRefObject } from "react";
-
-/**
- * Check if a specific user is in the database
- * @param address The address of the user
- * @returns An object {data: any | null, error: boolean}
- **/
-export const isUserInDatabase = async (address: string): Promise<{ data: any | null; error: boolean }> => {
-  try {
-    const foundUser = await getUser(address);
-
-    if (!foundUser.success) {
-      // Check if the error is due to no rows found
-      if (foundUser.error?.code === "PGRST116") {
-        return {
-          data: null,
-          error: false,
-        };
-      }
-      throw foundUser.error;
-    }
-
-    return {
-      data: foundUser.data,
-      error: false,
-    };
-  } catch (error) {
-    console.error("Error checking address:", error);
-    return {
-      data: null,
-      error: true,
-    };
-  }
-};
 
 /**
  * A utility function to get a specific partial match from the database
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getPartialMatch = async (
   user_1_address: string,
-  user_2_address: string
+  user_2_address: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/matches/partial?user_1_address=${user_1_address}&user_2_address=${user_2_address}`);
+  const response = await fetch(`/api/matches/partial?user_1_address=${user_1_address}&user_2_address=${user_2_address}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -68,17 +47,19 @@ export const getPartialMatch = async (
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
  * @param value - The boolean value that must be set in the database record
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updateMatch = async (
   user_1_address: string,
   user_2_address: string,
-  value: boolean
+  value: boolean,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch("/api/matches", {
     method: "PUT",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
+      Authorization: `Bearer ${jwt}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -88,13 +69,13 @@ export const updateMatch = async (
     }),
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {
@@ -108,16 +89,18 @@ export const updateMatch = async (
  * A utility function to create a new match inside the database
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMatch = async (
   user_1_address: string,
-  user_2_address: string
+  user_2_address: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch("/api/matches", {
     method: "POST",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
+      Authorization: `Bearer ${jwt}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -126,13 +109,13 @@ export const createMatch = async (
     }),
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {
@@ -146,16 +129,18 @@ export const createMatch = async (
  * A utility function to create a new chat inside the database
  * @param user_1_address - The address of the first user of the chat
  * @param user_2_address - The address of the second user of the chat
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createChat = async (
   user_1_address: string,
-  user_2_address: string
+  user_2_address: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch("/api/chats", {
     method: "POST",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
+      Authorization: `Bearer ${jwt}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -164,13 +149,13 @@ export const createChat = async (
     }),
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {
@@ -183,25 +168,39 @@ export const createChat = async (
 /**
  * A utility function that, given a chat id, gets the chat from the database
  * @param chatId - the unique id of the chat
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getChatFromId = async (
-  chatId: string
+  chatId: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/chats/${chatId}`);
+  const response = await fetch(`/api/chats/${chatId}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -209,25 +208,39 @@ export const getChatFromId = async (
 /**
  * A utility function that, given a user address, gets the chat from the database
  * @param userAddress - The address of one of the two user that participate to the chat
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getChatsFromUserAddress = async (
-  userAddress: string
+  userAddress: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/chats?userAddress=${userAddress}`);
+  const response = await fetch(`/api/chats?userAddress=${userAddress}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -236,26 +249,40 @@ export const getChatsFromUserAddress = async (
  * A utility function to get a specific chat from the database
  * @param user_1_address - The address of the first user of the chat
  * @param user_2_address - The address of the second user of the chat
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getSpecificChat = async (
   user_1_address: string,
-  user_2_address: string
+  user_2_address: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/chats/specific?user_1_address=${user_1_address}&user_2_address=${user_2_address}`);
+  const response = await fetch(`/api/chats/specific?user_1_address=${user_1_address}&user_2_address=${user_2_address}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -265,32 +292,34 @@ export const getSpecificChat = async (
  * @param address - The address of the user
  * @param fileName - The name of the file
  * @param file - The file to upload
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const uploadProfilePicture = async (
   address: string,
   fileName: string,
-  file: File
+  file: File,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const formData = new FormData();
+  formData.append("fileName", fileName);
+  formData.append("file", file);
+
   const response = await fetch(`/api/bucket/profile-pictures/${address}`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
-      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
     },
-    body: JSON.stringify({
-      fileName,
-      file,
-    }),
+    body: formData,
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {
@@ -301,25 +330,83 @@ export const uploadProfilePicture = async (
 };
 
 /**
- * A utility function that, given a user address, gets their profile from the database
- * @param userAddress - The address of the target user
+ * A utility function that fetches a given number of random users from the database
+ * @param onlyLannaHackers - Whether to fetch only lanna hackers or not
+ * @param limit - The number of users that must be fetched
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
-export const getUser = async (address: string): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/users/${address}`);
+export const getRandomUsers = async (
+  onlyLannaHackers: boolean,
+  limit: number,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/users/get-random?onlyLannaHackers=${onlyLannaHackers}&limit=${limit}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that, given a user address, gets their profile from the database
+ * @param address - The address of the target user
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getUser = async (
+  address: string,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/users/${address}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
     error: undefined,
   };
 };
@@ -327,16 +414,18 @@ export const getUser = async (address: string): Promise<{ success: boolean; data
 /**
  * A utility function to update a user profile inside the database
  * @param profileData - The data of the user to update
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updateUser = async (
   address: string,
-  profileData: Partial<UserType>
+  profileData: Partial<UserType>,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch(`/api/users/${address}`, {
     method: "PUT",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
+      Authorization: `Bearer ${jwt}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -344,13 +433,13 @@ export const updateUser = async (
     }),
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {
@@ -364,26 +453,40 @@ export const updateUser = async (
  * A utility function that, given a chat id, gets the messages of the chat from the database
  * @param chatId - the unique id of the chat
  * @param ascending - if the messages should be get in an ascending way
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getChatMessages = async (
   chatId: string,
-  ascending: boolean
+  ascending: boolean,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/messages/${chatId}?ascending=${ascending}`);
+  const response = await fetch(`/api/messages/${chatId}?ascending=${ascending}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -391,25 +494,39 @@ export const getChatMessages = async (
 /**
  * A utility function that, given a chat id, gets the last message of the chat from the database
  * @param chatId - the unique id of the chat
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getLastChatMessage = async (
-  chatId: string
+  chatId: string,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/messages/${chatId}/last-message`);
+  const response = await fetch(`/api/messages/${chatId}/last-message`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
+  }
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -417,15 +534,17 @@ export const getLastChatMessage = async (
 /**
  * A utility function to create a new message inside the database
  * @param newMessage - The new message to be added to the database
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMessage = async (
-  newMessage: ChatMessage
+  newMessage: ChatMessage,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch("/api/messages", {
     method: "POST",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
+      Authorization: `Bearer ${jwt}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -433,18 +552,18 @@ export const createMessage = async (
     }),
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {
     success: true,
-    data: responseJson.data,
+    data: body.data,
     error: undefined,
   };
 };
@@ -452,16 +571,18 @@ export const createMessage = async (
 /**
  * A utility function to update a message containing a request inside the database
  * @param requestId - The request id that identifies a request message
+ * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updateRequestMessage = async (
   requestId: string,
-  paid: boolean
+  paid: boolean,
+  jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch(`/api/requests/${requestId}`, {
     method: "PUT",
     headers: {
-      Authorization: `Bearer jwt`, // TODO: add the correct jwt
+      Authorization: `Bearer ${jwt}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -469,13 +590,13 @@ export const updateRequestMessage = async (
     }),
   });
 
-  const responseJson = await response.json();
+  const body = await response.json();
 
   if (!response.ok)
     return {
       success: false,
       data: null,
-      error: responseJson.error,
+      error: body.error,
     };
 
   return {

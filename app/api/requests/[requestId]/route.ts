@@ -1,4 +1,4 @@
-import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(req: NextRequest, { params: { requestId } }: { params: { requestId: string } }) {

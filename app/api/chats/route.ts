@@ -1,4 +1,4 @@
-import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -31,7 +31,19 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabase.from("chats").select("*").or(`user_1.eq.${userAddress},user_2.eq.${userAddress}`);
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No chat found in database
+        console.log("No chat found in database");
+        return NextResponse.json({ data }, { status: 404 });
+      }
+      throw error;
+    }
+
+    if (!data) {
+      console.log("No chat found in database");
+      return NextResponse.json({ data }, { status: 404 });
+    }
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {

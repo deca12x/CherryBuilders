@@ -8,17 +8,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/types";
-import { supabaseAnonClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-client";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
-import LoadingSpinner from "@/components/loadingSpinner";
-import { useSearchParams } from "next/navigation";
+import { getUser, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
+import LoadingSpinner from "@/components/ui/loadingSpinner";
 
 const ProfileCreation: React.FC = () => {
-  const { user, ready } = usePrivy();
-  const [step, setStep] = useState(0);
+  const { user, ready, getAccessToken } = usePrivy();
   const [unlockPage, setUnlockPage] = useState(false);
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
@@ -34,12 +32,9 @@ const ProfileCreation: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(false);
-  const [isLannaConfirmed, setIsLannaConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { toast } = useToast();
-  const searchParams = useSearchParams();
-  const isNewUser = searchParams.get("newUser") === "true";
 
   const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
 
@@ -54,16 +49,14 @@ const ProfileCreation: React.FC = () => {
         return;
       }
 
-      if (isNewUser) {
-        setUnlockPage(true);
-        return;
-      }
+      const jwt = await getAccessToken();
 
-      const { data, error } = await isUserInDatabase(address);
-      if (error) {
+      const { success, data, error } = await getUser(address, jwt);
+      if (!success && error) {
         setError(true);
         return;
       } else if (data) {
+        console.log("User already has a profile, redirecting to matching page");
         router.push("/matching");
         return;
       } else {
@@ -72,7 +65,7 @@ const ProfileCreation: React.FC = () => {
     };
 
     fetchExistingProfile();
-  }, [address, user, ready, router, isNewUser]);
+  }, [address, user, ready, router]);
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
@@ -87,6 +80,8 @@ const ProfileCreation: React.FC = () => {
     const files = e.target.files;
     if (!files || files.length === 0 || !address) return;
 
+    const jwt = await getAccessToken();
+
     setIsUploading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
@@ -94,7 +89,7 @@ const ProfileCreation: React.FC = () => {
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
 
         // Uploading the file of the profile picture to the database
-        const uploadedFile = await uploadProfilePicture(address, fileName, file);
+        const uploadedFile = await uploadProfilePicture(address, fileName, file, jwt);
         if (!uploadedFile.success) throw Error(uploadedFile.error);
 
         const {
@@ -151,7 +146,7 @@ const ProfileCreation: React.FC = () => {
         description: "Profile saved successfully.",
         variant: "default",
       });
-      router.push("/profile/creation/confirm-Hackathon");
+      router.push("/matching");
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -165,19 +160,25 @@ const ProfileCreation: React.FC = () => {
   };
 
   async function updateProfileData(address: string, profileData: UserType): Promise<void> {
+    const jwt = await getAccessToken();
+
     // Get the talent passport if the user has one
     const response = await fetch("/api/talent", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
       body: JSON.stringify({ address }),
     });
     const passportScore: number = response.ok ? await response.json() : 0;
 
-    const updatedUser = await updateUser(address, {
-      ...profileData,
-      evm_address: address,
-      talent_score: passportScore || 0,
-    });
+    const updatedUser = await updateUser(
+      address,
+      {
+        ...profileData,
+        evm_address: address,
+        talent_score: passportScore || 0,
+      },
+      jwt
+    );
 
     if (!updatedUser.success) throw updatedUser.error;
   }

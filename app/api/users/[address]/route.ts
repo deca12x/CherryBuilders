@@ -1,7 +1,7 @@
-import { supabaseServiceRoleClient as supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET({ param: { address } }: { param: { address: string } }) {
+export async function GET(req: NextRequest, { params: { address } }: { params: { address: string } }) {
   if (!address) {
     return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
   }
@@ -9,7 +9,19 @@ export async function GET({ param: { address } }: { param: { address: string } }
   try {
     const { data, error } = await supabase.from("user_data").select("*").eq("evm_address", address).single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === "PGRST116") {
+        // User not found in database
+        console.log("User not found in database");
+        return NextResponse.json({ data }, { status: 404 });
+      }
+      throw error;
+    }
+
+    if (!data) {
+      console.log("User not found in database");
+      return NextResponse.json({ data }, { status: 404 });
+    }
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {

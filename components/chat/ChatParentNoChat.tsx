@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
 import { getUser, getChatsFromUserAddress, getLastChatMessage } from "@/lib/supabase/utils";
+import { usePrivy } from "@privy-io/react-auth";
 
 type ChatHistoryItem = {
   id: string;
@@ -20,6 +21,7 @@ interface ChatSidebarProps {
 }
 
 export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarProps) {
+  const { getAccessToken } = usePrivy();
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -32,7 +34,8 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   const fetchChatHistory = async () => {
     setIsLoading(true);
     console.log("Fetching chat history for user:", userAddress);
-    const foundChats = await getChatsFromUserAddress(userAddress);
+    const jwt = await getAccessToken();
+    const foundChats = await getChatsFromUserAddress(userAddress, jwt);
 
     if (!foundChats.success) {
       console.error("Error fetching chat history:", foundChats.error);
@@ -45,13 +48,13 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
       foundChats.data.map(async (chat: any) => {
         const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
         const lastMessage = await fetchLastMessage(chat.id);
-        const userData = await getUser(otherUserAddress);
+        const userData = await getUser(otherUserAddress, jwt);
         return {
           id: chat.id,
-          name: userData?.data.name || `User ${otherUserAddress.slice(0, 6)}...`,
+          name: userData.data?.name || `User ${otherUserAddress.slice(0, 6)}...`,
           lastMessage: lastMessage?.message || "No messages yet",
           otherUserAddress,
-          profilePicture: userData?.data.profile_pictures[0] || "",
+          profilePicture: userData.data?.profile_pictures[0] || "",
         };
       })
     );
@@ -61,7 +64,8 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   };
 
   const fetchLastMessage = async (chatId: string): Promise<{ message: string } | null> => {
-    const lastMessage = await getLastChatMessage(chatId);
+    const jwt = await getAccessToken();
+    const lastMessage = await getLastChatMessage(chatId, jwt);
 
     if (!lastMessage.success) {
       console.error("Error fetching last message:", lastMessage.error);

@@ -12,15 +12,13 @@ import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { RefreshCcw } from "lucide-react";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import LoadingSpinner from "@/components/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loadingSpinner";
 import { useRouter } from "next/navigation";
-import { supabaseAnonClient as supabase } from "@/lib/supabase";
-import { isUserInDatabase, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
-import EnterPasswordDialog from "@/components/profile/confirm-attendence/EnterPasswordDialog";
-import OnlyLannaHackers from "@/components/profile/confirm-attendence/OnlyLannaHackers";
+import { getUser, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
+import { supabase } from "@/lib/supabase/supabase-client";
 
 const ProfilePage: React.FC = () => {
-  const { user, ready } = usePrivy();
+  const { user, ready, getAccessToken } = usePrivy();
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
@@ -49,6 +47,8 @@ const ProfilePage: React.FC = () => {
     const fetchExistingProfile = async () => {
       if (!ready) return;
 
+      const jwt = await getAccessToken();
+
       // If no address or no user are found, push the user to log in
       if (!user || !address) {
         router.push("/");
@@ -57,12 +57,12 @@ const ProfilePage: React.FC = () => {
 
       // If no error occurs but the user is not in the database
       // push it toward the profile creation page
-      const { data, error } = await isUserInDatabase(address);
-      if (error) {
+      const {success, data, error } = await getUser(address, jwt);
+      if (!success && error) {
         setError(true);
         return;
       } else if (!data) {
-        router.push("profile/creation");
+        router.push("/profile/creation");
         return;
       } else {
         setProfileData(data as UserType);
@@ -85,6 +85,8 @@ const ProfilePage: React.FC = () => {
     const files = e.target.files;
     if (!files || files.length === 0 || !address) return;
 
+    const jwt = await getAccessToken();
+
     setIsUploading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
@@ -92,7 +94,7 @@ const ProfilePage: React.FC = () => {
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
 
         // Uploading the file of the profile picture to the database
-        const uploadedFile = await uploadProfilePicture(address, fileName, file);
+        const uploadedFile = await uploadProfilePicture(address, fileName, file, jwt);
         if (!uploadedFile.success) throw Error(uploadedFile.error);
 
         const {
@@ -142,9 +144,11 @@ const ProfilePage: React.FC = () => {
       return;
     }
 
+    const jwt = await getAccessToken();
+
     setIsSubmitting(true);
     try {
-      const updatedUser = await updateUser(address, profileData);
+      const updatedUser = await updateUser(address, profileData, jwt);
       if (!updatedUser.success) throw Error(updatedUser.error);
       toast({
         title: "Success",
@@ -161,18 +165,6 @@ const ProfilePage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleWorldIDSuccess = () => {
-    toast({
-      title: "Verification Successful",
-      description: "Your profile is now complete with World ID verification!",
-      variant: "default",
-    });
-  };
-
-  const handleWorldIDClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
   };
 
   const handleUpdateTalentScore = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -308,12 +300,6 @@ const ProfilePage: React.FC = () => {
                   onChange={(e) => handleChange("bio", e.target.value)}
                   className="w-full min-h-[100px]"
                 />
-              </motion.div>
-
-              <motion.div className="mt-6 gap-3" variants={itemVariants}>
-                <EnterPasswordDialog />
-
-                {profileData.LANNA_2024 && <OnlyLannaHackers />}
               </motion.div>
 
               {/* Talent score */}
