@@ -320,6 +320,7 @@ const ProfilePage: React.FC = () => {
                 </Label>
                 <span className={"text-md mr-3 text-primary"}>{profileData.talent_score ?? "N/A"}</span>
                 <button className="flex items-center hover:text-primary" onClick={handleUpdateTalentScore}>
+                  {/* Spin the icon if the api call is waiting for a response */}
                   <RefreshCcw className={updateTalentScoreLoading ? "animate-reverse-spin" : ""} />
                   <span className="text-xs ml-1">Update</span>
                 </button>
