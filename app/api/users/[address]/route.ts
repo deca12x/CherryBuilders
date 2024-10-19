@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, { params: { address } }: { params: {
   }
 
   try {
-    const { data, error } = await supabase.from("user_data").select("*").eq("evm_address", address).single();
+    const { data, error } = await supabase.from("users").select("*").eq("evm_address", address).single();
 
     if (error) {
       if (error.code === "PGRST116") {
@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params: { address } }: { params: {
 
   try {
     const { error } = await supabase
-      .from("user_data")
+      .from("users")
       .upsert(
         {
           ...profileData,

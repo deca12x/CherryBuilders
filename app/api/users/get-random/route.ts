@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: userData, error: userError } = await supabase
-      .from("user_data")
+      .from("users")
       .select("*")
       .neq("evm_address", address)
       //.eq("ONLY_LANNA_HACKERS", onlyLannaHackers)
