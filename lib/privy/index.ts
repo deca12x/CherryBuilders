@@ -24,7 +24,6 @@ export const verifyAuthToken = async (
       user,
     };
   } catch (error: any) {
-    console.log("\nAuth failed in privy file\n");
     return {
       isValid: false,
     };

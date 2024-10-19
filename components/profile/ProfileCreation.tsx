@@ -17,7 +17,8 @@ import LoadingSpinner from "@/components/ui/loadingSpinner";
 
 const ProfileCreation: React.FC = () => {
   const { user, ready, getAccessToken } = usePrivy();
-  const [unlockPage, setUnlockPage] = useState(false);
+  const [wasUserChecked, setWasUserChecked] = useState(false);
+  const [jwt, setJwt] = useState<string | null>(null);
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
@@ -41,7 +42,7 @@ const ProfileCreation: React.FC = () => {
   const address = user?.wallet?.address;
 
   useEffect(() => {
-    const fetchExistingProfile = async () => {
+    const checkUser = async () => {
       if (!ready) return;
 
       if (!user || !address) {
@@ -49,22 +50,24 @@ const ProfileCreation: React.FC = () => {
         return;
       }
 
-      const jwt = await getAccessToken();
+      const token = await getAccessToken();
+      setJwt(token);
 
       const { success, data, error } = await getUser(address, jwt);
+
+      // If an error occurs, set the error state to true
+      // if the user is found redirect them to the matching page
       if (!success && error) {
         setError(true);
         return;
       } else if (data) {
-        console.log("User already has a profile, redirecting to matching page");
         router.push("/matching");
         return;
-      } else {
-        setUnlockPage(true);
       }
+      setWasUserChecked(true);
     };
 
-    fetchExistingProfile();
+    checkUser();
   }, [address, user, ready, router]);
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
@@ -79,8 +82,6 @@ const ProfileCreation: React.FC = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0 || !address) return;
-
-    const jwt = await getAccessToken();
 
     setIsUploading(true);
     try {
@@ -160,8 +161,6 @@ const ProfileCreation: React.FC = () => {
   };
 
   async function updateProfileData(address: string, profileData: UserType): Promise<void> {
-    const jwt = await getAccessToken();
-
     // Get the talent passport if the user has one
     const response = await fetch("/api/talent", {
       method: "POST",
@@ -207,7 +206,7 @@ const ProfileCreation: React.FC = () => {
         An unexpected error occured, please try again!
       </div>
     );
-  } else if (address && user && ready && unlockPage) {
+  } else if (address && user && ready && wasUserChecked) {
     return (
       <motion.main
         className="flex flex-col min-h-screen bg-background"

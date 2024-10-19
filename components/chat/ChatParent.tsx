@@ -12,10 +12,8 @@ import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
 import { createMessage, getChatFromId, getChatMessages, getUser } from "@/lib/supabase/utils";
-import { usePrivy } from "@privy-io/react-auth";
 
-export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
-  const { getAccessToken } = usePrivy();
+export default function ChatParent({ userAddress, chatId, authToken }: ChatParentProps) {
   const [message, setMessage] = useState("");
   const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
   const [otherUser, setOtherUser] = useState<User | null>(null);
@@ -57,8 +55,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   const fetchChatDetails = async () => {
     console.log("Fetching chat details for chat ID:", chatId);
-    const jwt = await getAccessToken();
-    const foundChat = await getChatFromId(chatId, jwt);
+    const foundChat = await getChatFromId(chatId, authToken);
 
     if (!foundChat.success) {
       console.error("Error fetching chat details:", foundChat.error);
@@ -72,7 +69,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       console.log("Chat data:", data);
       console.log(data);
       const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1;
-      const otherUserData = await getUser(otherUserAddress, jwt);
+      const otherUserData = await getUser(otherUserAddress, authToken);
       console.log("Determined other user address:", otherUserAddress);
 
       // Set the otherUser state with the address, even if we can't fetch the name
@@ -87,8 +84,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
 
   const fetchMessages = async () => {
     console.log("Fetching messages for chat:", chatId);
-    const jwt = await getAccessToken();
-    const foundMessages = await getChatMessages(chatId, true, jwt);
+    const foundMessages = await getChatMessages(chatId, true, authToken);
 
     if (!foundMessages.success) {
       console.error("Error fetching messages:", foundMessages.error);
@@ -140,7 +136,6 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
   };
 
   const handleSend = async (messageText: string, type?: string, requestId?: string) => {
-    const jwt = await getAccessToken();
     if (messageText.trim()) {
       console.log("Sending message:", messageText, "Type:", type, "RequestId:", requestId);
       const newMessage: ChatMessage = {
@@ -162,7 +157,7 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
       });
       setMessage("");
 
-      const newMessageRes = await createMessage(newMessage, jwt);
+      const newMessageRes = await createMessage(newMessage, authToken);
 
       if (!newMessageRes.success) {
         console.error("Error sending message:", newMessageRes.error);
@@ -192,20 +187,25 @@ export default function ChatParent({ userAddress, chatId }: ChatParentProps) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-            <ChatSidebar userAddress={userAddress} activeChatId={chatId} />
+            <ChatSidebar userAddress={userAddress} activeChatId={chatId} authToken={authToken} />
           </SheetContent>
         </Sheet>
       </div>
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-1/4 border-r border-border">
-        <ChatSidebar userAddress={userAddress} activeChatId={chatId} />
+        <ChatSidebar userAddress={userAddress} activeChatId={chatId} authToken={authToken} />
       </div>
 
       {/* Chat Area */}
       <div className="flex-1 flex flex-col p-2 pb-12">
         <ChatHeader name={otherUser?.name || "Loading..."} />
-        <MessageList key={currentChat.length} messages={currentChat} currentUserAddress={userAddress} />
+        <MessageList
+          key={currentChat.length}
+          messages={currentChat}
+          currentUserAddress={userAddress}
+          authToken={authToken}
+        />
         <MessageInput
           payeeAddress={userAddress}
           payerAddress={otherUser?.address as string}

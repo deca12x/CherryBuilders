@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getChatsFromUserAddress, getLastChatMessage, getUser } from "@/lib/supabase/utils";
-import { usePrivy } from "@privy-io/react-auth";
 
 type ChatHistoryItem = {
   id: string;
@@ -14,18 +13,13 @@ type ChatHistoryItem = {
   profilePicture: string;
 };
 
-type UserData = {
-  name: string;
-  profile_pictures: string[];
-};
-
 interface ChatSidebarProps {
   userAddress: string;
   activeChatId?: string;
+  authToken: string | null;
 }
 
-export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarProps) {
-  const { getAccessToken } = usePrivy();
+export default function ChatSidebar({ userAddress, activeChatId, authToken }: ChatSidebarProps) {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -38,8 +32,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   const fetchChatHistory = async () => {
     setIsLoading(true);
     console.log("Fetching chat history for user:", userAddress);
-    const jwt = await getAccessToken();
-    const foundChats = await getChatsFromUserAddress(userAddress, jwt);
+    const foundChats = await getChatsFromUserAddress(userAddress, authToken);
 
     if (!foundChats.success) {
       console.error("Error fetching chat history:", foundChats.error);
@@ -52,7 +45,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
       foundChats.data.map(async (chat: any) => {
         const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
         const lastMessage = await fetchLastMessage(chat.id);
-        const userData = await getUser(otherUserAddress, jwt);
+        const userData = await getUser(otherUserAddress, authToken);
         return {
           id: chat.id,
           name: userData.data?.name || `User ${otherUserAddress.slice(0, 6)}...`,
@@ -68,8 +61,7 @@ export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarPr
   };
 
   const fetchLastMessage = async (chatId: string): Promise<{ message: string } | null> => {
-    const jwt = await getAccessToken();
-    const lastMessage = await getLastChatMessage(chatId, jwt);
+    const lastMessage = await getLastChatMessage(chatId, authToken);
 
     if (!lastMessage.success) {
       console.error("Error fetching last message:", lastMessage.error);

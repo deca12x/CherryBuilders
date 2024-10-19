@@ -14,14 +14,23 @@ export default function Home() {
   const router = useRouter();
 
   const [error, setError] = useState(false);
+  const [jwt, setJwt] = useState<string | null>("");
 
   const address = user?.wallet?.address;
 
   useEffect(() => {
     const checkUser = async () => {
       if (!address || !user || !ready) return;
-      const jwt = await getAccessToken();
-      const { success, data, error } = await getUser(address, jwt);
+
+      // setting the jwt as a state variable to avoid stale closure
+      const token = await getAccessToken();
+      setJwt(token);
+
+      // check if the user exists in the database
+      const { success, data, error } = await getUser(address, token);
+
+      // if the user is not found, redirect to the profile creation page
+      // if the user is found, redirect to the matching page
       if (!success && error) {
         setError(true);
       } else if (data) {

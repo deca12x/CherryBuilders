@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
 import { getUser, getChatsFromUserAddress, getLastChatMessage } from "@/lib/supabase/utils";
-import { usePrivy } from "@privy-io/react-auth";
 
 type ChatHistoryItem = {
   id: string;
@@ -18,54 +17,52 @@ type ChatHistoryItem = {
 interface ChatSidebarProps {
   userAddress: string;
   activeChatId?: string;
+  authToken: string | null;
 }
 
-export default function ChatSidebar({ userAddress, activeChatId }: ChatSidebarProps) {
-  const { getAccessToken } = usePrivy();
+export default function ChatSidebar({ userAddress, activeChatId, authToken }: ChatSidebarProps) {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const fetchChatHistory = async () => {
+      setIsLoading(true);
+      console.log("Fetching chat history for user:", userAddress);
+      const foundChats = await getChatsFromUserAddress(userAddress, authToken);
+
+      if (!foundChats.success) {
+        console.error("Error fetching chat history:", foundChats.error);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Fetched chat history:", foundChats.data);
+      const history: ChatHistoryItem[] = await Promise.all(
+        foundChats.data.map(async (chat: any) => {
+          const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
+          const lastMessage = await fetchLastMessage(chat.id);
+          const userData = await getUser(otherUserAddress, authToken);
+          return {
+            id: chat.id,
+            name: userData.data?.name || `User ${otherUserAddress.slice(0, 6)}...`,
+            lastMessage: lastMessage?.message || "No messages yet",
+            otherUserAddress,
+            profilePicture: userData.data?.profile_pictures[0] || "",
+          };
+        })
+      );
+
+      setChatHistory(history);
+      setIsLoading(false);
+    };
+
     fetchChatHistory();
   }, [userAddress]);
 
-  const fetchChatHistory = async () => {
-    setIsLoading(true);
-    console.log("Fetching chat history for user:", userAddress);
-    const jwt = await getAccessToken();
-    const foundChats = await getChatsFromUserAddress(userAddress, jwt);
-
-    if (!foundChats.success) {
-      console.error("Error fetching chat history:", foundChats.error);
-      setIsLoading(false);
-      return;
-    }
-
-    console.log("Fetched chat history:", foundChats.data);
-    const history: ChatHistoryItem[] = await Promise.all(
-      foundChats.data.map(async (chat: any) => {
-        const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
-        const lastMessage = await fetchLastMessage(chat.id);
-        const userData = await getUser(otherUserAddress, jwt);
-        return {
-          id: chat.id,
-          name: userData.data?.name || `User ${otherUserAddress.slice(0, 6)}...`,
-          lastMessage: lastMessage?.message || "No messages yet",
-          otherUserAddress,
-          profilePicture: userData.data?.profile_pictures[0] || "",
-        };
-      })
-    );
-
-    setChatHistory(history);
-    setIsLoading(false);
-  };
-
   const fetchLastMessage = async (chatId: string): Promise<{ message: string } | null> => {
-    const jwt = await getAccessToken();
-    const lastMessage = await getLastChatMessage(chatId, jwt);
+    const lastMessage = await getLastChatMessage(chatId, authToken);
 
     if (!lastMessage.success) {
       console.error("Error fetching last message:", lastMessage.error);

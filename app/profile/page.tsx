@@ -32,6 +32,8 @@ const ProfilePage: React.FC = () => {
     verified: false,
     talent_score: 0,
   });
+  const [wasUserChecked, setWasUserChecked] = useState(false);
+  const [jwt, setJwt] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(false);
@@ -44,10 +46,8 @@ const ProfilePage: React.FC = () => {
   const address = user?.wallet?.address;
 
   useEffect(() => {
-    const fetchExistingProfile = async () => {
+    const checkUser = async () => {
       if (!ready) return;
-
-      const jwt = await getAccessToken();
 
       // If no address or no user are found, push the user to log in
       if (!user || !address) {
@@ -55,21 +55,26 @@ const ProfilePage: React.FC = () => {
         return;
       }
 
-      // If no error occurs but the user is not in the database
-      // push it toward the profile creation page
-      const {success, data, error } = await getUser(address, jwt);
+      const token = await getAccessToken();
+      setJwt(token);
+
+      const { success, data, error } = await getUser(address, token);
+
+      // If an error occurs, set the error state to true
+      // if the user is not found redirect them to the profile creation page
       if (!success && error) {
         setError(true);
         return;
       } else if (!data) {
         router.push("/profile/creation");
         return;
-      } else {
-        setProfileData(data as UserType);
       }
+
+      setProfileData(data as UserType);
+      setWasUserChecked(true);
     };
 
-    fetchExistingProfile();
+    checkUser();
   }, [address, user, ready, router]);
 
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
@@ -84,8 +89,6 @@ const ProfilePage: React.FC = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0 || !address) return;
-
-    const jwt = await getAccessToken();
 
     setIsUploading(true);
     try {
@@ -143,8 +146,6 @@ const ProfilePage: React.FC = () => {
       });
       return;
     }
-
-    const jwt = await getAccessToken();
 
     setIsSubmitting(true);
     try {
@@ -224,7 +225,7 @@ const ProfilePage: React.FC = () => {
         An unexpected error occured, please try again!
       </div>
     );
-  } else if (address && user && ready) {
+  } else if (address && user && ready && wasUserChecked) {
     return (
       <>
         <motion.main

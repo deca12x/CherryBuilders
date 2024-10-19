@@ -9,7 +9,6 @@ import { getPaymentNetworkExtension } from "@requestnetwork/payment-detection";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
 import { updateRequestMessage } from "@/lib/supabase/utils";
-import { usePrivy } from "@privy-io/react-auth";
 
 interface RequestMessageProps {
   message: string;
@@ -18,6 +17,7 @@ interface RequestMessageProps {
   onPay: (amount: string) => void;
   requestId: string;
   hasBeenPaid?: boolean;
+  authToken: string | null;
 }
 
 enum APP_STATUS {
@@ -37,9 +37,9 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
   onPay,
   requestId,
   hasBeenPaid,
+  authToken,
 }) => {
   const { data: walletClient } = useWalletClient();
-  const { getAccessToken } = usePrivy();
   const [status, setStatus] = useState<APP_STATUS>(APP_STATUS.AWAITING_INPUT);
   const [requestData, setRequestData] = useState<Types.IRequestDataWithEvents | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -153,8 +153,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
       onPay(amount);
 
       // Update request message inside the database
-      const jwt = await getAccessToken();
-      const updatedRequestMessage = await updateRequestMessage(requestId, true, jwt);
+      const updatedRequestMessage = await updateRequestMessage(requestId, true, authToken);
 
       if (!updatedRequestMessage.success) {
         console.error("Error updating Supabase:", updatedRequestMessage.error);

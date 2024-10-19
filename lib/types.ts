@@ -15,7 +15,7 @@ export interface UserType {
   created_at?: string;
   updated_at?: string;
   LANNA_2024?: boolean;
-  ONLY_LANNA_HACKERS?: boolean
+  ONLY_LANNA_HACKERS?: boolean;
 }
 
 export interface ChatMessage {
@@ -37,6 +37,7 @@ export interface User {
 export type ChatParentProps = {
   userAddress: string;
   chatId: string;
+  authToken: string | null;
 };
 
 export interface ProofData {

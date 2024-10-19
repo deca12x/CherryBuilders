@@ -28,6 +28,8 @@ export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
   const [error, setError] = useState(false);
+  const [jwt, setJwt] = useState<string | null>(null);
+  const [wasUserChecked, setWasUserChecked] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +43,7 @@ export default function Matching() {
   const address = user?.wallet?.address;
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const checkUser = async () => {
       if (!ready) return;
 
       // If no address or no user are found, push the user to log in
@@ -50,11 +52,12 @@ export default function Matching() {
         return;
       }
 
-      const jwt = await getAccessToken();
+      const token = await getAccessToken();
+      setJwt(token);
 
       // If no error occurs but the user is not in the database
       // push it toward the profile creation page
-      const { success, data, error } = await getUser(address, jwt);
+      const { success, data, error } = await getUser(address, token);
       if (!success && error) {
         setError(true);
         return;
@@ -62,17 +65,23 @@ export default function Matching() {
         router.push("/profile/creation");
         return;
       }
+      setWasUserChecked(true);
+    };
 
-      console.log("\n user: ", user);
-      console.log("router: ", router);
-      console.log("ready: " + ready + "\n");
+    checkUser();
+  }, [user, ready, router]);
 
+  // A useEffect that fetches users only when the connected user
+  // was correctly checked
+  useEffect(() => {
+    const fetchUsers = async () => {
       setIsLoading(true);
       try {
         const foundRandomUsers = await getRandomUsers(false, 20, jwt);
         if (!foundRandomUsers.success) throw foundRandomUsers.error;
 
         setUsers(foundRandomUsers.data);
+        // TODO: Remove this log in production
         console.log("-------USER DATA -------");
         console.log(foundRandomUsers.data);
       } catch (error) {
@@ -82,20 +91,18 @@ export default function Matching() {
       }
     };
 
-    fetchUsers();
-  }, [user, ready]);
+    if (wasUserChecked) fetchUsers();
+  }, [wasUserChecked]);
 
   const currentUser = users[currentUserIndex];
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;
 
-    const jwt = await getAccessToken();
-
     try {
       const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
 
-      if (!partialMatch.success && partialMatch.error.code !== "PGRST116") throw new Error(partialMatch.error);
+      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
       console.log(partialMatch.data);
 
       // If no partial match is found create one
