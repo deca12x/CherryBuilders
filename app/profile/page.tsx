@@ -12,10 +12,11 @@ import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { RefreshCcw } from "lucide-react";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import LoadingSpinner from "@/components/ui/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useRouter } from "next/navigation";
 import { getUser, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import { supabase } from "@/lib/supabase/supabase-client";
+import ErrorCard from "@/components/ui/error-card";
 
 const ProfilePage: React.FC = () => {
   const { user, ready, getAccessToken } = usePrivy();
@@ -225,11 +226,7 @@ const ProfilePage: React.FC = () => {
   };
 
   if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
-        An unexpected error occured, please try again!
-      </div>
-    );
+    return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
     return (
       <>

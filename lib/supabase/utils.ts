@@ -605,3 +605,125 @@ export const updateRequestMessage = async (
     error: undefined,
   };
 };
+
+/**
+ * A utility function that, given a code, retrieves a passcode item from the database
+ * @param code - The unique passcode's code
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getPasscodeByCode = async (
+  code: string,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/passcodes/${code}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function to update a passcode inside the database
+ * @param code - The passcode's code
+ * @param userAddress - The address of the user that will be associated with the passcode
+ * @param consumedValue - The boolean value that must be set in the database record
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const updatePasscodeByCode = async (
+  code: string,
+  userAddress: string,
+  consumedValue: boolean,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/passcodes/${code}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userAddress,
+      consumedValue: consumedValue.toString(),
+    }),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok)
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+
+  return {
+    success: true,
+    data: null,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that, given an event slug, retrieves the corresponding event item from the database
+ * @param eventSlug - The event's slug
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getEventBySlug = async (
+  eventSlug: string,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/events/${eventSlug}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};

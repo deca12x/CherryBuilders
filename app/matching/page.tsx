@@ -9,7 +9,7 @@ import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import LoadingSpinner from "@/components/ui/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import {
   createChat,
   createMatch,
@@ -20,6 +20,7 @@ import {
   updateMatch,
 } from "@/lib/supabase/utils";
 import { cn } from "@/lib/utils";
+import ErrorCard from "@/components/ui/error-card";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -376,11 +377,7 @@ export default function Matching() {
   );
 
   if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
-        An unexpected error occured, please try again!
-      </div>
-    );
+    return <ErrorCard />;
   } else if (user && address && ready) {
     return (
       <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">

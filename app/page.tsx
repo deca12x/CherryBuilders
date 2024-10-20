@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { getUser } from "@/lib/supabase/utils";
+import ErrorCard from "@/components/ui/error-card";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -44,16 +45,12 @@ export default function Home() {
   }, [address, router, user, ready]);
 
   if (error) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-background">
-        <div className="text-primary text-2xl">An unexpected error occured, please try again!</div>
-      </main>
-    );
+    return <ErrorCard />;
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-background">
-      <Card className="sm:max-w-xl">
+    <main className="flex min-h-screen flex-col items-center justify-center sm:p-24 p-3 bg-background">
+      <Card className="w-full max-w-[90vw] sm:max-w-xl">
         <CardContent className="pt-6">
           <h1 className={`text-3xl font-bold text-center text-primary ${k2d.className}`}>Welcome to</h1>
           <h1 className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}>Cherry 🍒</h1>

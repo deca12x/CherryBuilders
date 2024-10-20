@@ -1,10 +1,11 @@
 "use client";
 import ChatParentNoChat from "@/components/chat/ChatParentNoChat";
 import { usePrivy } from "@privy-io/react-auth";
-import LoadingSpinner from "@/components/ui/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/supabase/utils";
+import ErrorCard from "@/components/ui/error-card";
 
 export default function ChatUI() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -45,11 +46,7 @@ export default function ChatUI() {
   }, [user, ready, router]);
 
   if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
-        An unexpected error occured, please try again!
-      </div>
-    );
+    return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
     return <ChatParentNoChat userAddress={address as string} authToken={jwt} />;
   } else {
