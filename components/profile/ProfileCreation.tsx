@@ -53,7 +53,7 @@ const ProfileCreation: React.FC = () => {
       const token = await getAccessToken();
       setJwt(token);
 
-      const { success, data, error } = await getUser(address, jwt);
+      const { success, data, error } = await getUser(address, token);
 
       // If an error occurs, set the error state to true
       // if the user is found redirect them to the matching page
