@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, { params: { code } }: { params: { co
 }
 
 export async function PUT(req: NextRequest, { params: { code } }: { params: { code: string } }) {
-  const { consumedValue, userAddress } = await req.json();
+  const { consumedValue, userAddress, eventSlug } = await req.json();
 
   if (!code || !consumedValue || !userAddress) {
     return NextResponse.json({ error: "Incorrect payload format" }, { status: 400 });
@@ -40,12 +40,22 @@ export async function PUT(req: NextRequest, { params: { code } }: { params: { co
   const consumed = consumedValue === "true";
 
   try {
-    const { error } = await supabase
+    const { error: passcodeError } = await supabase
       .from("passcodes")
-      .update({ consumed: consumed, user_address: userAddress })
+      .update({
+        consumed: consumed,
+        user_address: userAddress,
+        updated_at: new Date().toISOString(), // Update the updated_at field with UTC time
+      })
       .eq("code", code);
 
-    if (error) throw error;
+    if (passcodeError) throw passcodeError;
+
+    const { error: relTableError } = await supabase
+      .from("users_events_rel")
+      .insert([{ event_slug: eventSlug, user_address: userAddress }]);
+
+    if (relTableError) throw relTableError;
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

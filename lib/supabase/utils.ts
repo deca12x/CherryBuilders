@@ -650,6 +650,7 @@ export const getPasscodeByCode = async (
  * A utility function to update a passcode inside the database
  * @param code - The passcode's code
  * @param userAddress - The address of the user that will be associated with the passcode
+ * @param eventSlug - The event's slug for the creation of a record in the users_events_rel table
  * @param consumedValue - The boolean value that must be set in the database record
  * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
@@ -657,6 +658,7 @@ export const getPasscodeByCode = async (
 export const updatePasscodeByCode = async (
   code: string,
   userAddress: string,
+  eventSlug: string,
   consumedValue: boolean,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
@@ -668,6 +670,7 @@ export const updatePasscodeByCode = async (
     },
     body: JSON.stringify({
       userAddress,
+      eventSlug,
       consumedValue: consumedValue.toString(),
     }),
   });

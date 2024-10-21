@@ -42,7 +42,7 @@ const ProfileCreation: React.FC = () => {
   const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
 
   const passcode = searchParams.get("passcode");
-  const eventSlug = searchParams.get("event_slug");
+  const eventSlug = searchParams.get("event-slug");
 
   const address = user?.wallet?.address;
 
@@ -153,7 +153,7 @@ const ProfileCreation: React.FC = () => {
         variant: "default",
       });
       if (passcode && eventSlug) {
-        router.push(`/verify/event?passcode=${passcode}&event_slug=${eventSlug}`);
+        router.push(`/verify/event?passcode=${passcode}&event-slug=${eventSlug}`);
       } else {
         router.push("/matching");
       }

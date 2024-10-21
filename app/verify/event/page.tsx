@@ -31,7 +31,7 @@ export default function Component() {
 
   const address = user?.wallet?.address;
   const passcode = searchParams.get("passcode");
-  const eventSlug = searchParams.get("event_slug");
+  const eventSlug = searchParams.get("event-slug");
 
   useEffect(() => {
     const fetchPasscodeAndEvent = async () => {
@@ -107,7 +107,7 @@ export default function Component() {
         setIsLoading(false);
         return;
       } else if (!data) {
-        router.push(`/profile/creation?passcode=${passcode}&event_slug=${eventSlug}`);
+        router.push(`/profile/creation?passcode=${passcode}&event-slug=${eventSlug}`);
         return;
       } else {
         setWasUserChecked(true);
@@ -119,10 +119,10 @@ export default function Component() {
 
   // A function to handle the verification of the passcode
   const handleVerify = async () => {
-    if (!passcode || !address || !jwt) return;
+    if (!passcode || !eventSlug || !address || !jwt) return;
     setIsVerifying(true);
 
-    const { error } = await updatePasscodeByCode(passcode, address, true, jwt);
+    const { error } = await updatePasscodeByCode(passcode, address, eventSlug, true, jwt);
 
     if (error) {
       setError(true);
