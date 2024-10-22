@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
 import { isApiKeyModeValid } from "./utils";
-import { ApiKey, HttpMethod } from "./types";
+import { HttpMethod } from "./types";
 import { supabase } from "../supabase/supabase-server";
-import { PostgrestError } from "@supabase/supabase-js";
+import { ApiKeyType } from "../supabase/types";
 
 /**
+ * A function that creates an API request log in the database
  * @param keyId - The ID of the API key
  * @param path - The path of the request
  * @param method - The HTTP method of the request
@@ -22,6 +23,7 @@ export const createApiKeyLog = async (keyId: number, path: string, method: HttpM
 };
 
 /**
+ * A function that validates an API key
  * @param req - The NextRequest object
  * @param expected_owner - The expected owner of the API key
  * @returns An object containing the API key and whether it is valid
@@ -29,7 +31,7 @@ export const createApiKeyLog = async (keyId: number, path: string, method: HttpM
 export const validateApiKey = async (
   req: NextRequest,
   expected_owner: string
-): Promise<{ apiKey: ApiKey | null; valid: boolean }> => {
+): Promise<{ apiKey: ApiKeyType | null; valid: boolean }> => {
   try {
     // Get the API key from the headers and check if it exists
     const apiKey = req.headers.get("x-api-key");
@@ -42,11 +44,7 @@ export const validateApiKey = async (
     }
 
     // Check if the API key exists in the database
-    const { data: keyData, error: keyError } = await supabase
-      .from("api_keys")
-      .select("*")
-      .eq("key", apiKey)
-      .single();
+    const { data: keyData, error: keyError } = await supabase.from("api_keys").select("*").eq("key", apiKey).single();
 
     // Get the HTTP method of the request
     const method = req.method as HttpMethod;
