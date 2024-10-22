@@ -139,6 +139,18 @@ export default function Component() {
     setIsVerifying(false);
   };
 
+  // A button component to redirect the user to the matching page
+  const RedirectButton = ({ text }: { text: string }) => {
+    return (
+      <button
+        className="flex items-center justify-center bg-primary py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
+        onClick={() => router.push("/matching")}
+      >
+        {text}
+      </button>
+    );
+  };
+
   if (error) {
     return <ErrorCard />;
   }
@@ -173,9 +185,15 @@ export default function Component() {
               <div className="text-center space-y-4">
                 <h1 className={`text-3xl font-bold text-primary ${k2d.className}`}>Passcode Already Used</h1>
                 {passcodeUsedByAnotherUser ? (
-                  <p className="text-muted-foreground">{"This passcode has been used already by someone else :("}</p>
+                  <div className="flex flex-col justify-center items-center sm:mt-9 mt-7 gap-3">
+                    <p className="text-muted-foreground">{"This passcode has been used already by someone else :("}</p>
+                    <RedirectButton text="Start Matching" />
+                  </div>
                 ) : (
-                  <p className="text-muted-foreground">{"You have already used this passcode, you're in! :)"}</p>
+                  <div className="flex flex-col justify-center items-center sm:mt-9 mt-7 gap-3">
+                    <p className="text-muted-foreground">{"You have already used this passcode, you're in! :)"}</p>
+                    <RedirectButton text="Start Matching" />
+                  </div>
                 )}
               </div>
             ) : (
@@ -186,12 +204,15 @@ export default function Component() {
                 <h1 className={`text-4xl sm:text-5xl font-bold text-center text-primary-foreground mt-2 ${k2d.className}`}>
                   {eventName}
                 </h1>
-                <div className="flex flex-col justify-center items-center mt-7 gap-3">
-                  {successfulVerification ? (
+                {successfulVerification ? (
+                  <div className="flex flex-col justify-center items-center mt-7 gap-3">
                     <h1 className={`text-2xl font-bold text-center text-green-500 ${k2d.className}`}>
                       Congrats you have verified your attendance!
                     </h1>
-                  ) : (
+                    <RedirectButton text="Start Matching" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col justify-center items-center sm:mt-9 mt-7 gap-3">
                     <button
                       className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-white py-3 px-10 rounded-lg text-lg font-semibold shadow-md"
                       onClick={handleVerify}
@@ -199,8 +220,8 @@ export default function Component() {
                     >
                       Verify
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </>
             )
           ) : (
