@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,11 @@ import { UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getUser, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import ErrorCard from "../ui/error-card";
+import SearchParamsComponent from "../searchparams";
 
 const ProfileCreation: React.FC = () => {
   const { user, ready, getAccessToken } = usePrivy();
@@ -36,7 +37,6 @@ const ProfileCreation: React.FC = () => {
   const [error, setError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const availableTags: UserTag[] = [
@@ -48,8 +48,13 @@ const ProfileCreation: React.FC = () => {
     "Business dev",
   ];
 
-  const passcode = searchParams.get("passcode");
-  const eventSlug = searchParams.get("event-slug");
+  const [passcode, setPasscode] = useState<string | null>(null);
+  const [eventSlug, setEventSlug] = useState<string | null>(null);
+
+  const handleParamsChange = (passcode: string | null, eventSlug: string | null) => {
+    setPasscode(passcode);
+    setEventSlug(eventSlug);
+  };
 
   const address = user?.wallet?.address;
 
@@ -226,6 +231,9 @@ const ProfileCreation: React.FC = () => {
         animate="visible"
         variants={containerVariants}
       >
+        <Suspense fallback={<LoadingSpinner />}>
+          <SearchParamsComponent onParamsChange={handleParamsChange} />
+        </Suspense>
         <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
           <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
             Create Your Profile

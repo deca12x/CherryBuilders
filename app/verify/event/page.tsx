@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { K2D } from "next/font/google";
 import { Card, CardContent } from "@/components/ui/card";
 import ConnectButton from "@/components/ui/connectButton";
@@ -9,13 +9,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import { getEventBySlug, getPasscodeByCode, getUser, updatePasscodeByCode } from "@/lib/supabase/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorCard from "@/components/ui/error-card";
+import SearchParamsComponent from "@/components/searchparams";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 export default function Component() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [error, setError] = useState(false);
   const [invalidPasscode, setInvalidPasscode] = useState(false);
@@ -30,8 +30,13 @@ export default function Component() {
   const [successfulVerification, setSuccessfulVerification] = useState(false);
 
   const address = user?.wallet?.address;
-  const passcode = searchParams.get("passcode");
-  const eventSlug = searchParams.get("event-slug");
+  const [passcode, setPasscode] = useState<string | null>(null);
+  const [eventSlug, setEventSlug] = useState<string | null>(null);
+
+  const handleParamsChange = (passcode: string | null, eventSlug: string | null) => {
+    setPasscode(passcode);
+    setEventSlug(eventSlug);
+  };
 
   useEffect(() => {
     const fetchPasscodeAndEvent = async () => {
@@ -142,6 +147,9 @@ export default function Component() {
     <main className="flex min-h-screen flex-col items-center justify-center sm:p-24 p-3 bg-background">
       <Card className="w-full max-w-[90vw] sm:max-w-xl">
         <CardContent className="pt-6 pb-8">
+          <Suspense fallback={<Skeleton className="h-8 w-3/4 mx-auto" />}>
+            <SearchParamsComponent onParamsChange={handleParamsChange} />
+          </Suspense>
           {user && address && ready && jwt ? (
             isLoading ? (
               <div className="space-y-4">
