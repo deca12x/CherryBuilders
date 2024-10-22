@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
 
     // If the passcode already exists, return it
     if (passCodeFetchData) {
-      return NextResponse.json({ passcode: passCodeFetchData.code, event_slug: eventSlug }, { status: 200 });
+      return NextResponse.json(
+        { passcode: passCodeFetchData.code, event_slug: eventSlug, consumed: passCodeFetchData.consumed },
+        { status: 200 }
+      );
     }
 
     // If the passcode doesn't exist, create a new one
@@ -56,7 +59,7 @@ export async function GET(req: NextRequest) {
       throw passcodeCreationError;
     }
 
-    return NextResponse.json({ passcode: uuid, event_slug: eventSlug }, { status: 200 });
+    return NextResponse.json({ passcode: uuid, event_slug: eventSlug, consumed: false }, { status: 200 });
   } catch (error) {
     console.error("Internal Server Error: ", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
