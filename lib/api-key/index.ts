@@ -42,7 +42,7 @@ export const validateApiKey = async (
     }
 
     // Check if the API key exists in the database
-    const { data: keyData, error: keyError }: { data: ApiKey | null; error: PostgrestError | null } = await supabase
+    const { data: keyData, error: keyError } = await supabase
       .from("api_keys")
       .select("*")
       .eq("key", apiKey)
