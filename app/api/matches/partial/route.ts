@@ -18,14 +18,7 @@ export async function GET(req: NextRequest) {
       .eq("user_1", user_1_address)
       .or("matched.is.null,matched.eq.false");
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        // No partial match found in database
-        console.log("No partial match found in database");
-        return NextResponse.json({ data }, { status: 404 });
-      }
-      throw error;
-    }
+    if (error) throw error;
 
     if (!data) {
       console.log("No partial match found in database");

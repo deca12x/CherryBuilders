@@ -7,15 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { UserTag, UserType } from "@/lib/types";
+import { UserTag, UserType } from "@/lib/supabase/types";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { RefreshCcw } from "lucide-react";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import LoadingSpinner from "@/components/ui/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useRouter } from "next/navigation";
 import { getUser, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
 import { supabase } from "@/lib/supabase/supabase-client";
+import ErrorCard from "@/components/ui/error-card";
 
 const ProfilePage: React.FC = () => {
   const { user, ready, getAccessToken } = usePrivy();
@@ -29,7 +30,6 @@ const ProfilePage: React.FC = () => {
     other_link: "",
     profile_pictures: [],
     evm_address: user?.wallet?.address || "",
-    verified: false,
     talent_score: 0,
   });
   const [wasUserChecked, setWasUserChecked] = useState(false);
@@ -42,7 +42,14 @@ const ProfilePage: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
 
-  const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
+  const availableTags: UserTag[] = [
+    "Frontend dev",
+    "Backend dev",
+    "Solidity dev",
+    "Designer",
+    "Talent scout",
+    "Business dev",
+  ];
 
   const address = user?.wallet?.address;
 
@@ -225,11 +232,7 @@ const ProfilePage: React.FC = () => {
   };
 
   if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
-        An unexpected error occured, please try again!
-      </div>
-    );
+    return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
     return (
       <>

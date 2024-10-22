@@ -21,9 +21,7 @@ export const verifyAuthToken = async (
   while (retries < 5) {
     try {
       const verifiedClaims = await privy.verifyAuthToken(authToken);
-      //console.log("Verified claims: ", verifiedClaims);
       const user = await privy.getUserById(verifiedClaims.userId);
-      //console.log("User: ", user);
       return {
         isValid: true,
         user,

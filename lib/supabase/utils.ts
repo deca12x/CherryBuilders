@@ -1,4 +1,4 @@
-import { ChatMessage, UserType } from "../types";
+import { ChatMessageType, UserType } from "./types";
 
 /**
  * A utility function to get a specific partial match from the database
@@ -330,22 +330,36 @@ export const uploadProfilePicture = async (
 };
 
 /**
- * A utility function that fetches a given number of random users from the database
- * @param onlyLannaHackers - Whether to fetch only lanna hackers or not
+ * A utility function that fetches a given number of filtered users from the database
+ * @param tags - The tags that the users must have
+ * @param events - The events that the users must have attended
+ * @param offset - The number of users that must be skipped. It's used for pagination
  * @param limit - The number of users that must be fetched
  * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
-export const getRandomUsers = async (
-  onlyLannaHackers: boolean,
+export const getFilteredUsers = async (
+  tags: string[],
+  events: string[],
+  offset: number,
   limit: number,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/users/get-random?onlyLannaHackers=${onlyLannaHackers}&limit=${limit}`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  // Create a search param string from the tags and events and encodes it
+  // e.g. solidity%20dev,backend%20dev and event_1,event_2,event_3
+  const eventsSearchParam = events.map(encodeURIComponent).join(",");
+  const tagsSearchParam = tags.map(encodeURIComponent).join(",");
+
+  console.log(eventsSearchParam, tagsSearchParam);
+
+  const response = await fetch(
+    `/api/users/get-by-filter?limit=${limit}&offset=${offset}&tags=${tagsSearchParam}&events=${eventsSearchParam}`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   const body = await response.json();
 
@@ -538,7 +552,7 @@ export const getLastChatMessage = async (
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMessage = async (
-  newMessage: ChatMessage,
+  newMessage: ChatMessageType,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch("/api/messages", {
@@ -602,6 +616,131 @@ export const updateRequestMessage = async (
   return {
     success: true,
     data: null,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that, given a code, retrieves a passcode item from the database
+ * @param code - The unique passcode's code
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getPasscodeByCode = async (
+  code: string,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/passcodes/${code}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function to update a passcode inside the database
+ * @param code - The passcode's code
+ * @param userAddress - The address of the user that will be associated with the passcode
+ * @param eventSlug - The event's slug for the creation of a record in the users_events_rel table
+ * @param consumedValue - The boolean value that must be set in the database record
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const updatePasscodeByCode = async (
+  code: string,
+  userAddress: string,
+  eventSlug: string,
+  consumedValue: boolean,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/passcodes/${code}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userAddress,
+      eventSlug,
+      consumedValue: consumedValue.toString(),
+    }),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok)
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+
+  return {
+    success: true,
+    data: null,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that, given an event slug, retrieves the corresponding event item from the database
+ * @param eventSlug - The event's slug
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getEventBySlug = async (
+  eventSlug: string,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/events/${eventSlug}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
     error: undefined,
   };
 };

@@ -4,7 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { getUser } from "@/lib/supabase/utils";
-import LoadingSpinner from "@/components/ui/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
+import ErrorCard from "@/components/ui/error-card";
 
 export default function ChatUI() {
   const params = useParams();
@@ -47,11 +48,7 @@ export default function ChatUI() {
   }, [user, ready, router]);
 
   if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
-        An unexpected error occured, please try again!
-      </div>
-    );
+    return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
     return <ChatParent userAddress={address as string} chatId={chatId} authToken={jwt} />;
   } else {

@@ -7,8 +7,8 @@ export const config = {
 };
 
 export async function middleware(req: NextRequest) {
-  if (req.url.includes("/api/public")) {
-    // If the request is for a public endpoint, continue processing the request
+  if (req.url.includes("/api/public") || req.url.includes("/api/external")) {
+    // If the request is for a public or external endpoint, continue processing the request
     return NextResponse.next();
   }
 
@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
     // If authentication is successful, continue processing the request
     const response = NextResponse.next();
     // privy embedded wallet address
-    const address = user?.wallet?.address.toLowerCase();
+    const address = user?.wallet?.address;
     response.headers.set("x-address", address!);
     return response;
   } catch (error: any) {

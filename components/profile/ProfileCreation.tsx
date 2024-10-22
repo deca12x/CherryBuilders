@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { UserTag, UserType } from "@/lib/types";
+import { UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getUser, updateUser, uploadProfilePicture } from "@/lib/supabase/utils";
-import LoadingSpinner from "@/components/ui/loadingSpinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
+import ErrorCard from "../ui/error-card";
 
 const ProfileCreation: React.FC = () => {
   const { user, ready, getAccessToken } = usePrivy();
@@ -35,9 +36,20 @@ const ProfileCreation: React.FC = () => {
   const [error, setError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
+  const availableTags: UserTag[] = [
+    "Frontend dev",
+    "Backend dev",
+    "Solidity dev",
+    "Designer",
+    "Talent scout",
+    "Business dev",
+  ];
+
+  const passcode = searchParams.get("passcode");
+  const eventSlug = searchParams.get("event-slug");
 
   const address = user?.wallet?.address;
 
@@ -147,7 +159,11 @@ const ProfileCreation: React.FC = () => {
         description: "Profile saved successfully.",
         variant: "default",
       });
-      router.push("/matching");
+      if (passcode && eventSlug) {
+        router.push(`/verify/event?passcode=${passcode}&event-slug=${eventSlug}`);
+      } else {
+        router.push("/matching");
+      }
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -201,11 +217,7 @@ const ProfileCreation: React.FC = () => {
   };
 
   if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-primary text-2xl">
-        An unexpected error occured, please try again!
-      </div>
-    );
+    return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
     return (
       <motion.main
