@@ -1,4 +1,4 @@
-import { ChatMessage, UserType } from "../types";
+import { ChatMessageType, UserType } from "./types";
 
 /**
  * A utility function to get a specific partial match from the database
@@ -330,22 +330,36 @@ export const uploadProfilePicture = async (
 };
 
 /**
- * A utility function that fetches a given number of random users from the database
- * @param onlyLannaHackers - Whether to fetch only lanna hackers or not
+ * A utility function that fetches a given number of filtered users from the database
+ * @param tags - The tags that the users must have
+ * @param events - The events that the users must have attended
+ * @param offset - The number of users that must be skipped. It's used for pagination
  * @param limit - The number of users that must be fetched
  * @param jwt - The jwt needed to authotize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
-export const getRandomUsers = async (
-  onlyLannaHackers: boolean,
+export const getFilteredUsers = async (
+  tags: string[],
+  events: string[],
+  offset: number,
   limit: number,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/users/get-random?onlyLannaHackers=${onlyLannaHackers}&limit=${limit}`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  // Create a search param string from the tags and events and encodes it
+  // e.g. solidity%20dev,backend%20dev and event_1,event_2,event_3
+  const eventsSearchParam = events.map(encodeURIComponent).join(",");
+  const tagsSearchParam = tags.map(encodeURIComponent).join(",");
+
+  console.log(eventsSearchParam, tagsSearchParam);
+
+  const response = await fetch(
+    `/api/users/get-by-filter?limit=${limit}&offset=${offset}&tags=${tagsSearchParam}&events=${eventsSearchParam}`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   const body = await response.json();
 
@@ -538,7 +552,7 @@ export const getLastChatMessage = async (
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMessage = async (
-  newMessage: ChatMessage,
+  newMessage: ChatMessageType,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch("/api/messages", {

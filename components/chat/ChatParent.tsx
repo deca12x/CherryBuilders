@@ -6,16 +6,17 @@ import ChatSidebar from "@/components/chat/ChatSideBar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import { supabase } from "@/lib/supabase/supabase-client";
-import { ChatMessage, ChatParentProps, User } from "@/lib/types";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
 import { createMessage, getChatFromId, getChatMessages, getUser } from "@/lib/supabase/utils";
+import { ChatParentProps, User } from "@/lib/types";
+import { ChatMessageType } from "@/lib/supabase/types";
 
 export default function ChatParent({ userAddress, chatId, authToken }: ChatParentProps) {
   const [message, setMessage] = useState("");
-  const [currentChat, setCurrentChat] = useState<ChatMessage[]>([]);
+  const [currentChat, setCurrentChat] = useState<ChatMessageType[]>([]);
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const channelRef = useRef<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -90,7 +91,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
       console.error("Error fetching messages:", foundMessages.error);
     } else {
       console.log("Fetched messages:", foundMessages.data);
-      setCurrentChat(foundMessages.data as ChatMessage[]);
+      setCurrentChat(foundMessages.data as ChatMessageType[]);
     }
   };
 
@@ -109,7 +110,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
         (payload: any) => {
           console.log("Received change from Supabase:", payload);
           if (payload.eventType === "INSERT") {
-            const newMessage = payload.new as ChatMessage;
+            const newMessage = payload.new as ChatMessageType;
             console.log("Processed new message:", newMessage);
             if (newMessage.sender !== userAddress) {
               console.log("Updating chat with new message from other user:", newMessage);
@@ -138,7 +139,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
   const handleSend = async (messageText: string, type?: string, requestId?: string) => {
     if (messageText.trim()) {
       console.log("Sending message:", messageText, "Type:", type, "RequestId:", requestId);
-      const newMessage: ChatMessage = {
+      const newMessage: ChatMessageType = {
         id: Date.now(),
         sender: userAddress,
         message: messageText.trim(),

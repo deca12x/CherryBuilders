@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 
 const eventSlug = "edge_city_lanna_2024";
+const apiKeyExpectedOwner = "cursive";
 
 export async function GET(req: NextRequest) {
   const userIdentifier = req.nextUrl.searchParams.get("user-identifier");
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const { apiKey: key, valid } = await validateApiKey(req, "cursive");
+    const { apiKey: key, valid } = await validateApiKey(req, apiKeyExpectedOwner);
 
     // If the API key is invalid, return a 401
     if (!valid || !key) {

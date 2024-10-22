@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { UserTag, UserType } from "@/lib/types";
+import { UserTag, UserType } from "@/lib/supabase/types";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { RefreshCcw } from "lucide-react";
 import ConnectButton from "@/components/ui/connectButton";
@@ -30,7 +30,6 @@ const ProfilePage: React.FC = () => {
     other_link: "",
     profile_pictures: [],
     evm_address: user?.wallet?.address || "",
-    verified: false,
     talent_score: 0,
   });
   const [wasUserChecked, setWasUserChecked] = useState(false);
@@ -43,7 +42,14 @@ const ProfilePage: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
 
-  const availableTags: UserTag[] = ["frontend dev", "backend dev", "solidity dev", "ui/ux dev"];
+  const availableTags: UserTag[] = [
+    "Frontend dev",
+    "Backend dev",
+    "Solidity dev",
+    "Designer",
+    "Talent scout",
+    "Business dev",
+  ];
 
   const address = user?.wallet?.address;
 

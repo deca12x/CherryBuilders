@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
     // If authentication is successful, continue processing the request
     const response = NextResponse.next();
     // privy embedded wallet address
-    const address = user?.wallet?.address.toLowerCase();
+    const address = user?.wallet?.address;
     response.headers.set("x-address", address!);
     return response;
   } catch (error: any) {
