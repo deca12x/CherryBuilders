@@ -9,8 +9,9 @@ export async function POST(req: NextRequest, { params: { address } }: { params: 
   if (!address || !fileName || !file) {
     return NextResponse.json({ error: "Incorrect payload format" }, { status: 400 });
   }
-
   
+
+
   try {
     const { error } = await supabase.storage.from("profile-pictures").upload(`${address}/${fileName}`, file);
 
