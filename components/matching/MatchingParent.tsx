@@ -31,12 +31,12 @@ import ProfileCardImage from "@/components/matching/ProfileCardImage";
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 interface MatchingContentProps {
-    jwt: string | null;
+  jwt: string | null;
   address: string;
 }
 
 export default function MatchingParent({ jwt, address }: MatchingContentProps) {
-    const [users, setUsers] = useState<UserType[]>([]);
+  const [users, setUsers] = useState<UserType[]>([]);
   const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
@@ -77,8 +77,6 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
     },
   });
 
-
-
   // A useEffect that fetches users only when the connected user
   useEffect(() => {
     const fetchUsers = async () => {
@@ -102,7 +100,6 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
 
     fetchUsers();
   }, [filters, jwt]);
-
 
   const currentUser = users[currentUserIndex];
 
@@ -136,10 +133,8 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
         const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
         if (!specificChat.success) throw new Error(specificChat.error);
 
-        // SEND EMAIL NOTIFICATIONS TO MATCHES 
+        // SEND EMAIL NOTIFICATIONS TO MATCHES
         // CREATE A sendEmailNotification FUNCTION
-
-
 
         setIsMatchModalOpen(true);
         setIsProfilesEndedModalOpen(false);
@@ -256,13 +251,7 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
         </div>
 
         {/* Buttons */}
-        {users.length > 0 && (
-          <ActionButtons
-            onReject={handleReject}
-            onAccept={handleAccept}
-            isLoading={isLoading}
-          />
-        )}
+        {users.length > 0 && <ActionButtons onReject={handleReject} onAccept={handleAccept} isLoading={isLoading} />}
 
         {/* Navigation */}
         <BottomNavigationBar />
