@@ -1,5 +1,5 @@
-'use client'
-import React, { useRef, useState } from "react";
+"use client";
+import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabase/supabase-client";
 import { RefreshCcw, Info } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { ProfileQuery } from "@/lib/airstack/types";
 
 interface ProfileFormProps {
   initialData: UserType;
@@ -20,6 +21,7 @@ interface ProfileFormProps {
   showTalentScore?: boolean;
   jwt: string | null;
   showPrivacyInfo?: boolean;
+  userProfile?: ProfileQuery | null;
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -28,6 +30,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   submitButtonText,
   showTalentScore = false,
   jwt,
+  userProfile,
 }) => {
   const [profileData, setProfileData] = useState<UserType>(initialData);
   const [isUploading, setIsUploading] = useState(false);
@@ -46,14 +49,34 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     "Business dev",
   ];
 
+  useEffect(() => {
+    if (!userProfile) return;
+
+    toast({
+      title: "Success",
+      description: "Found a Farcaster profile for this address!",
+      variant: "default",
+    });
+
+    // I'm sure that userProfile.Socials!.Social![0] exists (check function in /lib/airstack/index.ts)
+    const user = userProfile.Socials!.Social![0];
+
+    console.log("User profile data:", user);
+
+    setProfileData((prev) => ({
+      ...prev,
+      name: user.profileName || "",
+      bio: user.profileBio || "",
+      profile_pictures: user.profileImage ? [user.profileImage] : [],
+    }));
+  }, [userProfile, toast]);
+
   const handleChange = (field: keyof UserType, value: string | UserTag[] | string[] | boolean) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleTagToggle = (tag: UserTag) => {
-    const newTags = profileData.tags.includes(tag)
-      ? profileData.tags.filter((t) => t !== tag)
-      : [...profileData.tags, tag];
+    const newTags = profileData.tags.includes(tag) ? profileData.tags.filter((t) => t !== tag) : [...profileData.tags, tag];
     handleChange("tags", newTags);
   };
 
@@ -199,22 +222,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               </button>
             </motion.div>
           ))}
-          <Button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="h-24 w-24"
-          >
+          <Button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="h-24 w-24">
             {isUploading ? "Uploading..." : "Insert image"}
           </Button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            multiple
-            className="hidden"
-          />
+          <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" multiple className="hidden" />
         </div>
       </motion.div>
 
@@ -280,17 +291,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         </motion.div>
       )}
 
-
       <motion.div variants={itemVariants}>
         <Label className="text-sm font-medium mb-2 block">Tags</Label>
         <div className="grid grid-cols-2 gap-2">
           {availableTags.map((tag) => (
             <div key={tag} className="flex items-center space-x-2">
-              <Checkbox
-                id={tag}
-                checked={profileData.tags.includes(tag)}
-                onCheckedChange={() => handleTagToggle(tag)}
-              />
+              <Checkbox id={tag} checked={profileData.tags.includes(tag)} onCheckedChange={() => handleTagToggle(tag)} />
               <label htmlFor={tag} className="text-sm cursor-pointer">
                 {tag}
               </label>
@@ -326,7 +332,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         />
       </motion.div>
 
-      
       <motion.div variants={itemVariants} className="space-y-4">
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -335,8 +340,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             onCheckedChange={(checked) => handleChange("emailNotifications", checked)}
           />
           <label htmlFor="emailNotifications" className="text-sm">
-            I agree to receive essential notifications about matches and messages
-            (required for core app functionality)
+            I agree to receive essential notifications about matches and messages (required for core app functionality)
           </label>
         </div>
         <div className="flex items-center space-x-2">
@@ -346,8 +350,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             onCheckedChange={(checked) => handleChange("emailMarketing", checked)}
           />
           <label htmlFor="emailMarketing" className="text-sm">
-            I would like to receive marketing emails about new features and special offers
-            (optional)
+            I would like to receive marketing emails about new features and special offers (optional)
           </label>
         </div>
       </motion.div>

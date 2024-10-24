@@ -1,35 +1,37 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { UserType } from "@/lib/supabase/types";
 import ConnectButton from "@/components/ui/connectButton";
 import { useRouter } from "next/navigation";
 import { updateUser } from "@/lib/supabase/utils";
-import ProfileForm from './ProfileForm';
+import ProfileForm from "./ProfileForm";
+import { ProfileQuery } from "@/lib/airstack/types";
 
 interface ProfileCreationProps {
   jwt: string | null;
   address: string;
+  userProfile: ProfileQuery | null;
 }
 
-const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
+const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userProfile }) => {
+  const { toast } = useToast();
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
+    profile_pictures: [],
     tags: [],
     github_link: "",
     twitter_link: "",
     farcaster_link: "",
     other_link: "",
-    profile_pictures: [],
     evm_address: address,
     emailNotifications: false,
     emailMarketing: false,
   });
 
   const router = useRouter();
-  const { toast } = useToast();
 
   const handleSubmit = async (data: UserType) => {
     try {
@@ -75,15 +77,14 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
   return (
     <motion.main className="flex flex-col min-h-screen bg-background">
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-        <motion.h1 className="text-3xl font-bold text-primary mb-8">
-          Create Your Profile
-        </motion.h1>
+        <motion.h1 className="text-3xl font-bold text-primary mb-8">Create Your Profile</motion.h1>
         <ConnectButton />
         <ProfileForm
           initialData={profileData}
           onSubmit={handleSubmit}
           submitButtonText="Save & Continue"
           jwt={jwt}
+          userProfile={userProfile}
         />
       </div>
     </motion.main>
