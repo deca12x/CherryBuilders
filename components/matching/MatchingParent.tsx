@@ -136,6 +136,11 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
         const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
         if (!specificChat.success) throw new Error(specificChat.error);
 
+        // SEND EMAIL NOTIFICATIONS TO MATCHES 
+        // CREATE A sendEmailNotification FUNCTION
+
+
+
         setIsMatchModalOpen(true);
         setIsProfilesEndedModalOpen(false);
         setMatchedChatId(specificChat.data?.id);

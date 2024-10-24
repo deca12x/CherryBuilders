@@ -245,6 +245,12 @@ export const getChatsFromUserAddress = async (
   };
 };
 
+
+// SEND EMAIL NOTIFICATIONS TO MATCHES
+// CREATE A sendEmailNotification FUNCTION  
+// CREATE API ROUTE  /api/email/send-notification
+
+
 /**
  * A utility function to get a specific chat from the database
  * @param user_1_address - The address of the first user of the chat
