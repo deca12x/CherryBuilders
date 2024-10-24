@@ -22,6 +22,11 @@ import { cn } from "@/lib/utils";
 import ErrorCard from "@/components/ui/error-card";
 import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
+import ActionButtons from "@/components/matching/ActionButtons";
+import NoUsersFound from "@/components/matching/NoUsersFound";
+import ProfileCardSkeleton from "@/components/matching/ProfileCardSkeleton";
+import ProfileCardContent from "@/components/matching/ProfileCardContent";
+import ProfileCardImage from "@/components/matching/ProfileCardImage";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -230,71 +235,15 @@ export default function Matching() {
               )}
             </motion.div>
           ) : null}
-          <motion.div
-            key="1"
-            className="w-full"
-            initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
-            transition={{ type: "spring", duration: 0.55 }}
+          <ProfileCardImage
+            user={users[currentUserIndex] || null}
+            imageIndex={currentImageIndex}
+            isLoading={isLoading}
+            animateFrame={animateFrame}
+            onImagePrevious={handleImagePrevious}
+            onImageNext={handleImageNext}
             onAnimationComplete={() => setAnimateFrame(false)}
-          >
-            {/* Image */}
-            <div className="relative h-[400px]">
-              {isLoading ? (
-                <div className="w-full h-full bg-gray-300 animate-pulse"></div>
-              ) : user ? (
-                <>
-                  <img src={user.profile_pictures[imageIndex]} alt={user.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
-                    <div className="flex flex-col w-full p-2 gap-1">
-                      <h2 className={cn(`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`)}>
-                        <span className="mb-1">{user.name}</span>
-                      </h2>
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-2">
-                        {user.tags.map((tag: UserTag, index: number) => (
-                          <span
-                            key={index}
-                            className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm"
-                          >
-                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                          </span>
-                        ))}
-                        {user.events!.map((event) => {
-                          return (
-                            <span
-                              key={event.slug}
-                              className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm flex"
-                            >
-                              <CheckCircle2 className="mr-2 h-5 w-5" />
-                              <p className="font-bold">{event.name}</p>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : null}
-              <button
-                onClick={handleImagePrevious}
-                className="absolute left-0 top-0 bottom-0 w-1/2 flex items-center justify-start p-4 text-primary-foreground opacity-0 hover:opacity-100 transition-opacity"
-                aria-label="Previous image"
-                disabled={isLoading || !user}
-              >
-                <ChevronLeft size={40} />
-              </button>
-              <button
-                onClick={handleImageNext}
-                className="absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-end p-4 text-primary-foreground opacity-0 hover:opacity-100 transition-opacity"
-                aria-label="Next image"
-                disabled={isLoading || !user}
-              >
-                <ChevronRight size={40} />
-              </button>
-            </div>
-          </motion.div>
+          />
 
           {/* Content */}
           <motion.div
@@ -306,122 +255,15 @@ export default function Matching() {
             transition={{ type: "spring", duration: 0.7 }}
           >
             {isLoading ? (
-              <div className="flex flex-col p-4 gap-3">
-                {/* Stats Skeleton */}
-                <div className="flex flex-row gap-3">
-                  <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
-                    <div className="h-4 w-24 bg-gray-300 rounded mb-2"></div>
-                    <div className="h-4 w-16 bg-gray-300 rounded"></div>
-                  </div>
-                  <div className="flex flex-col items-center bg-card rounded-xl p-3">
-                    <div className="h-4 w-24 bg-gray-300 rounded mb-2"></div>
-                    <div className="h-4 w-16 bg-gray-300 rounded"></div>
-                  </div>
-                </div>
-                {/* Bio Skeleton */}
-                <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
-                  <div className="h-4 w-24 bg-gray-300 rounded mb-2"></div>
-                  <div className="h-4 w-full bg-gray-300 rounded mb-1"></div>
-                  <div className="h-4 w-full bg-gray-300 rounded mb-1"></div>
-                  <div className="h-4 w-3/4 bg-gray-300 rounded"></div>
-                </div>
-                {/* Links Skeleton */}
-                <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
-                  <div className="h-4 w-16 bg-gray-300 rounded mb-2"></div>
-                  <div className="flex justify-between sm:px-14">
-                    <div className="h-6 w-24 bg-gray-300 rounded"></div>
-                    <div className="h-6 w-24 bg-gray-300 rounded"></div>
-                  </div>
-                  <div className="flex justify-between sm:px-14">
-                    <div className="h-6 w-24 bg-gray-300 rounded"></div>
-                    <div className="h-6 w-24 bg-gray-300 rounded"></div>
-                  </div>
-                </div>
-              </div>
+              <ProfileCardSkeleton />
             ) : user ? (
-              <div className="flex flex-col p-4 gap-3">
-                {/* Filters button */}
-                <div className="flex justify-end items-center -my-1">
-                  <button
-                    className="flex justify-end items-center bg-card rounded-xl py-1.5 px-2"
-                    onClick={() => setIsFiltersModalOpen(true)}
-                  >
-                    <Filter className="mr-2 h-5 w-5" />
-                    Filters
-                  </button>
-                </div>
-
-                {/* Stats */}
-                <div className="w-full gap-3">
-                  {/* Talent score */}
-                  <div className="flex flex-col items-center bg-card rounded-xl p-3">
-                    <p className="font-bold text-foreground">Talent Score</p>
-                    <p className="text-muted-foreground">{user.talent_score ?? "N/A"}</p>
-                  </div>
-                </div>
-                {/* Bio */}
-                <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
-                  <p className="font-bold text-foreground">Who am I?</p>
-                  <p className="text-muted-foreground">{user.bio}</p>
-                </div>
-
-                {/* Links */}
-                {(user.twitter_link || user.github_link || user.farcaster_link || user.other_link) && (
-                  <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
-                    <p className="font-bold text-foreground">Links</p>
-                    <div className="grid grid-cols-2 gap-4 sm:px-14">
-                      {user.github_link && (
-                        <p className="text-muted-foreground flex items-center gap-2">
-                          <img height={26} width={26} src="/images/github.png" alt="github logo" />
-                          <a href={user.github_link} target="_blank" className="text-muted-foreground hover:underline">
-                            Github
-                          </a>
-                        </p>
-                      )}
-                      {user.twitter_link && (
-                        <p className="text-muted-foreground flex items-center gap-2">
-                          <img height={20} width={20} src="/images/x_logo.svg" alt="x logo" />
-                          <a href={user.twitter_link} target="_blank" className="text-muted-foreground hover:underline">
-                            Twitter
-                          </a>
-                        </p>
-                      )}
-                      {user.farcaster_link && (
-                        <p className="text-muted-foreground flex items-center gap-2">
-                          <img height={23} width={23} src="/images/farcaster.svg" alt="farcaster logo" />
-                          <a href={user.farcaster_link} target="_blank" className="text-muted-foreground hover:underline">
-                            Farcaster
-                          </a>
-                        </p>
-                      )}
-                      {user.other_link && (
-                        <p className="text-muted-foreground flex items-center gap-2">
-                          <Link size={24} />
-                          <a href={user.other_link} target="_blank" className="text-muted-foreground hover:underline">
-                            Other
-                          </a>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ProfileCardContent user={user} onOpenFilters={() => setIsFiltersModalOpen(true)} />
             ) : null}
           </motion.div>
         </AnimatePresence>
       </div>
     ) : (
-      <div className="flex flex-col gap-2 text-center justify-center items-center text-2xl font-bold w-full max-w-xl">
-        <span>It seems nobody is here 🤔</span>
-        <span className="text-xl">Why don't you to try to remove a filter or two?</span>
-        <button
-          className="flex justify-end items-center bg-card rounded-xl py-2 px-3 mt-2"
-          onClick={() => setIsFiltersModalOpen(true)}
-        >
-          <Filter className="mr-2 h-5 w-5" />
-          Filters
-        </button>
-      </div>
+      <NoUsersFound onOpenFilters={() => setIsFiltersModalOpen(true)} />
     );
 
   if (error) {
@@ -438,24 +280,11 @@ export default function Matching() {
 
         {/* Buttons */}
         {users.length > 0 && (
-          <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
-            <button
-              onClick={handleReject}
-              className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-              aria-label="Dislike"
-              disabled={isLoading}
-            >
-              <X size={24} />
-            </button>
-            <button
-              onClick={handleAccept}
-              className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
-              aria-label="Like"
-              disabled={isLoading}
-            >
-              <Heart size={24} />
-            </button>
-          </div>
+          <ActionButtons
+            onReject={handleReject}
+            onAccept={handleAccept}
+            isLoading={isLoading}
+          />
         )}
 
         {/* Navigation */}
