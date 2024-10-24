@@ -37,10 +37,8 @@ interface MatchingContentProps {
 
 export default function MatchingParent({ jwt, address }: MatchingContentProps) {
     const [users, setUsers] = useState<UserType[]>([]);
-  const { user, ready, getAccessToken } = usePrivy();
-  const router = useRouter();
+  const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
-  const [wasUserChecked, setWasUserChecked] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
