@@ -24,6 +24,8 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
     other_link: "",
     profile_pictures: [],
     evm_address: address,
+    emailNotifications: false,
+    emailMarketing: false,
   });
 
   const router = useRouter();

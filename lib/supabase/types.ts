@@ -16,6 +16,9 @@ export interface UserType {
   created_at?: string;
   updated_at?: string;
   events?: EventType[];
+  email?: string;
+  emailMarketing?: boolean;
+  emailNotifications?: boolean;
 }
 
 export interface ChatMessageType {

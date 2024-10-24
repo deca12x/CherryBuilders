@@ -9,8 +9,9 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Info } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface ProfileFormProps {
   initialData: UserType;
@@ -18,6 +19,7 @@ interface ProfileFormProps {
   submitButtonText: string;
   showTalentScore?: boolean;
   jwt: string | null;
+  showPrivacyInfo?: boolean;
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -33,6 +35,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const [updateTalentScoreLoading, setUpdateTalentScoreLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
 
   const availableTags: UserTag[] = [
     "Frontend dev",
@@ -43,7 +46,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     "Business dev",
   ];
 
-  const handleChange = (field: keyof UserType, value: string | UserTag[] | string[]) => {
+  const handleChange = (field: keyof UserType, value: string | UserTag[] | string[] | boolean) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -238,6 +241,23 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           value={profileData.bio || ""}
           onChange={(e) => handleChange("bio", e.target.value)}
           className="w-full min-h-[100px]"
+          required
+        />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Label htmlFor="email" className="text-sm font-medium mb-2 block">
+          Email
+        </Label>
+        <Input
+          id="email"
+          type="email"
+          value={profileData.email || ""}
+          onChange={(e) => handleChange("email", e.target.value)}
+          maxLength={255}
+          placeholder="mymail@mail.com"
+          className="w-full"
+          required
         />
       </motion.div>
 
@@ -259,6 +279,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           </button>
         </motion.div>
       )}
+
 
       <motion.div variants={itemVariants}>
         <Label className="text-sm font-medium mb-2 block">Tags</Label>
@@ -305,6 +326,61 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         />
       </motion.div>
 
+      
+      <motion.div variants={itemVariants} className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="emailNotifications"
+            checked={profileData.emailNotifications}
+            onCheckedChange={(checked) => handleChange("emailNotifications", checked)}
+          />
+          <label htmlFor="emailNotifications" className="text-sm">
+            I agree to receive essential notifications about matches and messages
+            (required for core app functionality)
+          </label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="emailMarketing"
+            checked={profileData.emailMarketing}
+            onCheckedChange={(checked) => handleChange("emailMarketing", checked)}
+          />
+          <label htmlFor="emailMarketing" className="text-sm">
+            I would like to receive marketing emails about new features and special offers
+            (optional)
+          </label>
+        </div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <button
+          type="button"
+          onClick={() => setShowPrivacyInfo(!showPrivacyInfo)}
+          className="text-sm text-muted-foreground flex items-center space-x-1"
+        >
+          <Info size={16} />
+          <span>Privacy Policy Details</span>
+        </button>
+
+        {showPrivacyInfo && (
+          <Alert className="mt-4">
+            <AlertTitle>Privacy Policy</AlertTitle>
+            <AlertDescription>
+              <div className="space-y-2 text-sm">
+                <p>We use your email address for:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Essential notifications about your matches and messages</li>
+                  <li>Marketing communications (only if you opt-in)</li>
+                </ul>
+                <p>You can update your preferences at any time in account settings.</p>
+                <p>We never share your email with third parties.</p>
+                <p>For marketing emails, you can unsubscribe at any time via the link in the email footer.</p>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+      </motion.div>
+
       <motion.div className="mt-6" variants={itemVariants}>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Saving..." : submitButtonText}
@@ -315,4 +391,3 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 };
 
 export default ProfileForm;
-
