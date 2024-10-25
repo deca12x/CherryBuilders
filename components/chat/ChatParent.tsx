@@ -29,6 +29,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
     const initSupabase = async () => {
       if (user?.wallet?.address) {
         const client = await createSupabaseClient(user.wallet.address);
+        console.log("Supabase client created with address:", user.wallet.address);
         setSupabaseClient(client);
       }
     };
@@ -37,7 +38,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
   }, [user]);
 
   useEffect(() => {
-    if (supabaseClient && chatId) {
+    if (supabaseClient && chatId && user?.wallet?.address) {
       fetchChatDetails();
       fetchMessages();
       setupRealtimeSubscription();
@@ -48,7 +49,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
         supabaseClient?.removeChannel(channelRef.current);
       }
     };
-  }, [supabaseClient, chatId]);
+  }, [supabaseClient, chatId, user?.wallet?.address]);
 
   const fetchChatDetails = async () => {
     if (!supabaseClient) return;
@@ -93,9 +94,13 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
   };
 
   const setupRealtimeSubscription = () => {
-    console.log(`Subscribing to channel: chat:${chatId}`);
+    if (!supabaseClient) return;
+
+    const channelName = `chat:${chatId}:${user?.wallet?.address}`;
+    console.log(`Attempting to subscribe to channel: ${channelName}`);
+
     channelRef.current = supabaseClient
-      .channel(`chat:${chatId}`)
+      .channel(channelName, { config: { broadcast: { ack: true }, presence: { key: user?.wallet?.address } } })
       .on(
         "postgres_changes",
         {
@@ -105,7 +110,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
           filter: `chat_id=eq.${chatId}`,
         },
         (payload: any) => {
-          console.log("Received change from Supabase:", payload);
+          console.log("Received real-time update:", payload);
           if (payload.eventType === "INSERT") {
             const newMessage = payload.new as ChatMessageType;
             console.log("Processed new message:", newMessage);
@@ -128,11 +133,10 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
           console.error("Subscription error:", err);
         } else {
           console.log("Subscription status:", status);
-          if (status === 'SUBSCRIBED') {
-            console.log("Successfully subscribed to channel");
-          }
         }
       });
+
+    console.log("Channel subscription set up");
   };
 
   const handleSend = async (messageText: string, type?: string, requestId?: string) => {

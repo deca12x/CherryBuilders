@@ -19,20 +19,24 @@ export async function generateSupabaseJWT(evmAddress: string) {
     exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour from now
     sub: evmAddress,
     role: 'authenticated',
-    evm_address: evmAddress
+    evm_address: evmAddress,
+    iat: Math.floor(Date.now() / 1000),
+    iss: 'supabase'
   };
+
+  console.log("JWT payload:", payload);
 
   const secret = new TextEncoder().encode(supabaseJwtSecret);
 
   return await new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
+    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .sign(secret);
 }
 
 export const createSupabaseClient = async (evmAddress?: string) => {
   const supabaseJWT = evmAddress ? await generateSupabaseJWT(evmAddress) : undefined;
 
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
     global: {
       headers: supabaseJWT ? { Authorization: `Bearer ${supabaseJWT}` } : {},
     },
@@ -47,6 +51,13 @@ export const createSupabaseClient = async (evmAddress?: string) => {
       },
     },
   });
+
+  if (supabaseJWT) {
+    client.auth.setSession({ access_token: supabaseJWT, refresh_token: '' });
+    client.realtime.setAuth(supabaseJWT);
+  }
+
+  return client;
 };
 
 // Create a default instance without auth
