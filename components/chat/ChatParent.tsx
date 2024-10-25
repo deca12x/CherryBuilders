@@ -6,13 +6,15 @@ import ChatSidebar from "@/components/chat/ChatSideBar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import { supabase } from "@/lib/supabase/supabase-client";
+import {ChatParentProps, User } from "@/lib/types";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
-import { createMessage, getChatFromId, getChatMessages, getUser } from "@/lib/supabase/utils";
-import { ChatParentProps, User } from "@/lib/types";
 import { ChatMessageType } from "@/lib/supabase/types";
+import { getUser } from "@/lib/supabase/utils";
+import { usePrivy } from '@privy-io/react-auth';
+import { createSupabaseClient } from "@/lib/supabase/supabase-client";
 
 export default function ChatParent({ userAddress, chatId, authToken }: ChatParentProps) {
   const [message, setMessage] = useState("");
@@ -20,60 +22,50 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const channelRef = useRef<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [supabaseClient, setSupabaseClient] = useState<any>(null);
+  const { user } = usePrivy();
 
   useEffect(() => {
-    console.log("ChatParent: Component mounted or chatId/userAddress changed");
-    console.log("Current userAddress:", userAddress);
-    console.log("Current chatId:", chatId);
-    console.log("Supabase connection status:", supabase.getChannels().length > 0 ? "Connected" : "Disconnected");
-
-    const initializeChat = async () => {
-      await fetchChatDetails();
-      await fetchMessages();
-      setupRealtimeSubscription();
+    const initSupabase = async () => {
+      if (user?.wallet?.address) {
+        const client = await createSupabaseClient(user.wallet.address);
+        setSupabaseClient(client);
+      }
     };
 
-    initializeChat();
+    initSupabase();
+  }, [user]);
 
-    // Ping the channel every 30 seconds to keep the connection alive
-    const intervalId = setInterval(() => {
-      console.log("Pinging channel to keep connection alive");
-      channelRef.current?.send({
-        type: "broadcast",
-        event: "ping",
-        payload: {},
-      });
-    }, 30000);
+  useEffect(() => {
+    if (supabaseClient && chatId) {
+      fetchChatDetails();
+      fetchMessages();
+      setupRealtimeSubscription();
+    }
 
     return () => {
-      console.log("ChatParent: Component unmounting, unsubscribing from channel");
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        supabaseClient?.removeChannel(channelRef.current);
       }
-      clearInterval(intervalId);
     };
-  }, [chatId, userAddress]);
+  }, [supabaseClient, chatId]);
 
   const fetchChatDetails = async () => {
+    if (!supabaseClient) return;
     console.log("Fetching chat details for chat ID:", chatId);
-    const foundChat = await getChatFromId(chatId, authToken);
+    const { data, error } = await supabaseClient.from("chats").select("*").eq("id", chatId).single();
 
-    if (!foundChat.success) {
-      console.error("Error fetching chat details:", foundChat.error);
+    if (error) {
+      console.error("Error fetching chat details:", error);
       return;
     }
 
-    // Get the data payload from the api call response
-    const data = foundChat.data;
-
     if (data) {
       console.log("Chat data:", data);
-      console.log(data);
       const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1;
       const otherUserData = await getUser(otherUserAddress, authToken);
       console.log("Determined other user address:", otherUserAddress);
 
-      // Set the otherUser state with the address, even if we can't fetch the name
       setOtherUser({
         address: otherUserAddress,
         name: otherUserData?.data.name || otherUserAddress,
@@ -84,20 +76,25 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
   };
 
   const fetchMessages = async () => {
+    if (!supabaseClient) return;
     console.log("Fetching messages for chat:", chatId);
-    const foundMessages = await getChatMessages(chatId, true, authToken);
+    const { data, error } = await supabaseClient
+      .from("messages")
+      .select("*")
+      .eq("chat_id", chatId)
+      .order("created_at", { ascending: true });
 
-    if (!foundMessages.success) {
-      console.error("Error fetching messages:", foundMessages.error);
+    if (error) {
+      console.error("Error fetching messages:", error);
     } else {
-      console.log("Fetched messages:", foundMessages.data);
-      setCurrentChat(foundMessages.data as ChatMessageType[]);
+      console.log("Fetched messages:", data);
+      setCurrentChat(data as ChatMessageType[]);
     }
   };
 
   const setupRealtimeSubscription = () => {
     console.log(`Subscribing to channel: chat:${chatId}`);
-    channelRef.current = supabase
+    channelRef.current = supabaseClient
       .channel(`chat:${chatId}`)
       .on(
         "postgres_changes",
@@ -126,12 +123,14 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
           }
         }
       )
-      .subscribe((status: string, err?: Error) => {
+      .subscribe(async (status: string, err?: Error) => {
         if (err) {
           console.error("Subscription error:", err);
         } else {
           console.log("Subscription status:", status);
-          console.log("Successfully subscribed to channel");
+          if (status === 'SUBSCRIBED') {
+            console.log("Successfully subscribed to channel");
+          }
         }
       });
   };
@@ -146,7 +145,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
         chat_id: chatId,
         created_at: new Date().toISOString(),
         type: type,
-        requestId: requestId, // This will now be correctly stored in the database
+        requestId: requestId,
       };
 
       console.log("Adding message to UI:", newMessage);
@@ -158,17 +157,15 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
       });
       setMessage("");
 
-      const newMessageRes = await createMessage(newMessage, authToken);
+      const { data, error } = await supabaseClient.from("messages").insert(newMessage).select();
 
-      if (!newMessageRes.success) {
-        console.error("Error sending message:", newMessageRes.error);
+      if (error) {
+        console.error("Error sending message:", error);
         console.log("Reverting UI update");
         setCurrentChat((prevMessages) => prevMessages.filter((msg) => msg.id !== newMessage.id));
-      } else if (newMessageRes.data) {
-        console.log("Message sent successfully to Supabase:", newMessageRes.data[0]);
-        setCurrentChat((prevMessages) =>
-          prevMessages.map((msg) => (msg.id === newMessage.id ? newMessageRes.data[0] : msg))
-        );
+      } else if (data) {
+        console.log("Message sent successfully to Supabase:", data[0]);
+        setCurrentChat((prevMessages) => prevMessages.map((msg) => (msg.id === newMessage.id ? data[0] : msg)));
 
         if (type === "request" && requestId) {
           console.log("Request message stored with requestId:", requestId);
@@ -201,12 +198,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
       {/* Chat Area */}
       <div className="flex-1 flex flex-col p-2 pb-12">
         <ChatHeader name={otherUser?.name || "Loading..."} />
-        <MessageList
-          key={currentChat.length}
-          messages={currentChat}
-          currentUserAddress={userAddress}
-          authToken={authToken}
-        />
+        <MessageList key={currentChat.length} messages={currentChat} currentUserAddress={userAddress} authToken={authToken} />
         <MessageInput
           payeeAddress={userAddress}
           payerAddress={otherUser?.address as string}
