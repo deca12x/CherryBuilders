@@ -41,6 +41,11 @@ export const createSupabaseClient = async (evmAddress?: string) => {
       autoRefreshToken: false,
       detectSessionInUrl: false,
     },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
   });
 };
 
