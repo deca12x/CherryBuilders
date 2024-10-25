@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserType } from "@/lib/supabase/types";
 import ConnectButton from "@/components/ui/connectButton";
 import { useRouter } from "next/navigation";
-import { updateUser } from "@/lib/supabase/utils";
+import { setUserFilters, updateUser } from "@/lib/supabase/utils";
 import ProfileForm from "./ProfileForm";
 import { ProfileQuery } from "@/lib/airstack/types";
 
@@ -41,6 +41,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
         description: "Profile saved successfully.",
         variant: "default",
       });
+      await setUserFilters([], [], jwt);
       router.push("/matching");
     } catch (error) {
       console.error("Error saving profile:", error);
