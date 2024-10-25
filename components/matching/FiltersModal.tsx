@@ -5,47 +5,20 @@ import { motion } from "framer-motion";
 import { ToggleRight, X } from "lucide-react";
 import { UserTag } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
+import { FiltersProp } from "@/lib/types";
+import { setUserFilters } from "@/lib/supabase/utils";
 
-interface MatchModalProps {
+interface FiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  parentFilters: {
-    tags: {
-      [key in UserTag]: boolean;
-    };
-    events: {
-      [key: string]: {
-        name: string;
-        selected: boolean;
-      };
-    };
-  };
-  setParentFilters: (filters: {
-    tags: {
-      [key in UserTag]: boolean;
-    };
-    events: {
-      [key: string]: {
-        name: string;
-        selected: boolean;
-      };
-    };
-  }) => void;
+  parentFilters: FiltersProp;
+  setParentFilters: (filters: FiltersProp) => void;
+  jwt: string | null;
 }
 
-export default function FiltersModal({ isOpen, onClose, parentFilters, setParentFilters }: MatchModalProps) {
+export default function FiltersModal({ isOpen, onClose, parentFilters, setParentFilters, jwt }: FiltersModalProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [filters, setFilters] = useState<{
-    tags: {
-      [key in UserTag]: boolean;
-    };
-    events: {
-      [key: string]: {
-        name: string;
-        selected: boolean;
-      };
-    };
-  }>(parentFilters);
+  const [filters, setFilters] = useState<FiltersProp>(parentFilters);
 
   useEffect(() => {
     if (isOpen) {
@@ -65,9 +38,21 @@ export default function FiltersModal({ isOpen, onClose, parentFilters, setParent
     }
   };
 
-  const handleModalClose = () => {
-    setParentFilters(filters);
+  const handleModalClose = async () => {
     onClose();
+    if (JSON.stringify(filters) !== JSON.stringify(parentFilters)) {
+      const activeTags = Object.keys(filters.tags).filter((key) => filters.tags[key as UserTag]);
+      const activeEvents = Object.keys(filters.events).filter((key) => filters.events[key].selected);
+
+      // Update user filters in the database
+      const { success, error } = await setUserFilters(activeTags, activeEvents, jwt);
+      if (!success && error) {
+        console.error("Error setting user filters: ", error);
+        return;
+      }
+
+      setParentFilters(filters);
+    }
   };
 
   if (!isVisible) return null;
