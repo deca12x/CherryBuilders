@@ -50,6 +50,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   ];
 
   useEffect(() => {
+    setProfileData(initialData);
+  }, [initialData]);
+
+  useEffect(() => {
     if (!userProfile) return;
 
     toast({
