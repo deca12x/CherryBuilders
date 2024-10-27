@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { UserType } from "@/lib/supabase/types";
@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { setUserFilters, updateUser } from "@/lib/supabase/utils";
 import ProfileForm from "./ProfileForm";
 import { ProfileQuery } from "@/lib/airstack/types";
+import { Skeleton } from "../ui/skeleton";
+import SearchParamsComponent from "../searchparams";
 
 interface ProfileCreationProps {
   jwt: string | null;
@@ -32,6 +34,8 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
   });
 
   const router = useRouter();
+  const [passcode, setPasscode] = useState<string | null>(null);
+  const [eventSlug, setEventSlug] = useState<string | null>(null);
 
   const handleSubmit = async (data: UserType) => {
     try {
@@ -42,7 +46,12 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
         variant: "default",
       });
       await setUserFilters([], [], jwt);
-      router.push("/matching");
+      if (passcode && eventSlug) {
+        router.push(`/verify/event?passcode=${passcode}&event-slug=${eventSlug}`);
+        return;
+      } else {
+        router.push("/matching");
+      }
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -75,8 +84,16 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
     if (!updatedUser.success) throw updatedUser.error;
   }
 
+  const handleParamsChange = (passcode: string | null, eventSlug: string | null) => {
+    setPasscode(passcode);
+    setEventSlug(eventSlug);
+  };
+
   return (
     <motion.main className="flex flex-col min-h-screen bg-background">
+      <Suspense fallback={<Skeleton className="h-8 w-3/4 mx-auto" />}>
+        <SearchParamsComponent onParamsChange={handleParamsChange} />
+      </Suspense>
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
         <motion.h1 className="text-3xl font-bold text-primary mb-8">Create Your Profile</motion.h1>
         <ConnectButton />
