@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { UserType } from "@/lib/supabase/types";
+import { EventType, UserType } from "@/lib/supabase/types";
 import ConnectButton from "@/components/ui/connectButton";
 import { updateUser } from "@/lib/supabase/utils";
 import ProfileForm from "@/components/profile/ProfileForm";
@@ -12,9 +12,10 @@ interface ProfileEditParentProps {
   initialProfileData: UserType;
   jwt: string | null;
   userAddress: string;
+  userEvents: EventType[];
 }
 
-const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileData, jwt, userAddress }) => {
+const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileData, jwt, userAddress, userEvents }) => {
   const [profileData, setProfileData] = useState<UserType>(initialProfileData);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [isFetchingFromAirstack, setIsFetchingFromAirstack] = useState(false);
@@ -122,6 +123,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
         submitButtonText="Save changes"
         showTalentScore={true}
         jwt={jwt}
+        userEvents={userEvents}
       />
 
       {/* Overwrite Modal */}
