@@ -5,8 +5,13 @@ const nextConfig = {
 	  serverComponentsExternalPackages: ['pdfkit', 'canvas'],
 	},
 	images: {
-		domains: ['ajnhllnrrrexrprlallv.supabase.co'],
-	},
+		remotePatterns: [
+		  {
+			protocol: 'https',
+			hostname: '**',
+		  },
+		],
+	  },
 	webpack: (config, { isServer }) => {
 	  if (!isServer) {
 		config.resolve.fallback = {

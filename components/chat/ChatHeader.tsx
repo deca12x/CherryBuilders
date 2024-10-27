@@ -6,7 +6,7 @@ export default function ChatHeader({ name }: { name: string }) {
   return (
     <div className="p-4 border-b border-border bg-card">
       <h2 className="text-lg font-semibold truncate mb-2 hidden lg:block">{name}</h2>
-      {user?.wallet?.address}
+      {/* {user?.wallet?.address} */}
     </div>
   );
 }

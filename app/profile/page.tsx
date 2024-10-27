@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { getUser } from "@/lib/supabase/utils";
+import { getEventsByAddress, getUser } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import ErrorCard from "@/components/ui/error-card";
 import ProfileEditParent from "@/components/profile/ProfileEditParent";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
-import { UserType } from "@/lib/supabase/types";
+import { EventType, UserType } from "@/lib/supabase/types";
 
 const ProfilePage: React.FC = () => {
   const { user, ready, getAccessToken } = usePrivy();
@@ -15,7 +15,25 @@ const ProfilePage: React.FC = () => {
   const [jwt, setJwt] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userEvents, setUserEvents] = useState<EventType[]>([]);
   const router = useRouter();
+
+  const address = user?.wallet?.address;
+
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      if (!address) return;
+
+      // Fetch the events the user is attending
+      const { data } = await getEventsByAddress(address, jwt);
+
+      if (data) {
+        setUserEvents(data);
+      }
+    };
+
+    if (profileData) fetchUserEvents();
+  }, [address, jwt, profileData]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -63,6 +81,7 @@ const ProfilePage: React.FC = () => {
           initialProfileData={profileData}
           jwt={jwt}
           userAddress={user.wallet.address}
+          userEvents={userEvents}
         />
       </main>
       <BottomNavigationBar />

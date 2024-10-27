@@ -1,5 +1,5 @@
 import { FiltersProp } from "../types";
-import { ChatMessageType, UserTag, UserType } from "./types";
+import { ChatMessageType, EventType, UserTag, UserType } from "./types";
 
 /**
  * A utility function to get a specific partial match from the database
@@ -719,6 +719,46 @@ export const getEventBySlug = async (
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   const response = await fetch(`/api/events/${eventSlug}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that, given a user address, retrieves all the events the user is attending from the database
+ * @param address - The address of the user
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getEventsByAddress = async (
+  address: string,
+  jwt: string | null
+): Promise<{ success: boolean; data: EventType[] | null; error: any | undefined }> => {
+  const response = await fetch(`/api/events/user/${address}`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
     },

@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { UserTag, UserType } from "@/lib/supabase/types";
+import { EventType, UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
-import { RefreshCcw, Info } from "lucide-react";
+import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ProfileQuery } from "@/lib/airstack/types";
@@ -22,6 +22,7 @@ interface ProfileFormProps {
   jwt: string | null;
   showPrivacyInfo?: boolean;
   userProfile?: ProfileQuery | null;
+  userEvents: EventType[];
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -31,6 +32,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   showTalentScore = false,
   jwt,
   userProfile,
+  userEvents,
 }) => {
   const [profileData, setProfileData] = useState<UserType>(initialData);
   const [isUploading, setIsUploading] = useState(false);
@@ -341,6 +343,24 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             />
             <span className="text-xs ml-1">Update</span>
           </button>
+        </motion.div>
+      )}
+      {userEvents.length > 0 && (
+        <motion.div className="flex flex-col items-start my-6" variants={itemVariants}>
+          <Label htmlFor="tags" className="text-sm font-medium mb-2 block">
+            Your events
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {userEvents.map((event) => (
+              <span
+                key={event.slug}
+                className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm flex"
+              >
+                <CheckCircle2 className="mr-2 h-5 w-5" />
+                <p className="font-bold">{event.name}</p>
+              </span>
+            ))}
+          </div>
         </motion.div>
       )}
 
