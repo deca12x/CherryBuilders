@@ -4,7 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import BottomNavigationBar from "../navbar/BottomNavigationBar";
-import { getUser, getChatsFromUserAddress, getLastChatMessage } from "@/lib/supabase/utils";
+import {
+  getUser,
+  getChatsFromUserAddress,
+  getLastChatMessage,
+} from "@/lib/supabase/utils";
 
 type ChatHistoryItem = {
   id: string;
@@ -20,7 +24,11 @@ interface ChatSidebarProps {
   authToken: string | null;
 }
 
-export default function ChatSidebar({ userAddress, activeChatId, authToken }: ChatSidebarProps) {
+export default function ChatSidebar({
+  userAddress,
+  activeChatId,
+  authToken,
+}: ChatSidebarProps) {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -29,7 +37,7 @@ export default function ChatSidebar({ userAddress, activeChatId, authToken }: Ch
   useEffect(() => {
     const fetchChatHistory = async () => {
       setIsLoading(true);
-      console.log("Fetching chat history for user:", userAddress);
+      // console.log("Fetching chat history for user:", userAddress);
       const foundChats = await getChatsFromUserAddress(userAddress, authToken);
 
       if (!foundChats.success) {
@@ -38,15 +46,17 @@ export default function ChatSidebar({ userAddress, activeChatId, authToken }: Ch
         return;
       }
 
-      console.log("Fetched chat history:", foundChats.data);
+      // console.log("Fetched chat history:", foundChats.data);
       const history: ChatHistoryItem[] = await Promise.all(
         foundChats.data.map(async (chat: any) => {
-          const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
+          const otherUserAddress =
+            chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
           const lastMessage = await fetchLastMessage(chat.id);
           const userData = await getUser(otherUserAddress, authToken);
           return {
             id: chat.id,
-            name: userData.data?.name || `User ${otherUserAddress.slice(0, 6)}...`,
+            name:
+              userData.data?.name || `User ${otherUserAddress.slice(0, 6)}...`,
             lastMessage: lastMessage?.message || "No messages yet",
             otherUserAddress,
             profilePicture: userData.data?.profile_pictures[0] || "",
@@ -61,7 +71,9 @@ export default function ChatSidebar({ userAddress, activeChatId, authToken }: Ch
     fetchChatHistory();
   }, [userAddress]);
 
-  const fetchLastMessage = async (chatId: string): Promise<{ message: string } | null> => {
+  const fetchLastMessage = async (
+    chatId: string
+  ): Promise<{ message: string } | null> => {
     const lastMessage = await getLastChatMessage(chatId, authToken);
 
     if (!lastMessage.success) {
@@ -92,12 +104,19 @@ export default function ChatSidebar({ userAddress, activeChatId, authToken }: Ch
             onClick={() => handleChatClick(chat.id)}
           >
             <Avatar className="h-10 w-10 flex-shrink-0">
-              <AvatarImage src={chat.profilePicture || `https://api.dicebear.com/6.x/initials/svg?seed=${chat.name}`} />
+              <AvatarImage
+                src={
+                  chat.profilePicture ||
+                  `https://api.dicebear.com/6.x/initials/svg?seed=${chat.name}`
+                }
+              />
               <AvatarFallback>{chat.name[0]}</AvatarFallback>
             </Avatar>
             <div className="ml-4 overflow-hidden">
               <p className="font-semibold truncate">{chat.name}</p>
-              <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
+              <p className="text-sm text-muted-foreground truncate">
+                {chat.lastMessage}
+              </p>
             </div>
           </div>
         ))
