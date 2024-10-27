@@ -98,6 +98,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
         <motion.h1 className="text-3xl font-bold text-primary mb-8">Create Your Profile</motion.h1>
         <ConnectButton />
         <ProfileForm
+      
           initialData={profileData}
           onSubmit={handleSubmit}
           submitButtonText="Save & Continue"

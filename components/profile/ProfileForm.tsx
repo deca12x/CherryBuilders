@@ -22,7 +22,7 @@ interface ProfileFormProps {
   jwt: string | null;
   showPrivacyInfo?: boolean;
   userProfile?: ProfileQuery | null;
-  userEvents: EventType[];
+  userEvents?: EventType[];
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -345,7 +345,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           </button>
         </motion.div>
       )}
-      {userEvents.length > 0 && (
+      {userEvents && userEvents.length > 0 ? (
         <motion.div className="flex flex-col items-start my-6" variants={itemVariants}>
           <Label htmlFor="tags" className="text-sm font-medium mb-2 block">
             Your events
@@ -362,7 +362,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             ))}
           </div>
         </motion.div>
-      )}
+      ) : null}
 
       <motion.div variants={itemVariants}>
         <Label className="text-sm font-medium mb-2 block">Tags</Label>
