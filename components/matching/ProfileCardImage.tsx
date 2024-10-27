@@ -1,10 +1,10 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { K2D } from "next/font/google";
 import { UserType, UserTag } from "@/lib/supabase/types";
-import Image from 'next/image';
+import Image from "next/image";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -25,11 +25,17 @@ const ProfileCardImage: React.FC<ProfileCardImageProps> = ({
   animateFrame,
   onImagePrevious,
   onImageNext,
-  onAnimationComplete
+  onAnimationComplete,
 }) => {
   const ImageContent = () => (
     <>
-      <Image src={user!.profile_pictures[imageIndex]} alt={user!.name} className="w-full h-full object-cover" width={400} height={400} />
+      <Image
+        src={user!.profile_pictures[imageIndex] ?? "/images/default_propic.jpeg"}
+        alt={user!.name}
+        className="w-full h-full object-cover"
+        width={400}
+        height={400}
+      />
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent flex items-end">
         <div className="flex flex-col w-full p-2 gap-1">
           <h2 className={cn(`flex items-center text-3xl font-bold text-primary-foreground ${k2d.className}`)}>
@@ -44,10 +50,7 @@ const ProfileCardImage: React.FC<ProfileCardImageProps> = ({
   const Tags = () => (
     <div className="flex flex-wrap gap-2">
       {user!.tags.map((tag: UserTag, index: number) => (
-        <span
-          key={index}
-          className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm"
-        >
+        <span key={index} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm">
           {tag.charAt(0).toUpperCase() + tag.slice(1)}
         </span>
       ))}
@@ -63,14 +66,16 @@ const ProfileCardImage: React.FC<ProfileCardImageProps> = ({
     </div>
   );
 
-  const NavigationButton = ({ direction, onClick }: { direction: 'left' | 'right', onClick: () => void }) => (
+  const NavigationButton = ({ direction, onClick }: { direction: "left" | "right"; onClick: () => void }) => (
     <button
       onClick={onClick}
-      className={`absolute ${direction}-0 top-0 bottom-0 w-1/2 flex items-center justify-${direction === 'left' ? 'start' : 'end'} p-4 text-primary-foreground opacity-0 hover:opacity-100 transition-opacity`}
-      aria-label={`${direction === 'left' ? 'Previous' : 'Next'} image`}
+      className={`absolute ${direction}-0 top-0 bottom-0 w-1/2 flex items-center justify-${
+        direction === "left" ? "start" : "end"
+      } p-4 text-primary-foreground opacity-0 hover:opacity-100 transition-opacity`}
+      aria-label={`${direction === "left" ? "Previous" : "Next"} image`}
       disabled={isLoading || !user}
     >
-      {direction === 'left' ? <ChevronLeft size={40} /> : <ChevronRight size={40} />}
+      {direction === "left" ? <ChevronLeft size={40} /> : <ChevronRight size={40} />}
     </button>
   );
 
@@ -85,11 +90,7 @@ const ProfileCardImage: React.FC<ProfileCardImageProps> = ({
       onAnimationComplete={onAnimationComplete}
     >
       <div className="relative h-[400px]">
-        {isLoading ? (
-          <div className="w-full h-full bg-gray-300 animate-pulse"></div>
-        ) : user ? (
-          <ImageContent />
-        ) : null}
+        {isLoading ? <div className="w-full h-full bg-gray-300 animate-pulse"></div> : user ? <ImageContent /> : null}
         <NavigationButton direction="left" onClick={onImagePrevious} />
         <NavigationButton direction="right" onClick={onImageNext} />
       </div>

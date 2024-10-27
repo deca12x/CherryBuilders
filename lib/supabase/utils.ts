@@ -1,4 +1,5 @@
-import { ChatMessageType, UserType } from "./types";
+import { FiltersProp } from "../types";
+import { ChatMessageType, UserTag, UserType } from "./types";
 
 /**
  * A utility function to get a specific partial match from the database
@@ -245,6 +246,10 @@ export const getChatsFromUserAddress = async (
   };
 };
 
+// SEND EMAIL NOTIFICATIONS TO MATCHES
+// CREATE A sendEmailNotification FUNCTION
+// CREATE API ROUTE  /api/email/send-notification
+
 /**
  * A utility function to get a specific chat from the database
  * @param user_1_address - The address of the first user of the chat
@@ -349,8 +354,6 @@ export const getFilteredUsers = async (
   // e.g. solidity%20dev,backend%20dev and event_1,event_2,event_3
   const eventsSearchParam = events.map(encodeURIComponent).join(",");
   const tagsSearchParam = tags.map(encodeURIComponent).join(",");
-
-  console.log(eventsSearchParam, tagsSearchParam);
 
   const response = await fetch(
     `/api/users/get-by-filter?limit=${limit}&offset=${offset}&tags=${tagsSearchParam}&events=${eventsSearchParam}`,
@@ -719,6 +722,92 @@ export const getEventBySlug = async (
     headers: {
       Authorization: `Bearer ${jwt}`,
     },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that gets the connected user's memorized filters from the database
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const getUserFilters = async (
+  jwt: string | null
+): Promise<{ success: boolean; data: FiltersProp | null; error: any | undefined }> => {
+  const response = await fetch(`/api/filters`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that sets the connected user's newly selected filters in the database
+ * @param tags - The tag filters
+ * @param events - The event filters
+ * @param jwt - The jwt needed to authotize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const setUserFilters = async (
+  tags: string[],
+  events: string[],
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/filters`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+    body: JSON.stringify({
+      tags,
+      events,
+    }),
   });
 
   const body = await response.json();

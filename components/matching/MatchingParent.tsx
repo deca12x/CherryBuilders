@@ -1,13 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Heart, Link, Smile, Frown, CheckCircle2, Filter } from "lucide-react";
+import { Smile, Frown } from "lucide-react";
 import { K2D } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import { usePrivy } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import {
   createChat,
@@ -15,10 +14,8 @@ import {
   getPartialMatch,
   getFilteredUsers,
   getSpecificChat,
-  getUser,
   updateMatch,
 } from "@/lib/supabase/utils";
-import { cn } from "@/lib/utils";
 import ErrorCard from "@/components/ui/error-card";
 import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
@@ -27,16 +24,18 @@ import NoUsersFound from "@/components/matching/NoUsersFound";
 import ProfileCardSkeleton from "@/components/matching/ProfileCardSkeleton";
 import ProfileCardContent from "@/components/matching/ProfileCardContent";
 import ProfileCardImage from "@/components/matching/ProfileCardImage";
+import { FiltersProp } from "@/lib/types";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 interface MatchingContentProps {
-    jwt: string | null;
+  jwt: string | null;
   address: string;
+  userFilters: FiltersProp;
 }
 
-export default function MatchingParent({ jwt, address }: MatchingContentProps) {
-    const [users, setUsers] = useState<UserType[]>([]);
+export default function MatchingParent({ jwt, address, userFilters }: MatchingContentProps) {
+  const [users, setUsers] = useState<UserType[]>([]);
   const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
@@ -49,35 +48,7 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
   const [matchedChatId, setMatchedChatId] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
-  const [filters, setFilters] = useState<{
-    tags: {
-      [key in UserTag]: boolean;
-    };
-    events: {
-      [key: string]: {
-        name: string;
-        selected: boolean;
-      };
-    };
-  }>({
-    tags: {
-      "Frontend dev": false,
-      "Backend dev": false,
-      "Solidity dev": false,
-      Designer: false,
-      "Talent scout": false,
-      "Business dev": false,
-    },
-    // TODO: fetch all events from database and build this object with them instead of hardcoding
-    events: {
-      edge_city_lanna_2024: {
-        name: "Edge City Lanna 2024",
-        selected: false,
-      },
-    },
-  });
-
-
+  const [filters, setFilters] = useState<FiltersProp>(userFilters);
 
   // A useEffect that fetches users only when the connected user
   useEffect(() => {
@@ -87,12 +58,12 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
         const activeTags = Object.keys(filters.tags).filter((key) => filters.tags[key as UserTag]);
         const activeEvents = Object.keys(filters.events).filter((key) => filters.events[key].selected);
 
-        const foundRandomUsers = await getFilteredUsers(activeTags, activeEvents, 0, 200, jwt);
-        if (!foundRandomUsers.success) throw foundRandomUsers.error;
+        const foundFilteredUsers = await getFilteredUsers(activeTags, activeEvents, 0, 200, jwt);
+        if (!foundFilteredUsers.success) throw foundFilteredUsers.error;
 
-        setUsers(foundRandomUsers.data);
+        setUsers(foundFilteredUsers.data);
         console.log("-------USER DATA -------");
-        console.log(foundRandomUsers.data);
+        console.log(foundFilteredUsers.data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -102,7 +73,6 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
 
     fetchUsers();
   }, [filters, jwt]);
-
 
   const currentUser = users[currentUserIndex];
 
@@ -135,6 +105,9 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
         // Get the chat ID
         const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
         if (!specificChat.success) throw new Error(specificChat.error);
+
+        // SEND EMAIL NOTIFICATIONS TO MATCHES
+        // CREATE A sendEmailNotification FUNCTION
 
         setIsMatchModalOpen(true);
         setIsProfilesEndedModalOpen(false);
@@ -188,8 +161,16 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
     setCurrentImageIndex((prev) => (prev - 1 + currentUser.profile_pictures.length) % currentUser.profile_pictures.length);
   };
 
-  const ProfileCard = ({ user, imageIndex, isLoading }: { user: UserType | null; imageIndex: number; isLoading: boolean }) =>
-    user || isLoading ? (
+  const ProfileCard = ({
+    user,
+    imageIndex,
+    isLoading,
+  }: {
+    user: UserType | null;
+    imageIndex: number;
+    isLoading: boolean;
+  }) => {
+    return user || isLoading ? (
       <div className="w-full max-w-xl bg-background shadow-lg overflow-hidden relative flex-grow pb-28">
         <AnimatePresence>
           {isProcessing ? (
@@ -237,6 +218,7 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
     ) : (
       <NoUsersFound onOpenFilters={() => setIsFiltersModalOpen(true)} />
     );
+  };
 
   if (error) {
     return <ErrorCard />;
@@ -251,13 +233,7 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
         </div>
 
         {/* Buttons */}
-        {users.length > 0 && (
-          <ActionButtons
-            onReject={handleReject}
-            onAccept={handleAccept}
-            isLoading={isLoading}
-          />
-        )}
+        {users.length > 0 && <ActionButtons onReject={handleReject} onAccept={handleAccept} isLoading={isLoading} />}
 
         {/* Navigation */}
         <BottomNavigationBar />
@@ -271,6 +247,7 @@ export default function MatchingParent({ jwt, address }: MatchingContentProps) {
           onClose={() => setIsFiltersModalOpen(false)}
           parentFilters={filters}
           setParentFilters={setFilters}
+          jwt={jwt}
         />
 
         {/* Profiles Ended Modal */}

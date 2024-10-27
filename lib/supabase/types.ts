@@ -92,3 +92,10 @@ export interface UsersEventsRelType {
   user_address: string;
   event_slug: string;
 }
+
+export interface FiltersType {
+  id: number;
+  user_address: string;
+  tags: UserTag[];
+  events: string[];
+}
