@@ -1,40 +1,29 @@
 import { createClient } from "@supabase/supabase-js";
-import * as jose from 'jose';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_ANON_KEY;
-const supabaseJwtSecret = process.env.NEXT_PUBLIC_SUPABASE_JWT_SECRET;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase URL or Anon Key");
 }
 
-if (!supabaseJwtSecret) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_JWT_SECRET');
-}
-
-export async function generateSupabaseJWT(evmAddress: string) {
-  const payload = {
-    aud: 'authenticated',
-    exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour from now
-    sub: evmAddress,
-    role: 'authenticated',
-    evm_address: evmAddress,
-    iat: Math.floor(Date.now() / 1000),
-    iss: 'supabase'
-  };
-
-  console.log("JWT payload:", payload);
-
-  const secret = new TextEncoder().encode(supabaseJwtSecret);
-
-  return await new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
-    .sign(secret);
-}
-
-export const createSupabaseClient = async (evmAddress?: string) => {
-  const supabaseJWT = evmAddress ? await generateSupabaseJWT(evmAddress) : undefined;
+export const createSupabaseClient = async (evmAddress?: string, privyAuthToken?: string) => {
+  let supabaseJWT;
+  
+  if (evmAddress && privyAuthToken) {
+    const response = await fetch('/api/auth/supabase-token', {
+      headers: {
+        Authorization: `Bearer ${privyAuthToken}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get Supabase token');
+    }
+    
+    const data = await response.json();
+    supabaseJWT = data.token;
+  }
 
   const client = createClient(supabaseUrl, supabaseAnonKey, {
     global: {

@@ -3,7 +3,10 @@ import type { NextRequest } from "next/server";
 import { verifyAuthToken } from "./lib/privy";
 
 export const config = {
-  matcher: "/api/:function*",
+  matcher: [
+    "/api/:function*",
+    "/api/auth/supabase-token"
+  ],
 };
 
 export async function middleware(req: NextRequest) {

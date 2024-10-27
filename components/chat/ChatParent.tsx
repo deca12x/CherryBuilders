@@ -28,7 +28,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
   useEffect(() => {
     const initSupabase = async () => {
       if (user?.wallet?.address) {
-        const client = await createSupabaseClient(user.wallet.address);
+        const client = await createSupabaseClient(user.wallet.address, authToken as string);
         console.log("Supabase client created with address:", user.wallet.address);
         setSupabaseClient(client);
       }
