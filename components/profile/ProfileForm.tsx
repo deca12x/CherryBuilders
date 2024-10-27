@@ -22,7 +22,7 @@ interface ProfileFormProps {
   jwt: string | null;
   showPrivacyInfo?: boolean;
   userProfile?: ProfileQuery | null;
-  userEvents: EventType[];
+  userEvents?: EventType[];
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -37,7 +37,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const [profileData, setProfileData] = useState<UserType>(initialData);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [updateTalentScoreLoading, setUpdateTalentScoreLoading] = useState(false);
+  const [updateTalentScoreLoading, setUpdateTalentScoreLoading] =
+    useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
@@ -77,12 +78,17 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }));
   }, [userProfile, toast]);
 
-  const handleChange = (field: keyof UserType, value: string | UserTag[] | string[] | boolean) => {
+  const handleChange = (
+    field: keyof UserType,
+    value: string | UserTag[] | string[] | boolean
+  ) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleTagToggle = (tag: UserTag) => {
-    const newTags = profileData.tags.includes(tag) ? profileData.tags.filter((t) => t !== tag) : [...profileData.tags, tag];
+    const newTags = profileData.tags.includes(tag)
+      ? profileData.tags.filter((t) => t !== tag)
+      : [...profileData.tags, tag];
     handleChange("tags", newTags);
   };
 
@@ -94,14 +100,23 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileExt = file.name.split(".").pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const fileName = `${Math.random()
+          .toString(36)
+          .substring(2, 15)}.${fileExt}`;
 
-        const uploadedFile = await uploadProfilePicture(profileData.evm_address, fileName, file, jwt);
+        const uploadedFile = await uploadProfilePicture(
+          profileData.evm_address,
+          fileName,
+          file,
+          jwt
+        );
         if (!uploadedFile.success) throw Error(uploadedFile.error);
 
         const {
           data: { publicUrl },
-        } = supabase.storage.from("profile-pictures").getPublicUrl(`${profileData.evm_address}/${fileName}`);
+        } = supabase.storage
+          .from("profile-pictures")
+          .getPublicUrl(`${profileData.evm_address}/${fileName}`);
 
         return publicUrl;
       });
@@ -152,13 +167,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }
   };
 
-  const handleUpdateTalentScore = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleUpdateTalentScore = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
     setUpdateTalentScoreLoading(true);
     try {
       const response = await fetch("/api/talent", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
         body: JSON.stringify({ address: profileData.evm_address }),
       });
 
@@ -212,13 +232,20 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       variants={containerVariants}
     >
       <motion.div variants={itemVariants}>
-        <Label htmlFor="profilePictures" className="text-sm font-medium mb-2 block">
+        <Label
+          htmlFor="profilePictures"
+          className="text-sm font-medium mb-2 block"
+        >
           Profile Pictures
         </Label>
         <div className="flex flex-wrap items-center gap-4">
           {profileData.profile_pictures.map((url, index) => (
             <motion.div key={url} className="relative" variants={itemVariants}>
-              <img src={url} alt={`Profile ${index + 1}`} className="w-24 h-24 object-cover rounded-lg shadow-md" />
+              <img
+                src={url}
+                alt={`Profile ${index + 1}`}
+                className="w-24 h-24 object-cover rounded-lg shadow-md"
+              />
               <button
                 type="button"
                 onClick={() => handleRemoveImage(index)}
@@ -228,10 +255,22 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               </button>
             </motion.div>
           ))}
-          <Button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="h-24 w-24">
+          <Button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="h-24 w-24"
+          >
             {isUploading ? "Uploading..." : "Insert image"}
           </Button>
-          <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" multiple className="hidden" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            multiple
+            className="hidden"
+          />
         </div>
       </motion.div>
 
@@ -279,7 +318,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       </motion.div>
 
       {showTalentScore && (
-        <motion.div className="flex items-center mt-6 gap-2" variants={itemVariants}>
+        <motion.div
+          className="flex items-center mt-6 gap-2"
+          variants={itemVariants}
+        >
           <Label className="text-md font-medium block items-center justify-center underline">
             <a
               href="https://talentprotocol.notion.site/Builder-Score-FAQ-4e07c8df13514ce79661ed0d776d4741"
@@ -289,14 +331,21 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               Talent Score:
             </a>
           </Label>
-          <span className="text-md mr-3 text-primary">{profileData.talent_score ?? "N/A"}</span>
-          <button className="flex items-center hover:text-primary" onClick={handleUpdateTalentScore}>
-            <RefreshCcw className={updateTalentScoreLoading ? "animate-reverse-spin" : ""} />
+          <span className="text-md mr-3 text-primary">
+            {profileData.talent_score ?? "N/A"}
+          </span>
+          <button
+            className="flex items-center hover:text-primary"
+            onClick={handleUpdateTalentScore}
+          >
+            <RefreshCcw
+              className={updateTalentScoreLoading ? "animate-reverse-spin" : ""}
+            />
             <span className="text-xs ml-1">Update</span>
           </button>
         </motion.div>
       )}
-      {userEvents.length > 0 && (
+      {userEvents && userEvents.length > 0 ? (
         <motion.div className="flex flex-col items-start my-6" variants={itemVariants}>
           <Label htmlFor="tags" className="text-sm font-medium mb-2 block">
             Your events
@@ -313,14 +362,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             ))}
           </div>
         </motion.div>
-      )}
+      ) : null}
 
       <motion.div variants={itemVariants}>
         <Label className="text-sm font-medium mb-2 block">Tags</Label>
         <div className="grid grid-cols-2 gap-2">
           {availableTags.map((tag) => (
             <div key={tag} className="flex items-center space-x-2">
-              <Checkbox id={tag} checked={profileData.tags.includes(tag)} onCheckedChange={() => handleTagToggle(tag)} />
+              <Checkbox
+                id={tag}
+                checked={profileData.tags.includes(tag)}
+                onCheckedChange={() => handleTagToggle(tag)}
+              />
               <label htmlFor={tag} className="text-sm cursor-pointer">
                 {tag}
               </label>
@@ -361,20 +414,26 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           <Checkbox
             id="emailNotifications"
             checked={profileData.emailNotifications}
-            onCheckedChange={(checked) => handleChange("emailNotifications", checked)}
+            onCheckedChange={(checked) =>
+              handleChange("emailNotifications", checked)
+            }
           />
           <label htmlFor="emailNotifications" className="text-sm">
-            I agree to receive essential notifications about matches and messages (required for core app functionality)
+            I agree to receive essential notifications about matches and
+            messages (required for core app functionality)
           </label>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
             id="emailMarketing"
             checked={profileData.emailMarketing}
-            onCheckedChange={(checked) => handleChange("emailMarketing", checked)}
+            onCheckedChange={(checked) =>
+              handleChange("emailMarketing", checked)
+            }
           />
           <label htmlFor="emailMarketing" className="text-sm">
-            I would like to receive marketing emails about new features and special offers (optional)
+            I would like to receive marketing emails about new features and
+            special offers (optional)
           </label>
         </div>
       </motion.div>
@@ -396,12 +455,20 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               <div className="space-y-2 text-sm">
                 <p>We use your email address for:</p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Essential notifications about your matches and messages</li>
+                  <li>
+                    Essential notifications about your matches and messages
+                  </li>
                   <li>Marketing communications (only if you opt-in)</li>
                 </ul>
-                <p>You can update your preferences at any time in account settings.</p>
+                <p>
+                  You can update your preferences at any time in account
+                  settings.
+                </p>
                 <p>We never share your email with third parties.</p>
-                <p>For marketing emails, you can unsubscribe at any time via the link in the email footer.</p>
+                <p>
+                  For marketing emails, you can unsubscribe at any time via the
+                  link in the email footer.
+                </p>
               </div>
             </AlertDescription>
           </Alert>

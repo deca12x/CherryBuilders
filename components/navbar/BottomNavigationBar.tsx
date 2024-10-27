@@ -1,4 +1,4 @@
-import { MessageCircle, Cog, User } from "lucide-react";
+import { MessageCircle, Handshake, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const BottomNavigationBar = () => {
@@ -24,7 +24,7 @@ const BottomNavigationBar = () => {
           className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
           aria-label="Find People"
         >
-          <Cog size={25} />
+          <Handshake size={25} />
           <span className="hidden sm:flex">Find People</span>
         </button>
         <button
