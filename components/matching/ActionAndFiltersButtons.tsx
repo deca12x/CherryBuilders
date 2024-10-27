@@ -14,8 +14,8 @@ export default function ActionAndFiltersButtons({
   onOpenFilters,
 }: ActionButtonsProps) {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="fixed bottom-16 left-0 right-0 flex justify-center space-x-4">
+    <div className="sticky bottom-0">
+      <div className="absolute bottom-16 left-0 right-0 flex justify-center space-x-4">
         <button
           onClick={onReject}
           className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
@@ -33,7 +33,7 @@ export default function ActionAndFiltersButtons({
           <Heart size={24} />
         </button>
       </div>
-      <div className="fixed bottom-16 right-4 flex justify-center space-x-4">
+      <div className="absolute bottom-16 right-4">
         <button
           onClick={onOpenFilters}
           className="flex justify-end items-center bg-card rounded-xl my-2 py-1.5 px-2"

@@ -19,7 +19,7 @@ import {
 import ErrorCard from "@/components/ui/error-card";
 import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
-import ActionAndFiltersButtons from "@/components/matching/ActionButtons";
+import ActionAndFiltersButtons from "@/components/matching/ActionAndFiltersButtons";
 import NoUsersFound from "@/components/matching/NoUsersFound";
 import ProfileCardSkeleton from "@/components/matching/ProfileCardSkeleton";
 import ProfileCardContent from "@/components/matching/ProfileCardContent";
@@ -269,24 +269,24 @@ export default function MatchingParent({
       <div className="flex sm:flex-row flex-col items-stretch min-h-screen bg-gradient-to-br from-primary to-secondary">
         {/* Profile Card */}
         <div className="flex-grow flex justify-center items-center">
-          <div className="w-full max-w-xl">
+          <div className="w-full max-w-xl relative h-[80vh]">
             <ProfileCard
               user={users[currentUserIndex] || null}
               imageIndex={currentImageIndex}
               isLoading={isLoading}
             />
+            {users.length > 0 && (
+              <ActionAndFiltersButtons
+                onReject={handleReject}
+                onAccept={handleAccept}
+                isLoading={isLoading}
+                onOpenFilters={() => setIsFiltersModalOpen(true)}
+              />
+            )}
           </div>
         </div>
 
         {/* Buttons */}
-        {users.length > 0 && (
-          <ActionAndFiltersButtons
-            onReject={handleReject}
-            onAccept={handleAccept}
-            isLoading={isLoading}
-            onOpenFilters={() => setIsFiltersModalOpen(true)}
-          />
-        )}
 
         {/* Navigation */}
         <BottomNavigationBar />
