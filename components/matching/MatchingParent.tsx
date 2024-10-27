@@ -249,10 +249,7 @@ export default function MatchingParent({
             {isLoading ? (
               <ProfileCardSkeleton />
             ) : user ? (
-              <ProfileCardContent
-                user={user}
-                onOpenFilters={() => setIsFiltersModalOpen(true)}
-              />
+              <ProfileCardContent user={user} />
             ) : null}
           </motion.div>
         </AnimatePresence>
