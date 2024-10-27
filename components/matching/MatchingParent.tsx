@@ -19,7 +19,7 @@ import {
 import ErrorCard from "@/components/ui/error-card";
 import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
-import ActionButtons from "@/components/matching/ActionButtons";
+import ActionAndFiltersButtons from "@/components/matching/ActionButtons";
 import NoUsersFound from "@/components/matching/NoUsersFound";
 import ProfileCardSkeleton from "@/components/matching/ProfileCardSkeleton";
 import ProfileCardContent from "@/components/matching/ProfileCardContent";
@@ -280,10 +280,11 @@ export default function MatchingParent({
 
         {/* Buttons */}
         {users.length > 0 && (
-          <ActionButtons
+          <ActionAndFiltersButtons
             onReject={handleReject}
             onAccept={handleAccept}
             isLoading={isLoading}
+            onOpenFilters={() => setIsFiltersModalOpen(true)}
           />
         )}
 
