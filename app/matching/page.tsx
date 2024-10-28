@@ -7,6 +7,7 @@ import { getUser, getUserFilters } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
+import G22Dialog from "@/components/promo/G22Dialog";
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -19,6 +20,7 @@ export default function Matching() {
     tags: {},
     events: {},
   });
+  const [showG22Dialog, setShowG22Dialog] = useState(true);
 
   const address = user?.wallet?.address;
 
@@ -62,10 +64,28 @@ export default function Matching() {
     checkUser();
   }, [user, ready, router, address]);
 
+  useEffect(() => {
+    // Check if user has dismissed the dialog before
+    const hasSeenG22Dialog = localStorage.getItem('hasSeenG22Dialog');
+    if (hasSeenG22Dialog) {
+      setShowG22Dialog(false);
+    }
+  }, []);
+
+  const handleDontShowAgain = () => {
+    localStorage.setItem('hasSeenG22Dialog', 'true');
+    setShowG22Dialog(false);
+  };
+
   if (error) {
     return <ErrorCard />;
   } else if (user && address && ready && wasUserChecked && wasFiltersChecked) {
-    return <MatchingParent jwt={jwt} address={address} userFilters={filters} />;
+    return (
+      <>
+        {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />}
+        <MatchingParent jwt={jwt} address={address} userFilters={filters} />
+      </>
+    );
   } else {
     return <LoadingSpinner />;
   }
