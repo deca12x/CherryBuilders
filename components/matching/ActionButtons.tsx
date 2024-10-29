@@ -1,4 +1,5 @@
 import { X, Heart } from "lucide-react";
+import FiltersButton from "./FiltersButton";
 
 interface ActionButtonsProps {
   onReject: () => void;
@@ -8,7 +9,7 @@ interface ActionButtonsProps {
 
 export default function ActionButtons({ onReject, onAccept, isLoading }: ActionButtonsProps) {
   return (
-    <div className="fixed bottom-[75px] justify-center space-x-6">
+    <div className="space-x-5">
       <button
         onClick={onReject}
         className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"

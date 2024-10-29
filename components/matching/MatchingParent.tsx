@@ -21,8 +21,6 @@ import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
 import ActionButtons from "./ActionButtons";
 
-const k2d = K2D({ weight: "600", subsets: ["latin"] });
-
 interface MatchingContentProps {
   jwt: string | null;
   address: string;
@@ -30,7 +28,7 @@ interface MatchingContentProps {
 }
 
 export default function MatchingParent({ jwt, address, userFilters }: MatchingContentProps) {
-  const [users, setUsers] = useState<UserType[]>([]);
+  const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
   const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
@@ -45,7 +43,7 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
 
-  const currentUser = users[currentUserIndex];
+  const currentUser = fetchedUsers[currentUserIndex];
 
   // A useEffect that fetches users based on the filters
   useEffect(() => {
@@ -58,9 +56,10 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         const foundFilteredUsers = await getFilteredUsers(activeTags, activeEvents, 0, 200, jwt);
         if (!foundFilteredUsers.success) throw foundFilteredUsers.error;
 
-        setUsers(foundFilteredUsers.data);
+        setFetchedUsers(foundFilteredUsers.data);
       } catch (error) {
         console.error("Error fetching users:", error);
+        setError(true);
       } finally {
         setIsLoading(false);
       }
@@ -109,12 +108,12 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   };
 
   const handleAccept = async () => {
-    if (users.length === 0) return;
+    if (fetchedUsers.length === 0) return;
     setIsProcessing(true);
     setProcessingAction("accept");
     await checkMatch();
     // If the current user is the last user in the list, do not animate
-    if (currentUserIndex !== users.length - 1) {
+    if (currentUserIndex !== fetchedUsers.length - 1) {
       setAnimateFrame(true);
       setCurrentUserIndex((prev) => prev + 1);
       setCurrentImageIndex(0);
@@ -130,7 +129,7 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     setProcessingAction("reject");
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    if (users.length === 0 || currentUserIndex === users.length - 1) {
+    if (fetchedUsers.length === 0 || currentUserIndex === fetchedUsers.length - 1) {
       setIsProfilesEndedModalOpen(true);
     } else {
       setAnimateFrame(true);
@@ -148,7 +147,7 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
       <div className="flex sm:flex-row flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary to-secondary">
         {/* Profile Card */}
         <ProfileCard
-          user={users[currentUserIndex] || null}
+          user={fetchedUsers[currentUserIndex] || null}
           imageIndex={currentImageIndex}
           isLoading={isLoading}
           animateFrame={animateFrame}
@@ -156,10 +155,9 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           processingAction={processingAction}
           setAnimateFrame={setAnimateFrame}
           setIsFiltersModalOpen={setIsFiltersModalOpen}
+          handleAccept={handleAccept}
+          handleReject={handleReject}
         />
-
-        {/* Buttons */}
-        {users.length > 0 && <ActionButtons onReject={handleReject} onAccept={handleAccept} isLoading={isLoading} />}
 
         {/* Navigation */}
         <BottomNavigationBar />

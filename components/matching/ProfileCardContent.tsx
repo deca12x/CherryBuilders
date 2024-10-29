@@ -16,14 +16,13 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
         <p className="text-muted-foreground">{user.bio}</p>
       </div>
 
-      {/* Stats */}
-      <div className="w-full gap-3">
-        {/* Talent score */}
+      {/* Talent score */}
+      {user.talent_score && user.talent_score > 0 ? (
         <div className="flex flex-col items-center bg-card rounded-xl p-3">
           <p className="font-bold text-foreground">Talent Score</p>
-          <p className="text-muted-foreground">{user.talent_score ?? "N/A"}</p>
+          <p className="text-muted-foreground">{user.talent_score}</p>
         </div>
-      </div>
+      ) : null}
 
       {/* Links */}
       {(user.twitter_link || user.github_link || user.farcaster_link || user.other_link) && (

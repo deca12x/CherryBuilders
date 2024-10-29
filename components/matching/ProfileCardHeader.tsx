@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { K2D } from "next/font/google";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
-import FiltersButton from "./FiltersButton";
 import ProfilePictureModal from "./ProfilePictureModal";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
@@ -11,18 +10,11 @@ const k2d = K2D({ weight: "600", subsets: ["latin"] });
 interface ProfileCardHeaderProps {
   user: UserType | null;
   imageIndex: number;
-  setIsFiltersModalOpen: (value: boolean) => void;
   animateFrame: boolean;
   isLoading: boolean;
 }
 
-export default function ProfileCardHeader({
-  user,
-  imageIndex,
-  setIsFiltersModalOpen,
-  animateFrame,
-  isLoading,
-}: ProfileCardHeaderProps) {
+export default function ProfileCardHeader({ user, imageIndex, animateFrame, isLoading }: ProfileCardHeaderProps) {
   const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = React.useState(false);
 
   return (
@@ -62,7 +54,6 @@ export default function ProfileCardHeader({
             )}
           </div>
         </motion.div>
-        <FiltersButton className="sm:mt-2 mt-1" onOpenFilters={() => setIsFiltersModalOpen(true)} />
       </div>
 
       {/* Profile Picture Modal */}
