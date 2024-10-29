@@ -39,7 +39,6 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
   const [currentPage, setCurrentPage] = useState(1);
@@ -127,7 +126,6 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
 
   const handleAccept = async () => {
     if (fetchedUsers.length === 0) return;
-    setIsProcessing(true);
     setProcessingAction("accept");
     await checkMatch();
     
@@ -139,13 +137,14 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
       setCurrentUserIndex(prev => prev + 1);
       setCurrentImageIndex(0);
     }
+
     
     setIsProcessing(false);
+
     setProcessingAction(null);
   };
 
   const handleReject = async () => {
-    setIsProcessing(true);
     setProcessingAction("reject");
     await new Promise(resolve => setTimeout(resolve, 1000));
     
@@ -157,8 +156,10 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
       setCurrentUserIndex(prev => prev + 1);
       setCurrentImageIndex(0);
     }
+
     
     setIsProcessing(false);
+
     setProcessingAction(null);
   };
 
@@ -173,7 +174,6 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           imageIndex={currentImageIndex}
           isLoading={isLoading}
           animateFrame={animateFrame}
-          isProcessing={isProcessing}
           processingAction={processingAction}
           setAnimateFrame={setAnimateFrame}
           setIsFiltersModalOpen={setIsFiltersModalOpen}
