@@ -15,7 +15,7 @@ export default function Matching() {
   const [error, setError] = useState(false);
   const [jwt, setJwt] = useState<string | null>(null);
   const [wasUserChecked, setWasUserChecked] = useState(false);
-  const [wasFiltersChecked, setWasFiltersChecked] = useState(false);
+  const [wereFiltersChecked, setWereFiltersChecked] = useState(false);
   const [filters, setFilters] = useState<FiltersProp>({
     tags: {},
     events: {},
@@ -32,7 +32,7 @@ export default function Matching() {
         return;
       }
       setFilters(data!);
-      setWasFiltersChecked(true);
+      setWereFiltersChecked(true);
     };
 
     if (wasUserChecked) fetchUserFilters();
@@ -66,24 +66,24 @@ export default function Matching() {
 
   useEffect(() => {
     // Check if user has dismissed the dialog before
-    const hasSeenG22Dialog = localStorage.getItem('hasSeenG22Dialog');
+    const hasSeenG22Dialog = localStorage.getItem("hasSeenG22Dialog");
     if (hasSeenG22Dialog) {
       setShowG22Dialog(false);
     }
   }, []);
 
   const handleDontShowAgain = () => {
-    localStorage.setItem('hasSeenG22Dialog', 'true');
+    localStorage.setItem("hasSeenG22Dialog", "true");
     setShowG22Dialog(false);
   };
 
   if (error) {
     return <ErrorCard />;
-  } else if (user && address && ready && wasUserChecked && wasFiltersChecked) {
+  } else if (user && address && ready && wasUserChecked && wereFiltersChecked) {
     return (
       <>
-        {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />}
         <MatchingParent jwt={jwt} address={address} userFilters={filters} />
+        {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />}
       </>
     );
   } else {
