@@ -141,16 +141,6 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     setProcessingAction(null);
   };
 
-  const handleImageNext = () => {
-    if (!currentUser) return;
-    setCurrentImageIndex((prev) => (prev + 1) % currentUser.profile_pictures.length);
-  };
-
-  const handleImagePrevious = () => {
-    if (!currentUser) return;
-    setCurrentImageIndex((prev) => (prev - 1 + currentUser.profile_pictures.length) % currentUser.profile_pictures.length);
-  };
-
   if (error) {
     return <ErrorCard />;
   } else if (user && address && ready) {
@@ -162,9 +152,6 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           imageIndex={currentImageIndex}
           isLoading={isLoading}
           animateFrame={animateFrame}
-          currentImageIndex={currentImageIndex}
-          handleImageNext={handleImageNext}
-          handleImagePrevious={handleImagePrevious}
           isProcessing={isProcessing}
           processingAction={processingAction}
           setAnimateFrame={setAnimateFrame}
