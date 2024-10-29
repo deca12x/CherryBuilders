@@ -25,15 +25,15 @@ export default function ProfileCardHeader({
   const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = React.useState(false);
 
   return (
-    <AnimatePresence>
-      <div className="flex justify-between">
+    <AnimatePresence mode="wait">
+      <div className="flex justify-between" key="header-container">
         <motion.div
-          key={user?.evm_address + "Header"}
+          key={user?.evm_address ?? "Header"}
           className="flex sm:gap-5 gap-4"
           initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
-          transition={{ type: "spring", duration: 0.55 }}
+          transition={{ type: "spring", duration: 0.52 }}
           onAnimationComplete={() => setAnimateFrame(false)}
         >
           {!user || isLoading ? (
