@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
-// import { sendTgMessage } from "@/lib/telegram";
+import { sendTgMessage } from "@/lib/telegram";
 
 export async function POST(req: NextRequest) {
   // user_1_address is the user that initiates the match

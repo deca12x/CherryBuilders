@@ -12,7 +12,10 @@ const isValidTelegramHandle = (handle: string): boolean => {
   return /^[a-zA-Z0-9_]{5,32}$/.test(handle);
 };
 
-const sendTgMessage = async (user1Address: string, user2Address: string) => {
+export const sendTgMessage = async (
+  user1Address: string,
+  user2Address: string
+) => {
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   if (!TELEGRAM_BOT_TOKEN) {
     throw new Error("TELEGRAM_BOT_TOKEN not found in environment variables");
