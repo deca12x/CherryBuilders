@@ -5,7 +5,7 @@ const BottomNavigationBar = () => {
   const Router = useRouter();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card shadow-lg">
+    <nav className="fixed z-40 bottom-0 left-0 right-0 bg-card shadow-lg">
       <div className="flex justify-around items-center py-2">
         <button
           onClick={() => {
