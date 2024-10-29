@@ -53,13 +53,13 @@ export async function PUT(req: NextRequest) {
     if (error) throw error;
 
     // Telegram notification calls
-    // if (value) {
-    //   try {
-    //     await sendTgMessage(user_1_address, user_2_address);
-    //   } catch (telegramError) {
-    //     console.error("Telegram notification failed:", telegramError);
-    //   }
-    // }
+    if (value) {
+      try {
+        await sendTgMessage(user_1_address, user_2_address);
+      } catch (telegramError) {
+        console.error("Telegram notification failed:", telegramError);
+      }
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
