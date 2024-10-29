@@ -1,7 +1,4 @@
-// import { supabase } from "@/lib/supabase/supabase-server";
-// import { supabase } from "../../lib/supabase/supabase-server";
-const { supabase } = require("../../lib/supabase/supabase-server");
-
+import { supabase } from "@/lib/supabase/supabase-server";
 interface UserTelegramData {
   telegram: string | null;
   tg_notification_frequency: number | null;
