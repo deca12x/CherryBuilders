@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { K2D } from "next/font/google";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
@@ -12,21 +12,29 @@ interface ProfileCardHeaderProps {
   imageIndex: number;
   animateFrame: boolean;
   isLoading: boolean;
+  setAnimateFrame: (value: boolean) => void;
 }
 
-export default function ProfileCardHeader({ user, imageIndex, animateFrame, isLoading }: ProfileCardHeaderProps) {
+export default function ProfileCardHeader({
+  user,
+  imageIndex,
+  animateFrame,
+  isLoading,
+  setAnimateFrame,
+}: ProfileCardHeaderProps) {
   const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = React.useState(false);
 
   return (
-    <>
+    <AnimatePresence>
       <div className="flex justify-between">
         <motion.div
-          key="1"
+          key={user?.evm_address + "Header"}
           className="flex sm:gap-5 gap-4"
           initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
           transition={{ type: "spring", duration: 0.55 }}
+          onAnimationComplete={() => setAnimateFrame(false)}
         >
           {!user || isLoading ? (
             <div className="bg-primary-foreground sm:w-[90px] sm:h-[90px] w-[70px] h-[70px] rounded-full flex-shrink-0 animate-pulse"></div>
@@ -62,6 +70,6 @@ export default function ProfileCardHeader({ user, imageIndex, animateFrame, isLo
         isOpen={isProfilePictureModalOpen}
         onClose={() => setIsProfilePictureModalOpen(false)}
       />
-    </>
+    </AnimatePresence>
   );
 }
