@@ -2,7 +2,7 @@ import React from "react";
 
 const ProfileCardSkeleton: React.FC = () => {
   return (
-    <div className="flex flex-col p-4 gap-3">
+    <div className="flex flex-col gap-3">
       {/* Stats Skeleton */}
       <div className="flex flex-row gap-3">
         <div className="flex flex-grow flex-col items-center bg-card rounded-xl p-3">
