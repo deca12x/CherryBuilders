@@ -42,10 +42,13 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 10;
 
   const currentUser = fetchedUsers[currentUserIndex];
 
-  // A useEffect that fetches users based on the filters
+  // Modified useEffect to handle pagination
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
@@ -53,10 +56,16 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         const activeTags = Object.keys(filters.tags).filter((key) => filters.tags[key as UserTag]);
         const activeEvents = Object.keys(filters.events).filter((key) => filters.events[key].selected);
 
-        const foundFilteredUsers = await getFilteredUsers(activeTags, activeEvents, 0, 200, jwt);
+        const foundFilteredUsers = await getFilteredUsers(activeTags, activeEvents, currentPage, PAGE_SIZE, jwt);
         if (!foundFilteredUsers.success) throw foundFilteredUsers.error;
 
-        setFetchedUsers(foundFilteredUsers.data);
+        setFetchedUsers(prevUsers => {
+          // If it's the first page, replace all users
+          if (currentPage === 1) return foundFilteredUsers.data?.users || [];
+          // Otherwise append new users
+          return [...prevUsers, ...(foundFilteredUsers.data?.users || [])];
+        });
+        setTotalPages(foundFilteredUsers.data?.totalPages || 1);
       } catch (error) {
         console.error("Error fetching users:", error);
         setError(true);
@@ -66,7 +75,16 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     };
 
     fetchUsers();
-  }, [filters, jwt]);
+  }, [filters, currentPage, jwt]);
+
+  // Load more users when reaching the end
+  const loadMoreUsers = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    } else {
+      setIsProfilesEndedModalOpen(true);
+    }
+  };
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;
@@ -112,14 +130,16 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     setIsProcessing(true);
     setProcessingAction("accept");
     await checkMatch();
-    // If the current user is the last user in the list, do not animate
-    if (currentUserIndex !== fetchedUsers.length - 1) {
-      setAnimateFrame(true);
-      setCurrentUserIndex((prev) => prev + 1);
-      setCurrentImageIndex(0);
+    
+    // Check if we need to load more users
+    if (currentUserIndex === fetchedUsers.length - 1) {
+      loadMoreUsers();
     } else {
-      setIsProfilesEndedModalOpen(true);
+      setAnimateFrame(true);
+      setCurrentUserIndex(prev => prev + 1);
+      setCurrentImageIndex(0);
     }
+    
     setIsProcessing(false);
     setProcessingAction(null);
   };
@@ -127,15 +147,17 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   const handleReject = async () => {
     setIsProcessing(true);
     setProcessingAction("reject");
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    if (fetchedUsers.length === 0 || currentUserIndex === fetchedUsers.length - 1) {
-      setIsProfilesEndedModalOpen(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if we need to load more users
+    if (currentUserIndex === fetchedUsers.length - 1) {
+      loadMoreUsers();
     } else {
       setAnimateFrame(true);
-      setCurrentUserIndex((prev) => prev + 1);
+      setCurrentUserIndex(prev => prev + 1);
       setCurrentImageIndex(0);
     }
+    
     setIsProcessing(false);
     setProcessingAction(null);
   };

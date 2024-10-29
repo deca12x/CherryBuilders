@@ -338,25 +338,23 @@ export const uploadProfilePicture = async (
  * A utility function that fetches a given number of filtered users from the database
  * @param tags - The tags that the users must have
  * @param events - The events that the users must have attended
- * @param offset - The number of users that must be skipped. It's used for pagination
- * @param limit - The number of users that must be fetched
- * @param jwt - The jwt needed to authotize the call
- * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ * @param page - The current page number (starts at 1)
+ * @param pageSize - The number of users per page
+ * @param jwt - The jwt needed to authorize the call
+ * @returns An object representing the response { success: boolean; data: { users: any[], totalPages: number } | null; error: any | undefined }
  */
 export const getFilteredUsers = async (
   tags: string[],
   events: string[],
-  offset: number,
-  limit: number,
+  page: number,
+  pageSize: number,
   jwt: string | null
-): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  // Create a search param string from the tags and events and encodes it
-  // e.g. solidity%20dev,backend%20dev and event_1,event_2,event_3
+): Promise<{ success: boolean; data: { users: UserType[], totalPages: number } | null; error: any | undefined }> => {
   const eventsSearchParam = events.map(encodeURIComponent).join(",");
   const tagsSearchParam = tags.map(encodeURIComponent).join(",");
 
   const response = await fetch(
-    `/api/users/get-by-filter?limit=${limit}&offset=${offset}&tags=${tagsSearchParam}&events=${eventsSearchParam}`,
+    `/api/users/get-by-filter?page=${page}&pageSize=${pageSize}&tags=${tagsSearchParam}&events=${eventsSearchParam}`,
     {
       headers: {
         Authorization: `Bearer ${jwt}`,

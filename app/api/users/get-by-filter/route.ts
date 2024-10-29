@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
   const address = req.headers.get("x-address")!;
 
   const searchParams = req.nextUrl.searchParams;
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const offset = parseInt(searchParams.get("offset") || "0");
+  const page = parseInt(searchParams.get("page") || "1");
+  const pageSize = parseInt(searchParams.get("pageSize") || "10");
   const tags = searchParams.get("tags");
   const events = searchParams.get("events");
 
@@ -24,9 +24,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
   }
 
-  if (isNaN(limit) || isNaN(offset)) {
-    console.error("Invalid limit or offset parameter");
-    return NextResponse.json({ error: "Invalid limit or offset parameter" }, { status: 400 });
+  if (isNaN(page) || isNaN(pageSize) || page < 1 || pageSize < 1) {
+    console.error("Invalid pagination parameters");
+    return NextResponse.json({ error: "Invalid pagination parameters" }, { status: 400 });
   }
 
   try {
@@ -52,49 +52,59 @@ export async function GET(req: NextRequest) {
 
     const matchedUsers = Array.from(matchedUsersSet);
 
-    // Fetch users that have the required tags
+    // First get total count for pagination
+    const { count, error: countError } = await supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .neq("evm_address", address)
+      .contains("tags", tagsArray);
+
+    if (countError) throw countError;
+
+    const totalPages = Math.ceil((count || 0) / pageSize);
+    const offset = (page - 1) * pageSize;
+
+    // Fetch paginated users
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select(
-        `
+      .select(`
         *,
         events:users_events_rel (
           event:events(*)
         )
-      `
-      )
+      `)
       .neq("evm_address", address)
       .contains("tags", tagsArray)
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + pageSize - 1);
 
     if (userError) throw userError;
 
     if (!userData) {
-      console.error("No users found with the required tags");
-      return NextResponse.json({ data: userData }, { status: 404 });
+      return NextResponse.json({ 
+        data: { users: [], totalPages: 0 } 
+      }, { status: 404 });
     }
 
-    // Unnest the event objects
+    // Transform and filter data as before
     const transformedUserData: UserType[] = userData.map((user) => ({
       ...user,
       events: user.events.map((eventRel: { event: any }) => eventRel.event),
     }));
 
-    // Remove all the users that have their addresses contained in the matchedUsers array
-    // and doesn't have the required events
     const filteredUserData = transformedUserData.filter((user) => {
       const userEvents: string[] = user.events!.map((event) => event.slug);
       return !matchedUsers.includes(user.evm_address) && eventsArray.every((event) => userEvents.includes(event));
     });
 
-    if (!filteredUserData) {
-      console.error("No users found with the required events");
-      return NextResponse.json({ data: [] }, { status: 404 });
-    }
-
-    // Shuffle the array
+    // Shuffle the filtered data
     const shuffledData = shuffleArray(filteredUserData);
-    return NextResponse.json({ data: shuffledData }, { status: 200 });
+
+    return NextResponse.json({ 
+      data: { 
+        users: shuffledData, 
+        totalPages 
+      } 
+    }, { status: 200 });
   } catch (error) {
     console.error("Internal Server Error: ", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
