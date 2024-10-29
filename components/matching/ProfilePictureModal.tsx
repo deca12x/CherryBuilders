@@ -65,6 +65,18 @@ export default function ProfilePictureModal({ images, isOpen, onClose }: Profile
         className="bg-card rounded-xl shadow-xl p-3 max-w-md w-full mx-4 text-center relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Image indicators */}
+        <div className="absolute top-0 left-0 right-0 z-50 flex flex-wrap justify-center gap-1 p-1">
+          {safeImages.map((_, index) => (
+            <div
+              key={index}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                index === imageIndex ? "w-8 bg-white" : "w-4 bg-white/50"
+              }`}
+            />
+          ))}
+        </div>
+
         <div className="relative w-full aspect-square overflow-hidden">
           <AnimatePresence initial={false} custom={direction}>
             <motion.img
@@ -119,7 +131,7 @@ export default function ProfilePictureModal({ images, isOpen, onClose }: Profile
           onClick={onClose}
           variant="ghost"
           size="icon"
-          className="absolute z-40 top-3 right-3 text-primary-foreground bg-secondary/40 hover:bg-secondary/80 rounded-xl"
+          className="absolute z-50 top-3.5 right-3.5 text-primary-foreground bg-secondary/40 hover:bg-secondary/80 rounded-xl"
         >
           <X className="h-4 w-4" />
         </Button>
