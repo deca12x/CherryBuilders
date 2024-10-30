@@ -97,34 +97,36 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
   };
 
   return (
-    <motion.div
-      className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
-        Edit Your Profile
-      </motion.h1>
-      <div className="flex flex-col sm:flex-row gap-3">
-        <ConnectButton />
-        <button
-          className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-red-700 py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
-          onClick={() => setIsOverwriteModalOpen(true)}
-          disabled={isFetchingFromAirstack}
-        >
-          Fetch From Airstack
-        </button>
-      </div>
+    <>
+      <motion.div
+        className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
+          Edit Your Profile
+        </motion.h1>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <ConnectButton />
+          <button
+            className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-red-700 py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
+            onClick={() => setIsOverwriteModalOpen(true)}
+            disabled={isFetchingFromAirstack}
+          >
+            Fetch From Airstack
+          </button>
+        </div>
 
-      <ProfileForm
-        initialData={profileData}
-        onSubmit={handleSubmit}
-        submitButtonText="Save changes"
-        showTalentScore={true}
-        jwt={jwt}
-        userEvents={userEvents}
-      />
+        <ProfileForm
+          initialData={profileData}
+          onSubmit={handleSubmit}
+          submitButtonText="Save changes"
+          showTalentScore={true}
+          jwt={jwt}
+          userEvents={userEvents}
+        />
+      </motion.div>
 
       {/* Overwrite Modal */}
       <OverwriteModal
@@ -132,7 +134,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
         onClose={() => setIsOverwriteModalOpen(false)}
         parentHandleFetchFromAirstack={handleFetchFromAirstack}
       />
-    </motion.div>
+    </>
   );
 };
 
