@@ -1,6 +1,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { Loader2 } from "lucide-react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
 
 const ConnectButton: React.FC = () => {
   const { login, logout, ready, user } = usePrivy();
@@ -8,7 +9,7 @@ const ConnectButton: React.FC = () => {
   // Wagmi hooks
   const { isConnected } = useAccount();
   const { disconnect } = useDisconnect();
-  const { connect, connectors } = useConnect();
+  const { connect } = useConnect();
 
   // If privy is not ready, show the loading spinner
   if (!ready) {
@@ -24,7 +25,7 @@ const ConnectButton: React.FC = () => {
     return (
       <button
         className="flex items-center justify-center bg-primary py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
-        onClick={() => connect({ connector: connectors[0] })}
+        onClick={() => connect({ connector: injected() })}
       >
         Connect Wallet
       </button>
