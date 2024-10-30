@@ -53,7 +53,7 @@ export default function OverwriteModal({ isOpen, onClose, parentHandleFetchFromA
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       onAnimationComplete={handleAnimationComplete}
-      className="fixed inset-0 z-50 flex items-center justify-center mb-[650px] bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={handleOverlayClick}
     >
       <motion.div
