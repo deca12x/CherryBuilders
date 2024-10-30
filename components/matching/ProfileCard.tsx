@@ -9,6 +9,7 @@ import UserEvents from "./UserEvents";
 import ProfileCardHeader from "./ProfileCardHeader";
 import ActionButtons from "./ActionButtons";
 import FiltersButton from "./FiltersButton";
+import { useEffect } from "react";
 
 interface ProfileCardProps {
   user: UserType | null;
@@ -33,6 +34,20 @@ export default function ProfileCard({
   handleReject,
   handleAccept,
 }: ProfileCardProps) {
+  // Prevent scrolling when processing an action
+  useEffect(() => {
+    if (processingAction) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    // Cleanup on component unmount
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [processingAction]);
+
   return user || isLoading ? (
     <>
       <div className="w-full max-w-xl min-h-screen bg-background shadow-lg overflow-x-hidden pb-36 p-4">
@@ -40,8 +55,8 @@ export default function ProfileCard({
           {/* Dark overlay */}
           {processingAction ? (
             <motion.div
-              key="processing"
-              className="absolute inset-0 flex items-center justify-center bg-background/80 z-20"
+              key={processingAction + "Processing"}
+              className="fixed inset-0 flex justify-center items-center bg-background/80 z-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
