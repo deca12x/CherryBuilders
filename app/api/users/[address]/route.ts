@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/supabase-server";
+import { UserType } from "@/lib/supabase/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { params: { address } }: { params: { address: string } }) {
@@ -31,9 +32,9 @@ export async function GET(req: NextRequest, { params: { address } }: { params: {
 }
 
 export async function PUT(req: NextRequest, { params: { address } }: { params: { address: string } }) {
-  const { profileData } = await req.json();
+  const { profileData }: { profileData: UserType } = await req.json();
 
-  if (!profileData || !address) {
+  if (!profileData || profileData.name.length > 20 || profileData.bio.length > 500 || !address) {
     return NextResponse.json({ error: "Incorrect payload format" }, { status: 400 });
   }
 
