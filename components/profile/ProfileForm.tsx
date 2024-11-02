@@ -254,7 +254,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           id="name"
           value={profileData.name}
           onChange={(e) => handleChange("name", e.target.value)}
-          maxLength={255}
+          maxLength={20} // The max length is also checked in the backend
           required
           className="w-full"
         />
@@ -269,6 +269,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           value={profileData.bio || ""}
           onChange={(e) => handleChange("bio", e.target.value)}
           className="w-full min-h-[100px]"
+          maxLength={500} // The max length is also checked in the backend
           required
         />
       </motion.div>
