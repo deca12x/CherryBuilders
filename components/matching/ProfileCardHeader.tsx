@@ -4,6 +4,7 @@ import { K2D } from "next/font/google";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
 import ProfilePictureModal from "./ProfilePictureModal";
+import UserTags from "./UserTags";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -26,7 +27,7 @@ export default function ProfileCardHeader({
 
   return (
     <AnimatePresence mode="wait">
-      <div className="flex justify-between" key="header-container">
+      <div key="header-container">
         <motion.div
           key={user?.evm_address ?? "Header"}
           className="flex sm:gap-5 gap-4"
@@ -52,24 +53,28 @@ export default function ProfileCardHeader({
               />
             </button>
           )}
-          <div
-            className={`flex min-h-full items-center sm:text-3xl text-2xl font-bold text-primary-foreground leading-7 sm:leading-normal ${k2d.className}`}
-          >
+          <div className="flex flex-col w-full justify-center gap-2 overflow-auto">
             {!user || isLoading ? (
-              <div className="sm:h-8 sm:w-48 h-6 w-28 bg-gray-300 rounded animate-pulse"></div>
+              <>
+                <div className="sm:h-8 sm:w-48 h-6 w-28 bg-gray-300 rounded animate-pulse"></div>
+                <div className="sm:h-6 sm:w-24 h-4 w-14 bg-gray-300 rounded animate-pulse"></div>
+              </>
             ) : (
-              user.name
+              <>
+                <div className={`${k2d.className} sm:text-3xl text-2xl font-bold text-primary-foreground`}>{user.name}</div>
+                <UserTags user={user} />
+              </>
             )}
           </div>
         </motion.div>
-      </div>
 
-      {/* Profile Picture Modal */}
-      <ProfilePictureModal
-        images={user?.profile_pictures ?? []}
-        isOpen={isProfilePictureModalOpen}
-        onClose={() => setIsProfilePictureModalOpen(false)}
-      />
+        {/* Profile Picture Modal */}
+        <ProfilePictureModal
+          images={user?.profile_pictures ?? []}
+          isOpen={isProfilePictureModalOpen}
+          onClose={() => setIsProfilePictureModalOpen(false)}
+        />
+      </div>
     </AnimatePresence>
   );
 }
