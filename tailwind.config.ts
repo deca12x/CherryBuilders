@@ -80,8 +80,15 @@ const config: Config = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "reverse-spin": "reverse-spin 1s linear infinite",
       },
+      transitionDuration: {
+        "250": "250ms",
+      },
+      animationDuration: {
+        "250": "250ms",
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
 };
+
 export default config;
