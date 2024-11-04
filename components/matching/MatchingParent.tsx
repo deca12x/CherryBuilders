@@ -20,14 +20,18 @@ import FiltersModal from "@/components/matching/FiltersModal";
 import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
 import ActionButtons from "./ActionButtons";
-
+import { sendTgMessage } from "@/lib/telegram";
 interface MatchingContentProps {
   jwt: string | null;
   address: string;
   userFilters: FiltersProp;
 }
 
-export default function MatchingParent({ jwt, address, userFilters }: MatchingContentProps) {
+export default function MatchingParent({
+  jwt,
+  address,
+  userFilters,
+}: MatchingContentProps) {
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
   const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
@@ -36,10 +40,13 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   const [isLoading, setIsLoading] = useState(true);
   const [animateFrame, setAnimateFrame] = useState(false);
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
-  const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
+  const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] =
+    useState(false);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
-  const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
+  const [processingAction, setProcessingAction] = useState<
+    "accept" | "reject" | null
+  >(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
 
   const currentUser = fetchedUsers[currentUserIndex];
@@ -49,10 +56,20 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const activeTags = Object.keys(filters.tags).filter((key) => filters.tags[key as UserTag]);
-        const activeEvents = Object.keys(filters.events).filter((key) => filters.events[key].selected);
+        const activeTags = Object.keys(filters.tags).filter(
+          (key) => filters.tags[key as UserTag]
+        );
+        const activeEvents = Object.keys(filters.events).filter(
+          (key) => filters.events[key].selected
+        );
 
-        const foundFilteredUsers = await getFilteredUsers(activeTags, activeEvents, 0, 200, jwt);
+        const foundFilteredUsers = await getFilteredUsers(
+          activeTags,
+          activeEvents,
+          0,
+          200,
+          jwt
+        );
         if (!foundFilteredUsers.success) throw foundFilteredUsers.error;
 
         setFetchedUsers(foundFilteredUsers.data);
@@ -71,19 +88,33 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     if (!address || !currentUser) return;
 
     try {
-      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
+      const partialMatch = await getPartialMatch(
+        currentUser.evm_address,
+        address,
+        jwt
+      );
 
-      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
+      if (!partialMatch.success && partialMatch.error)
+        throw new Error(partialMatch.error);
 
       // If no partial match is found create one
       if (partialMatch.data.length === 0) {
-        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
+        const newMatch = await createMatch(
+          address,
+          currentUser.evm_address,
+          jwt
+        );
         if (!newMatch.success) throw Error(newMatch.error);
       }
 
       // If a match is found, update it
       else if (partialMatch.data.length > 0) {
-        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
+        const updatedMatch = await updateMatch(
+          currentUser.evm_address,
+          address,
+          true,
+          jwt
+        );
         if (!updatedMatch.success) throw Error(updatedMatch.error);
 
         // Create a chat between the two users
@@ -91,7 +122,11 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         if (!newChat.success) throw Error(newChat.error);
 
         // Get the chat ID
-        const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
+        const specificChat = await getSpecificChat(
+          address,
+          currentUser.evm_address,
+          jwt
+        );
         if (!specificChat.success) throw new Error(specificChat.error);
 
         // SEND EMAIL NOTIFICATIONS TO MATCHES
@@ -125,7 +160,10 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     setProcessingAction("reject");
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    if (fetchedUsers.length === 0 || currentUserIndex === fetchedUsers.length - 1) {
+    if (
+      fetchedUsers.length === 0 ||
+      currentUserIndex === fetchedUsers.length - 1
+    ) {
       setIsProfilesEndedModalOpen(true);
     } else {
       setAnimateFrame(true);
@@ -133,6 +171,18 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
       setCurrentImageIndex(0);
     }
     setProcessingAction(null);
+  };
+
+  const testTgBot = async () => {
+    try {
+      await sendTgMessage(
+        "0x60CC0188283433D4cE368419805A96354Dd497C3",
+        "0x23032A3D92D72a857EB4eB2D9ea417ff103A4008"
+      );
+      console.log("Test successful!");
+    } catch (error) {
+      console.error("Test failed:", error);
+    }
   };
 
   if (error) {
@@ -153,11 +203,22 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           handleReject={handleReject}
         />
 
+        {/* <button
+          onClick={testTgBot}
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          Test Telegram Bot
+        </button> */}
+
         {/* Navigation */}
         <BottomNavigationBar />
 
         {/* Match Modal */}
-        <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
+        <MatchModal
+          isOpen={isMatchModalOpen}
+          onClose={() => setIsMatchModalOpen(false)}
+          chatId={matchedChatId}
+        />
 
         {/* Filters Modal */}
         <FiltersModal
@@ -169,7 +230,10 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         />
 
         {/* Profiles Ended Modal */}
-        <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
+        <ProfilesEndedModal
+          isOpen={isProfilesEndedModalOpen}
+          onClose={() => setIsProfilesEndedModalOpen(false)}
+        />
       </div>
     );
   } else {
