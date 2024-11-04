@@ -69,7 +69,7 @@ export default function ProfileCard({
             </motion.div>
           ) : null}
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-5">
             {/* Card Header with image, name and filters button */}
             <ProfileCardHeader
               user={user}
@@ -78,20 +78,6 @@ export default function ProfileCard({
               isLoading={isLoading}
               setAnimateFrame={setAnimateFrame}
             />
-
-            {/* Tags and Events */}
-            <motion.div
-              key={user?.evm_address + "TagsEvents"}
-              className="flex flex-col gap-1.5 mb-3"
-              initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
-              transition={{ type: "spring", duration: 0.62 }}
-              onAnimationComplete={() => setAnimateFrame(false)}
-            >
-              <UserTags user={user} />
-              <UserEvents user={user} />
-            </motion.div>
 
             {/* Content */}
             <motion.div

@@ -1,7 +1,8 @@
 import React from "react";
-import { Filter, Link } from "lucide-react";
+import { Link } from "lucide-react";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
+import UserEvents from "./UserEvents";
 
 interface ProfileCardContentProps {
   user: UserType;
@@ -15,6 +16,14 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
         <p className="font-bold text-foreground">Who am I?</p>
         <p className="text-muted-foreground">{user.bio}</p>
       </div>
+
+      {/* Events */}
+      {user.events && user.events.length > 0 && (
+        <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
+          <p className="font-bold text-foreground">You can find me at</p>
+          <UserEvents user={user} />
+        </div>
+      )}
 
       {/* Talent score */}
       {user.talent_score && user.talent_score > 0 ? (
