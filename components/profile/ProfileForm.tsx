@@ -13,6 +13,7 @@ import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ProfileQuery } from "@/lib/airstack/types";
+import { checkForBadWords } from "@/utils/language/badWordChecker";
 
 interface ProfileFormProps {
   initialData: UserType;
@@ -137,6 +138,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (checkForBadWords(profileData.name) || checkForBadWords(profileData.bio || '')) {
+      toast({
+        title: "🙈 Oops!",
+        description: "Please keep it friendly - no bad words allowed!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit(profileData);
