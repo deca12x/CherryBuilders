@@ -8,7 +8,10 @@ export async function GET(req: NextRequest) {
 
   if (!address) {
     console.error("Missing required parameters");
-    return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required parameters" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -20,7 +23,9 @@ export async function GET(req: NextRequest) {
       .single();
 
     // Fetch all the events from the database
-    const { data: eventsData, error: eventsError } = await supabase.from("events").select("*");
+    const { data: eventsData, error: eventsError } = await supabase
+      .from("events")
+      .select("*");
 
     // If there was an error fetching the data, return the default filters
     if (eventsError || filtersError) {
@@ -32,20 +37,25 @@ export async function GET(req: NextRequest) {
             tags: {
               "Frontend dev": false,
               "Backend dev": false,
-              "Solidity dev": false,
+              "Smart contract dev": false,
               Designer: false,
               "Talent scout": false,
-              "Business dev": false,
+              "Biz dev": false,
+              Artist: false,
+              "Here for the lolz": false,
             },
             events: !eventsData
               ? {}
-              : eventsData.reduce((acc: FiltersProp["events"], event: EventType) => {
-                  acc[event.slug] = {
-                    name: event.name,
-                    selected: false,
-                  };
-                  return acc;
-                }, {}),
+              : eventsData.reduce(
+                  (acc: FiltersProp["events"], event: EventType) => {
+                    acc[event.slug] = {
+                      name: event.name,
+                      selected: false,
+                    };
+                    return acc;
+                  },
+                  {}
+                ),
           },
         },
         { status: 200 }
@@ -60,24 +70,32 @@ export async function GET(req: NextRequest) {
       tags: {
         "Frontend dev": tags.includes("Frontend dev"),
         "Backend dev": tags.includes("Backend dev"),
-        "Solidity dev": tags.includes("Solidity dev"),
+        "Smart contract dev": tags.includes("Smart contract dev"),
         Designer: tags.includes("Designer"),
         "Talent scout": tags.includes("Talent scout"),
-        "Business dev": tags.includes("Business dev"),
+        "Biz dev": tags.includes("Biz dev"),
+        Artist: tags.includes("Artist"),
+        "Here for the lolz": tags.includes("Here for the lolz"),
       },
-      events: eventsData.reduce((acc: FiltersProp["events"], event: EventType) => {
-        acc[event.slug] = {
-          name: event.name,
-          selected: userEvents.includes(event.slug),
-        };
-        return acc;
-      }, {}),
+      events: eventsData.reduce(
+        (acc: FiltersProp["events"], event: EventType) => {
+          acc[event.slug] = {
+            name: event.name,
+            selected: userEvents.includes(event.slug),
+          };
+          return acc;
+        },
+        {}
+      ),
     };
 
     return NextResponse.json({ data: filters }, { status: 200 });
   } catch (error) {
     console.error("Internal Server Error: ", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -87,7 +105,10 @@ export async function PUT(req: NextRequest) {
 
   if (!address || !tags || !events) {
     console.error("Missing required parameters");
-    return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required parameters" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -105,9 +126,15 @@ export async function PUT(req: NextRequest) {
 
     if (filtersError) throw filtersError;
 
-    return NextResponse.json({ message: "Filters updated succesfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Filters updated succesfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Internal Server Error: ", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
