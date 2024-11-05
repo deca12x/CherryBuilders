@@ -1,41 +1,31 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { K2D } from "next/font/google";
-import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
-import UserTags from "../matching/UserTags";
+import { LandingProfile } from "@/lib/landing/types";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
 interface MiniProfileCardProps {
-  user: UserType;
-  imageIndex?: number;
-  animateFrame?: boolean;
+  profile: LandingProfile;
 }
 
-export default function MiniProfileCard({
-  user,
-  imageIndex = 0,
-  animateFrame = false,
-}: MiniProfileCardProps) {
+export default function MiniProfileCard({ profile }: MiniProfileCardProps) {
   return (
     <AnimatePresence mode="wait">
       <div key="mini-header-container">
         <motion.div
-          key={user.evm_address}
+          key={profile.index}
           className="flex sm:gap-5 gap-4"
-          initial={{ x: animateFrame ? 400 : 0, opacity: animateFrame ? 0 : 1 }}
+          initial={{ x: 400, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: animateFrame ? -400 : 0, opacity: animateFrame ? 0 : 1 }}
+          exit={{ x: -400, opacity: 0 }}
           transition={{ type: "spring", duration: 0.52 }}
         >
           <div className="flex justify-center items-center bg-primary-foreground sm:w-[90px] sm:h-[90px] w-[70px] h-[70px] rounded-full overflow-hidden flex-shrink-0">
             <Image
-              src={
-                user.profile_pictures[imageIndex] ??
-                "/images/default_propic.jpeg"
-              }
-              alt={user.name}
+              src={profile.image}
+              alt={profile.name}
               className="rounded-full object-cover sm:w-[86px] sm:h-[86px] w-[66px] h-[66px]"
               width={100}
               height={100}
@@ -45,9 +35,18 @@ export default function MiniProfileCard({
             <div
               className={`${k2d.className} sm:text-3xl text-2xl font-bold text-primary-foreground`}
             >
-              {user.name}
+              {profile.name}
             </div>
-            <UserTags user={user} />
+            <div className="flex justify-start items-center cursor-default sm:gap-2 gap-1.5 pb-2 sm:pb-0 pr-0.5 overflow-x-auto">
+              {profile.tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="flex text-nowrap bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm"
+                >
+                  {tag}
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

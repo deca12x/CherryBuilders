@@ -8,6 +8,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { getUser } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MiniProfileCard from "@/components/landing/miniProfileCard";
+import { LANDING_PROFILES } from "@/lib/landing/data";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -82,7 +83,7 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
-      {/* <MiniProfileCard user={userObject} /> */}
+      <MiniProfileCard profile={LANDING_PROFILES[0]} />
     </main>
   );
 }
