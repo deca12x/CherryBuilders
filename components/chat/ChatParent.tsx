@@ -5,12 +5,10 @@ import ChatHeader from "@/components/chat/ChatHeader";
 import ChatSidebar from "@/components/chat/ChatSideBar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
-import { supabase } from "@/lib/supabase/supabase-client";
 import {ChatParentProps, User } from "@/lib/types";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
-import BottomNavigationBar from "../navbar/BottomNavigationBar";
 import { ChatMessageType } from "@/lib/supabase/types";
 import { getUser } from "@/lib/supabase/utils";
 import { usePrivy } from '@privy-io/react-auth';
@@ -211,7 +209,6 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
           handleSend={handleSend}
         />
       </div>
-      <BottomNavigationBar />
     </div>
   );
 }

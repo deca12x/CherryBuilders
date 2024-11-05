@@ -1,8 +1,17 @@
+"use client";
 import { MessageCircle, Handshake, User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
+// These are the paths where the bottom navigation bar should be hidden
+const hiddenPaths = ["/", "/verify/event", "/verify"];
 
 const BottomNavigationBar = () => {
   const Router = useRouter();
+  const pathname = usePathname();
+
+  if (hiddenPaths.includes(pathname)) {
+    return null;
+  }
 
   return (
     <nav className="fixed z-40 bottom-0 left-0 right-0 bg-card shadow-lg">

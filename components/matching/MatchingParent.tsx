@@ -1,7 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { K2D } from "next/font/google";
-import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import { usePrivy } from "@privy-io/react-auth";
@@ -19,7 +17,6 @@ import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
 import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
-import ActionButtons from "./ActionButtons";
 
 interface MatchingContentProps {
   jwt: string | null;
@@ -152,9 +149,6 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           handleAccept={handleAccept}
           handleReject={handleReject}
         />
-
-        {/* Navigation */}
-        <BottomNavigationBar />
 
         {/* Match Modal */}
         <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
