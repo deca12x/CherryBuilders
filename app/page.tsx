@@ -1,17 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { K2D } from "next/font/google";
-import { Card, CardContent } from "@/components/ui/card";
-import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { getUser } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MiniProfileCard from "@/components/landing/miniProfileCard";
 import { LANDING_PROFILES } from "@/lib/landing/data";
-
-const k2d = K2D({ weight: "600", subsets: ["latin"] });
-
+import WelcomeCard from "@/components/landing/welcomeCard";
 export default function Home() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
@@ -20,6 +15,7 @@ export default function Home() {
   const [jwt, setJwt] = useState<string | null>("");
 
   const address = user?.wallet?.address;
+  const isAuthenticated = !!(user && address && ready && jwt);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -52,37 +48,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center sm:p-24 p-3 bg-background">
-      <Card className="w-full max-w-[90vw] sm:max-w-xl">
-        <CardContent className="pt-6">
-          <h1
-            className={`text-3xl font-bold text-center text-primary ${k2d.className}`}
-          >
-            Welcome to
-          </h1>
-          <h1
-            className={`text-5xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}
-          >
-            cherry.builders
-          </h1>
-          <div className="flex flex-col justify-center items-center mt-7 gap-3">
-            {user && address && ready && jwt ? (
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-center text-lg text-primary-foreground">
-                  Wallet connected!
-                </p>
-                <p className="text-center text-lg text-primary-foreground">
-                  Redirecting...
-                </p>
-              </div>
-            ) : (
-              <ConnectButton />
-            )}
-            <p className="text-sm text-center text-muted-foreground mt-4">
-              Cherry is currently under development, use at your own discretion
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <WelcomeCard isAuthenticated={isAuthenticated} />
       <MiniProfileCard profile={LANDING_PROFILES[0]} />
     </main>
   );
