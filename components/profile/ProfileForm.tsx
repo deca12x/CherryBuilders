@@ -225,6 +225,41 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     },
   };
 
+  const formatSocialLink = (value: string, platform: 'github' | 'twitter' | 'farcaster') => {
+    if (!value) return '';
+    
+    // Remove @ if present and trim whitespace
+    let handle = value.trim();
+    handle = handle.startsWith('@') ? handle.substring(1) : handle;
+
+    // If it's already a full URL with http/https, return as is
+    if (handle.startsWith('http')) return handle;
+
+    // Extract handle from various URL formats and clean it
+    if (platform === 'github') {
+      if (handle.includes('github.com/')) {
+        handle = handle.split('github.com/').pop() || handle;
+      }
+      return `https://github.com/${handle}`;
+    }
+    
+    if (platform === 'twitter') {
+      if (handle.includes('twitter.com/') || handle.includes('x.com/')) {
+        handle = handle.split(/(?:twitter\.com\/|x\.com\/)/).pop() || handle;
+      }
+      return `https://twitter.com/${handle}`;
+    }
+    
+    if (platform === 'farcaster') {
+      if (handle.includes('warpcast.com/')) {
+        handle = handle.split('warpcast.com/').pop() || handle;
+      }
+      return `https://warpcast.com/${handle}`;
+    }
+
+    return value;
+  };
+
   return (
     <motion.form
       onSubmit={handleSubmit}
@@ -356,19 +391,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         <Input
           placeholder="GitHub"
           value={profileData.github_link || ""}
-          onChange={(e) => handleChange("github_link", e.target.value)}
+          onChange={(e) => handleChange("github_link", formatSocialLink(e.target.value, 'github'))}
           maxLength={255}
         />
         <Input
           placeholder="X (Twitter)"
           value={profileData.twitter_link || ""}
-          onChange={(e) => handleChange("twitter_link", e.target.value)}
+          onChange={(e) => handleChange("twitter_link", formatSocialLink(e.target.value, 'twitter'))}
           maxLength={255}
         />
         <Input
           placeholder="Farcaster"
           value={profileData.farcaster_link || ""}
-          onChange={(e) => handleChange("farcaster_link", e.target.value)}
+          onChange={(e) => handleChange("farcaster_link", formatSocialLink(e.target.value, 'farcaster'))}
           maxLength={255}
         />
         <Input
