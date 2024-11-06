@@ -14,7 +14,7 @@ const WelcomeCard = forwardRef<HTMLDivElement, WelcomeCardProps>(
     return (
       <div
         ref={ref}
-        className="flex flex-col items-center justify-center w-full max-w-[90vw] sm:max-w-xl p-6"
+        className="flex flex-col items-center justify-center w-full max-w-[90vw] sm:max-w-xl p-3 sm:p-6"
       >
         <h1
           className={`text-3xl font-bold text-center text-primary ${k2d.className}`}

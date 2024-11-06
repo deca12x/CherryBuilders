@@ -85,7 +85,7 @@ export default function Home() {
 
   // Render
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center sm:p-24 p-3 bg-background">
+    <main className="fixed inset-0 flex flex-col items-center justify-center bg-background overflow-hidden">
       <WelcomeCard ref={welcomeCardRef} isAuthenticated={isAuthenticated} />
       {nodes.map((node) => (
         <div
