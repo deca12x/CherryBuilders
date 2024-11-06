@@ -31,8 +31,16 @@ export default function useCardFloating({
     const isMobile = width < 640;
 
     const simulation = forceSimulation(nodes)
+      .alphaDecay(0) // Prevent cooling
+      .alphaMin(0) // Never stop
       .force("charge", forceManyBody().strength(isMobile ? -30 : -50))
-      .force("collision", forceCollide().radius(isMobile ? 40 : 60))
+      .force(
+        "collision",
+        forceCollide()
+          .radius(isMobile ? 40 : 60)
+          .strength(1)
+          .iterations(4)
+      )
       .force("safezone", (alpha: number) => {
         simulation.nodes().forEach((node: ForceNode) => {
           if (
@@ -51,6 +59,11 @@ export default function useCardFloating({
       });
 
     simulation.on("tick", () => {
+      // Constrain nodes to screen bounds
+      simulation.nodes().forEach((node: ForceNode) => {
+        node.x = Math.max(0, Math.min(width, node.x));
+        node.y = Math.max(0, Math.min(height, node.y));
+      });
       setNodes([...simulation.nodes()]);
     });
 
