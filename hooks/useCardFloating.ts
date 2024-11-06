@@ -1,24 +1,17 @@
 import { useEffect, useState } from "react";
-import {
-  forceSimulation,
-  forceManyBody,
-  forceCollide,
-  forceCenter,
-} from "d3-force";
-import { ForceNode, SafeZone } from "@/lib/landing/types";
+import { forceSimulation, forceManyBody, forceCollide } from "d3-force";
+import { ForceNode } from "@/lib/landing/types";
 
 interface UseCardFloatingProps {
   count: number;
   width: number;
   height: number;
-  safeZone: SafeZone;
 }
 
 export default function useCardFloating({
   count,
   width,
   height,
-  safeZone,
 }: UseCardFloatingProps) {
   const [nodes, setNodes] = useState<ForceNode[]>([]);
   useEffect(() => {
@@ -40,23 +33,7 @@ export default function useCardFloating({
           .radius(isMobile ? 40 : 60)
           .strength(1)
           .iterations(4)
-      )
-      .force("safezone", (alpha: number) => {
-        simulation.nodes().forEach((node: ForceNode) => {
-          if (
-            node.x > safeZone.left &&
-            node.x < safeZone.right &&
-            node.y > safeZone.top &&
-            node.y < safeZone.bottom
-          ) {
-            // Push node away from center of safe zone
-            const centerX = (safeZone.left + safeZone.right) / 2;
-            const centerY = (safeZone.top + safeZone.bottom) / 2;
-            node.vx = (node.x - centerX) * alpha;
-            node.vy = (node.y - centerY) * alpha;
-          }
-        });
-      });
+      );
 
     simulation.on("tick", () => {
       // Constrain nodes to screen bounds
@@ -70,7 +47,7 @@ export default function useCardFloating({
     return () => {
       simulation.stop();
     };
-  }, [count, width, height, safeZone]);
+  }, [count, width, height]);
 
   return nodes;
 }
