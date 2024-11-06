@@ -40,7 +40,7 @@ const WelcomeCard = forwardRef<HTMLDivElement, WelcomeCardProps>(
             <ConnectButton />
           )}
           <p className="text-sm text-center text-muted-foreground mt-4">
-            Cherry is currently under development, use at your own discretion
+            Find collaborators for your next hackathon or conference
           </p>
         </div>
       </div>

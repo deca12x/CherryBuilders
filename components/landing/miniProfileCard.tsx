@@ -4,6 +4,7 @@ import { K2D } from "next/font/google";
 import Image from "next/image";
 import { MiniProfile } from "@/lib/landing/types";
 import { Card, CardContent } from "@/components/ui/card";
+import UserTags from "@/components/matching/UserTags";
 
 const k2d = K2D({ weight: "600", subsets: ["latin"] });
 
@@ -13,7 +14,7 @@ interface MiniProfileCardProps {
 
 export default function MiniProfileCard({ profile }: MiniProfileCardProps) {
   return (
-    <Card className="w-full max-w-[280px] sm:max-w-[280px] max-w-[200px]">
+    <Card className="w-[280px]">
       <CardContent className="p-3">
         <AnimatePresence mode="wait">
           <motion.div
@@ -39,21 +40,7 @@ export default function MiniProfileCard({ profile }: MiniProfileCardProps) {
               >
                 {profile.name}
               </h3>
-              <div className="flex flex-wrap gap-1 mt-0.5">
-                {profile.tags.slice(0, 2).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-block bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full text-[10px] whitespace-nowrap"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {profile.tags.length > 2 && (
-                  <span className="inline-block text-[10px] text-muted-foreground">
-                    +{profile.tags.length - 2}
-                  </span>
-                )}
-              </div>
+              <UserTags user={{ tags: profile.tags }} size="sm" />
             </div>
           </motion.div>
         </AnimatePresence>
