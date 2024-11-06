@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { getUser } from "@/lib/supabase/utils";
@@ -7,29 +7,45 @@ import ErrorCard from "@/components/ui/error-card";
 import MiniProfileCard from "@/components/landing/miniProfileCard";
 import { LANDING_PROFILES } from "@/lib/landing/data";
 import WelcomeCard from "@/components/landing/welcomeCard";
+import useWindowSize from "@/hooks/useWindowSize";
+import useCardFloating from "@/hooks/useCardFloating";
+import { SafeZone } from "@/lib/landing/types";
+
 export default function Home() {
+  // Third-party hooks
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
 
+  // Refs
+  const welcomeCardRef = useRef<HTMLDivElement>(null);
+
+  // State hooks
   const [error, setError] = useState(false);
   const [jwt, setJwt] = useState<string | null>("");
+  const [safeZone, setSafeZone] = useState<SafeZone>({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  });
 
+  // Custom hooks
+  const { width, height } = useWindowSize();
+
+  // Derived state
   const address = user?.wallet?.address;
   const isAuthenticated = !!(user && address && ready && jwt);
 
+  // Effects
   useEffect(() => {
     const checkUser = async () => {
       if (!address || !user || !ready) return;
 
-      // setting the jwt as a state variable to avoid stale closure
       const token = await getAccessToken();
       setJwt(token);
 
-      // check if the user exists in the database
       const { success, data, error } = await getUser(address, token);
 
-      // if the user is not found, redirect to the profile creation page
-      // if the user is found, redirect to the matching page
       if (!success && error) {
         setError(true);
       } else if (data) {
@@ -42,14 +58,47 @@ export default function Home() {
     checkUser();
   }, [address, router, user, ready]);
 
+  useEffect(() => {
+    if (welcomeCardRef.current) {
+      const rect = welcomeCardRef.current.getBoundingClientRect();
+      setSafeZone({
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left,
+        right: rect.right,
+      });
+    }
+  }, [width, height]);
+
+  // Hooks that depend on state
+  const nodes = useCardFloating({
+    count: LANDING_PROFILES.length,
+    width,
+    height,
+    safeZone,
+  });
+
+  // Early returns
   if (error) {
     return <ErrorCard />;
   }
 
+  // Render
   return (
     <main className="flex min-h-screen flex-col items-center justify-center sm:p-24 p-3 bg-background">
-      <WelcomeCard isAuthenticated={isAuthenticated} />
-      <MiniProfileCard profile={LANDING_PROFILES[0]} />
+      <WelcomeCard ref={welcomeCardRef} isAuthenticated={isAuthenticated} />
+      {nodes.map((node) => (
+        <div
+          key={node.index}
+          style={{
+            position: "absolute",
+            left: `${node.x}px`,
+            top: `${node.y}px`,
+          }}
+        >
+          <MiniProfileCard profile={LANDING_PROFILES[node.index]} />
+        </div>
+      ))}
     </main>
   );
 }
