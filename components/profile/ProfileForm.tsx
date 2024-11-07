@@ -13,6 +13,7 @@ import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ProfileQuery } from "@/lib/airstack/types";
+import { checkForBadWords } from "@/utils/language/badWordChecker";
 
 interface ProfileFormProps {
   initialData: UserType;
@@ -154,6 +155,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (checkForBadWords(profileData.name) || checkForBadWords(profileData.bio || '')) {
+      toast({
+        title: "🙈 Oops!",
+        description: "Please keep it friendly - no bad words allowed!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit(profileData);
@@ -231,6 +242,41 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       y: 0,
       opacity: 1,
     },
+  };
+
+  const formatSocialLink = (value: string, platform: 'github' | 'twitter' | 'farcaster') => {
+    if (!value) return '';
+    
+    // Remove @ if present and trim whitespace
+    let handle = value.trim();
+    handle = handle.startsWith('@') ? handle.substring(1) : handle;
+
+    // If it's already a full URL with http/https, return as is
+    if (handle.startsWith('http')) return handle;
+
+    // Extract handle from various URL formats and clean it
+    if (platform === 'github') {
+      if (handle.includes('github.com/')) {
+        handle = handle.split('github.com/').pop() || handle;
+      }
+      return `https://github.com/${handle}`;
+    }
+    
+    if (platform === 'twitter') {
+      if (handle.includes('twitter.com/') || handle.includes('x.com/')) {
+        handle = handle.split(/(?:twitter\.com\/|x\.com\/)/).pop() || handle;
+      }
+      return `https://twitter.com/${handle}`;
+    }
+    
+    if (platform === 'farcaster') {
+      if (handle.includes('warpcast.com/')) {
+        handle = handle.split('warpcast.com/').pop() || handle;
+      }
+      return `https://warpcast.com/${handle}`;
+    }
+
+    return value;
   };
 
   return (
@@ -400,19 +446,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         <Input
           placeholder="GitHub"
           value={profileData.github_link || ""}
-          onChange={(e) => handleChange("github_link", e.target.value)}
+          onChange={(e) => handleChange("github_link", formatSocialLink(e.target.value, 'github'))}
           maxLength={255}
         />
         <Input
           placeholder="X (Twitter)"
           value={profileData.twitter_link || ""}
-          onChange={(e) => handleChange("twitter_link", e.target.value)}
+          onChange={(e) => handleChange("twitter_link", formatSocialLink(e.target.value, 'twitter'))}
           maxLength={255}
         />
         <Input
           placeholder="Farcaster"
           value={profileData.farcaster_link || ""}
-          onChange={(e) => handleChange("farcaster_link", e.target.value)}
+          onChange={(e) => handleChange("farcaster_link", formatSocialLink(e.target.value, 'farcaster'))}
           maxLength={255}
         />
         <Input
