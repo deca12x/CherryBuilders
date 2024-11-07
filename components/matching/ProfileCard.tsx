@@ -1,6 +1,6 @@
 import { UserType } from "@/lib/supabase/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { Frown, Smile } from "lucide-react";
+import { Frown, Smile, MessageCircle } from "lucide-react";
 import ProfileCardSkeleton from "./ProfileCardSkeleton";
 import ProfileCardContent from "./ProfileCardContent";
 import NoUsersFound from "./NoUsersFound";
@@ -68,6 +68,16 @@ export default function ProfileCard({
             >
               {processingAction === "accept" ? (
                 <Smile size={64} className="text-green-500" />
+              ) : processingAction === "icebreaker" ? (
+                <motion.div 
+                  className="flex flex-col items-center gap-2"
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", bounce: 0.5 }}
+                >
+                  <MessageCircle size={64} className="text-blue-500" />
+                 
+                </motion.div>
               ) : (
                 <Frown size={64} className="text-gray-500" />
               )}
