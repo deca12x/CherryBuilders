@@ -20,6 +20,7 @@ import FiltersModal from "@/components/matching/FiltersModal";
 import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
 import ActionButtons from "./ActionButtons";
+import { sendMatchingEmail } from "@/lib/email/sendMatchingEmail";
 
 interface MatchingContentProps {
   jwt: string | null;
@@ -39,7 +40,7 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
-  const [processingAction, setProcessingAction] = useState<"accept" | "reject" | null>(null);
+  const [processingAction, setProcessingAction] = useState<"accept" | "reject" | "icebreaker" | null>(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
 
   const currentUser = fetchedUsers[currentUserIndex];
@@ -95,11 +96,79 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         if (!specificChat.success) throw new Error(specificChat.error);
 
         // SEND EMAIL NOTIFICATIONS TO MATCHES
+    
+
         // CREATE A sendEmailNotification FUNCTION
 
         setIsMatchModalOpen(true);
         setIsProfilesEndedModalOpen(false);
         setMatchedChatId(specificChat.data?.id);
+
+        
+        if(currentUser.emailMarketing) {
+          await sendMatchingEmail({
+            matchedWith: currentUser.name,
+            matchedWithImage: currentUser.profile_pictures[0] || "",
+            matchedWithBio: currentUser.bio,
+            chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
+            receiverEmail: currentUser?.email || "" as string,
+            jwt: jwt as string
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error in checkMatch:", error);
+    }
+  };
+
+
+  const checkMatchWithIceBreaker = async (message: string) => {
+    if (!address || !currentUser) return;
+
+    try {
+      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
+
+      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
+
+      // If no partial match is found create one
+      if (partialMatch.data.length === 0) {
+        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
+        if (!newMatch.success) throw Error(newMatch.error);
+      }
+
+      // If a match is found, update it
+      else if (partialMatch.data.length > 0) {
+        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
+        if (!updatedMatch.success) throw Error(updatedMatch.error);
+
+        // Create a chat between the two users
+        const newChat = await createChat(address, currentUser.evm_address, jwt);
+        if (!newChat.success) throw Error(newChat.error);
+
+        // Get the chat ID
+        const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
+        if (!specificChat.success) throw new Error(specificChat.error);
+
+        // SEND EMAIL NOTIFICATIONS TO MATCHES
+    
+
+        // CREATE A sendEmailNotification FUNCTION
+
+        setIsMatchModalOpen(true);
+        setIsProfilesEndedModalOpen(false);
+        setMatchedChatId(specificChat.data?.id);
+
+        
+        if(currentUser.emailMarketing) {
+          await sendMatchingEmail({
+            matchedWith: currentUser.name,
+            matchedWithImage: currentUser.profile_pictures[0] || "",
+            matchedWithBio: currentUser.bio,
+            chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
+            receiverEmail: currentUser?.email || "" as string,
+            jwt: jwt as string
+          });
+        }
       }
     } catch (error) {
       console.error("Error in checkMatch:", error);
@@ -135,6 +204,10 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
     setProcessingAction(null);
   };
 
+  const handleIcebreaker = async (message: string) => {
+  console.log('hey')
+  };
+
   if (error) {
     return <ErrorCard />;
   } else if (user && address && ready) {
@@ -151,6 +224,7 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           setIsFiltersModalOpen={setIsFiltersModalOpen}
           handleAccept={handleAccept}
           handleReject={handleReject}
+          handleIcebreaker={handleIcebreaker}
         />
 
         {/* Navigation */}

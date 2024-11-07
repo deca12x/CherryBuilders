@@ -9,18 +9,20 @@ import UserEvents from "./UserEvents";
 import ProfileCardHeader from "./ProfileCardHeader";
 import ActionButtons from "./ActionButtons";
 import FiltersButton from "./FiltersButton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import IcebreakerModal from "./IcebreakerModal";
 
 interface ProfileCardProps {
   user: UserType | null;
   imageIndex: number;
   isLoading: boolean;
-  processingAction: "accept" | "reject" | null;
+  processingAction: "accept" | "reject" | "icebreaker" | null;
   animateFrame: boolean;
   setAnimateFrame: (value: boolean) => void;
   setIsFiltersModalOpen: (value: boolean) => void;
   handleReject: () => void;
   handleAccept: () => void;
+  handleIcebreaker: (message: string) => void;
 }
 
 export default function ProfileCard({
@@ -33,7 +35,10 @@ export default function ProfileCard({
   setIsFiltersModalOpen,
   handleReject,
   handleAccept,
+  handleIcebreaker,
 }: ProfileCardProps) {
+  const [isIcebreakerModalOpen, setIsIcebreakerModalOpen] = useState(false);
+
   // Prevent scrolling when processing an action
   useEffect(() => {
     if (processingAction) {
@@ -101,11 +106,26 @@ export default function ProfileCard({
       {/* Buttons */}
       {user && (
         <div className="fixed w-full max-w-xl flex bottom-[75px] justify-center items-center">
-          <ActionButtons onReject={handleReject} onAccept={handleAccept} isLoading={isLoading} />
+          <ActionButtons 
+            onReject={handleReject} 
+            onAccept={handleAccept} 
+            onIcebreaker={() => setIsIcebreakerModalOpen(true)}
+            isLoading={isLoading} 
+          />
           <div className="absolute right-4">
             <FiltersButton onOpenFilters={() => setIsFiltersModalOpen(true)} showText={false} />
           </div>
         </div>
+      )}
+
+      {/* Icebreaker Modal */}
+      {user && (
+        <IcebreakerModal
+          isOpen={isIcebreakerModalOpen}
+          onClose={() => setIsIcebreakerModalOpen(false)}
+          onSend={handleIcebreaker}
+          user={user}
+        />
       )}
     </>
   ) : (
