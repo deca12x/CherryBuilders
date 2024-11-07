@@ -5,13 +5,13 @@ import ChatHeader from "@/components/chat/ChatHeader";
 import ChatSidebar from "@/components/chat/ChatSideBar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
-import {ChatParentProps, User } from "@/lib/types";
+import { ChatParentProps, User } from "@/lib/types";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import { ChatMessageType } from "@/lib/supabase/types";
 import { getUser } from "@/lib/supabase/utils";
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy } from "@privy-io/react-auth";
 import { createSupabaseClient } from "@/lib/supabase/supabase-client";
 
 export default function ChatParent({ userAddress, chatId, authToken }: ChatParentProps) {
@@ -148,6 +148,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
         created_at: new Date().toISOString(),
         type: type,
         requestId: requestId,
+        read: false,
       };
 
       console.log("Adding message to UI:", newMessage);
@@ -200,7 +201,12 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
       {/* Chat Area */}
       <div className="flex-1 flex flex-col p-2 pb-12">
         <ChatHeader name={otherUser?.name || "Loading..."} />
-        <MessageList key={currentChat.length} messages={currentChat} currentUserAddress={userAddress} authToken={authToken} />
+        <MessageList
+          key={currentChat.length}
+          messages={currentChat}
+          currentUserAddress={userAddress}
+          authToken={authToken}
+        />
         <MessageInput
           payeeAddress={userAddress}
           payerAddress={otherUser?.address as string}
