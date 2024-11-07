@@ -3,7 +3,7 @@ import { ForceNode } from "@/lib/landing/types";
 import { LANDING_PROFILES } from "@/lib/landing/data";
 
 const MAX_VISIBLE = 8;
-const DISPLAY_INTERVAL = 1000;
+const DISPLAY_INTERVAL = 2000;
 
 interface UseCardFloatingProps {
   count: number;
@@ -19,23 +19,34 @@ export default function useCardFloating({
   const [visibleMiniProfiles, setVisibleMiniProfiles] = useState<ForceNode[]>(
     []
   );
-  const [currentPosition, setCurrentPosition] = useState(0);
   const [shuffledProfiles] = useState(() =>
     [...LANDING_PROFILES].sort(() => Math.random() - 0.5)
   );
 
   const selectedProfilesRef = useRef<number[]>([]);
+  const positionRef = useRef(0);
 
   useEffect(() => {
+    // const positions = [
+    //   { x: -320, y: -180 },
+    //   { x: 0, y: -280 },
+    //   { x: 320, y: -180 },
+    //   { x: -400, y: 0 },
+    //   { x: 400, y: 0 },
+    //   { x: -320, y: 180 },
+    //   { x: 0, y: 280 },
+    //   { x: 320, y: 180 },
+    // ];
+
     const positions = [
-      { x: -320, y: -180 },
-      { x: 0, y: -280 },
-      { x: 320, y: -180 },
-      { x: -400, y: 0 },
       { x: 400, y: 0 },
-      { x: -320, y: 180 },
       { x: 0, y: 280 },
+      { x: -320, y: -180 },
+      { x: 320, y: -180 },
+      { x: -320, y: 180 },
+      { x: 0, y: -280 },
       { x: 320, y: 180 },
+      { x: -400, y: 0 },
     ];
 
     const addNextProfile = () => {
@@ -52,13 +63,14 @@ export default function useCardFloating({
         nextProfileId,
       ];
 
+      positionRef.current = (positionRef.current + 1) % positions.length;
+
       // Update visible profiles
       setVisibleMiniProfiles((prev) => {
-        const positionIndex = prev.length % positions.length;
         const nextNode = {
           index: nextProfileId,
-          x: width / 2 + positions[positionIndex].x,
-          y: height / 2 + positions[positionIndex].y,
+          x: width / 2 + positions[positionRef.current].x,
+          y: height / 2 + positions[positionRef.current].y,
           vx: 0,
           vy: 0,
         };
