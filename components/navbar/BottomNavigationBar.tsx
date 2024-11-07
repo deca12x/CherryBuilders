@@ -14,11 +14,11 @@ const BottomNavigationBar = () => {
   }
 
   return (
-    <nav className="fixed z-40 bottom-0 left-0 right-0 bg-card shadow-lg">
+    <nav className="fixed z-50 bottom-0 left-0 right-0 bg-card shadow-lg">
       <div className="flex justify-around items-center py-2">
         <button
           onClick={() => {
-            Router.push("/chat");
+            Router.push("/chat2");
           }}
           className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
           aria-label="Messages"
