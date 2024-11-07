@@ -27,8 +27,8 @@ export const LANDING_PROFILES: MiniProfile[] = [
   },
   {
     index: 3,
-    name: "Deca",
-    image: "/images/landing/deca.png",
+    name: "4th",
+    image: "/images/default_propic.jpeg",
     tags: [
       "Frontend dev",
       "Backend dev",
@@ -39,20 +39,20 @@ export const LANDING_PROFILES: MiniProfile[] = [
   },
   {
     index: 4,
-    name: "Blackicon",
-    image: "/images/landing/black.png",
+    name: "5th",
+    image: "/images/default_propic.jpeg",
     tags: ["Backend dev", "Frontend dev"],
   },
   {
     index: 5,
-    name: "Alex Astro",
-    image: "/images/landing/alex.png",
+    name: "6th",
+    image: "/images/default_propic.jpeg",
     tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
   },
   {
     index: 6,
-    name: "Deca",
-    image: "/images/landing/deca.png",
+    name: "7th",
+    image: "/images/default_propic.jpeg",
     tags: [
       "Frontend dev",
       "Backend dev",
@@ -63,14 +63,32 @@ export const LANDING_PROFILES: MiniProfile[] = [
   },
   {
     index: 7,
-    name: "Blackicon",
-    image: "/images/landing/black.png",
+    name: "8th",
+    image: "/images/default_propic.jpeg",
     tags: ["Backend dev", "Frontend dev"],
   },
   {
     index: 8,
-    name: "Alex Astro",
-    image: "/images/landing/alex.png",
+    name: "9th",
+    image: "/images/default_propic.jpeg",
     tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
+  },
+  {
+    index: 9,
+    name: "10th",
+    image: "/images/default_propic.jpeg",
+    tags: ["Backend dev", "Frontend dev"],
+  },
+  {
+    index: 10,
+    name: "11th",
+    image: "/images/default_propic.jpeg",
+    tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
+  },
+  {
+    index: 11,
+    name: "12th",
+    image: "/images/default_propic.jpeg",
+    tags: ["Backend dev", "Frontend dev"],
   },
 ];

@@ -49,7 +49,7 @@ export default function Home() {
 
   // Hooks that depend on state
   const nodes = useCardFloating({
-    count: LANDING_PROFILES.length,
+    count: 8,
     width,
     height,
   });
@@ -70,6 +70,7 @@ export default function Home() {
             position: "absolute",
             left: `${node.x}px`,
             top: `${node.y}px`,
+            transform: "translate(-50%, -50%)",
           }}
         >
           <MiniProfileCard profile={LANDING_PROFILES[node.index]} />
