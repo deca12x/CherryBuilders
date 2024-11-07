@@ -32,6 +32,7 @@ export interface ChatMessageType {
   requestId?: string;
   paid?: boolean;
   chain_id?: number;
+  read: boolean;
 }
 
 export interface ApiKeyType {
