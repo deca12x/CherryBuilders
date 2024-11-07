@@ -205,7 +205,59 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
   };
 
   const handleIcebreaker = async (message: string) => {
-  console.log('hey')
+    if (!address || !currentUser) return;
+    setProcessingAction("icebreaker");
+
+    try {
+      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
+      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
+
+      // Create chat regardless of match status
+      const newChat = await createChat(address, currentUser.evm_address, jwt);
+      if (!newChat.success) throw Error(newChat.error);
+
+      // Get the chat ID
+      const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
+      if (!specificChat.success) throw new Error(specificChat.error);
+
+      // If no partial match exists, create one
+      if (partialMatch.data.length === 0) {
+        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
+        if (!newMatch.success) throw Error(newMatch.error);
+      } 
+      // If a match exists, update it
+      else {
+        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
+        if (!updatedMatch.success) throw Error(updatedMatch.error);
+      }
+
+      // Send email notification if user has opted in
+      if (currentUser.emailMarketing) {
+        await sendMatchingEmail({
+          matchedWith: currentUser.name,
+          matchedWithImage: currentUser.profile_pictures[0] || "",
+          matchedWithBio: currentUser.bio,
+          chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
+          receiverEmail: currentUser?.email || "",
+          jwt: jwt as string,
+          message: message // Add the icebreaker message to the email
+        });
+      }
+
+      // Move to next profile
+      if (currentUserIndex !== fetchedUsers.length - 1) {
+        setAnimateFrame(true);
+        setCurrentUserIndex((prev) => prev + 1);
+        setCurrentImageIndex(0);
+      } else {
+        setIsProfilesEndedModalOpen(true);
+      }
+
+    } catch (error) {
+      console.error("Error in handleIcebreaker:", error);
+    } finally {
+      setProcessingAction(null);
+    }
   };
 
   if (error) {

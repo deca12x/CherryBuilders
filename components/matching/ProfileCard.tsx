@@ -111,6 +111,8 @@ export default function ProfileCard({
             onAccept={handleAccept} 
             onIcebreaker={() => setIsIcebreakerModalOpen(true)}
             isLoading={isLoading} 
+            userHasEmailNotifsOn={user.emailNotifications || false}
+            userHasEmail={user.email ? true : false}
           />
           <div className="absolute right-4">
             <FiltersButton onOpenFilters={() => setIsFiltersModalOpen(true)} showText={false} />

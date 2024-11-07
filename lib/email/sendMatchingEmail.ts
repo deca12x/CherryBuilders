@@ -5,6 +5,7 @@ interface SendMatchingEmailParams {
   chatLink: string;
   receiverEmail?: string;
   jwt: string;
+  message?: string;
 }
 
 export async function sendMatchingEmail({
@@ -13,7 +14,8 @@ export async function sendMatchingEmail({
   matchedWithBio,
   chatLink,
   receiverEmail,
-  jwt
+  jwt,
+  message
 }: SendMatchingEmailParams) {
   try {
 
@@ -33,6 +35,7 @@ export async function sendMatchingEmail({
         matchedWithBio,
         chatLink,
         receiverEmail,
+        message
       }),
     });
 
