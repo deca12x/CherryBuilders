@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
             tags: {
               "Frontend dev": false,
               "Backend dev": false,
-              "Smart contract dev": false,
+              "Solidity dev": false,
               Designer: false,
               "Talent scout": false,
               "Biz dev": false,
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       tags: {
         "Frontend dev": tags.includes("Frontend dev"),
         "Backend dev": tags.includes("Backend dev"),
-        "Smart contract dev": tags.includes("Smart contract dev"),
+        "Solidity dev": tags.includes("Solidity dev"),
         Designer: tags.includes("Designer"),
         "Talent scout": tags.includes("Talent scout"),
         "Biz dev": tags.includes("Biz dev"),

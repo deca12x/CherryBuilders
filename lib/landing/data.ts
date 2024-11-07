@@ -8,7 +8,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     tags: [
       "Frontend dev",
       "Backend dev",
-      "Smart contract dev",
+      "Solidity dev",
       "Biz dev",
       "Here for the lolz",
     ],
@@ -23,7 +23,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     index: 2,
     name: "Alex Astro",
     image: "/images/landing/alex.png",
-    tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
+    tags: ["Frontend dev", "Backend dev", "Solidity dev"],
   },
   {
     index: 3,
@@ -32,7 +32,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     tags: [
       "Frontend dev",
       "Backend dev",
-      "Smart contract dev",
+      "Solidity dev",
       "Biz dev",
       "Here for the lolz",
     ],
@@ -47,7 +47,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     index: 5,
     name: "6th",
     image: "/images/default_propic.jpeg",
-    tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
+    tags: ["Frontend dev", "Backend dev", "Solidity dev"],
   },
   {
     index: 6,
@@ -56,7 +56,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     tags: [
       "Frontend dev",
       "Backend dev",
-      "Smart contract dev",
+      "Solidity dev",
       "Biz dev",
       "Here for the lolz",
     ],
@@ -71,7 +71,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     index: 8,
     name: "9th",
     image: "/images/default_propic.jpeg",
-    tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
+    tags: ["Frontend dev", "Backend dev", "Solidity dev"],
   },
   {
     index: 9,
@@ -83,7 +83,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
     index: 10,
     name: "11th",
     image: "/images/default_propic.jpeg",
-    tags: ["Frontend dev", "Backend dev", "Smart contract dev"],
+    tags: ["Frontend dev", "Backend dev", "Solidity dev"],
   },
   {
     index: 11,

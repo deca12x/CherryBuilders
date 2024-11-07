@@ -3,7 +3,7 @@ import { ApiKeyMode } from "../api-key/types";
 export type UserTag =
   | "Frontend dev"
   | "Backend dev"
-  | "Smart contract dev"
+  | "Solidity dev"
   | "Designer"
   | "Talent scout"
   | "Biz dev"
