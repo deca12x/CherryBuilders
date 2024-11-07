@@ -50,7 +50,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     "Solidity dev",
     "Designer",
     "Talent scout",
-    "Biz dev",
+    "Business dev",
     "Artist",
     "Here for the lolz",
   ];
