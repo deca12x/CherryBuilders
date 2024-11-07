@@ -2,9 +2,28 @@ import { useState, useEffect, useRef } from "react";
 import { ForceNode } from "@/lib/landing/types";
 import { LANDING_PROFILES } from "@/lib/landing/data";
 
-const MAX_VISIBLE = 8;
+const MOBILE_BREAKPOINT = 768;
+const DESKTOP_MAX_VISIBLE = 8;
+const MOBILE_MAX_VISIBLE = 4;
 const DISPLAY_INTERVAL = 2000;
 
+const DESKTOP_POSITIONS = [
+  { x: 400, y: 0 },
+  { x: 0, y: 280 },
+  { x: -320, y: -180 },
+  { x: 320, y: -180 },
+  { x: -320, y: 180 },
+  { x: 0, y: -280 },
+  { x: 320, y: 180 },
+  { x: -400, y: 0 },
+];
+
+const MOBILE_POSITIONS = [
+  { x: -35, y: 180 },
+  { x: -35, y: -300 },
+  { x: 35, y: 300 },
+  { x: 35, y: -180 },
+];
 interface UseCardFloatingProps {
   count: number;
   width: number;
@@ -16,6 +35,10 @@ export default function useCardFloating({
   width,
   height,
 }: UseCardFloatingProps) {
+  const isMobile = width < MOBILE_BREAKPOINT;
+  const positions = isMobile ? MOBILE_POSITIONS : DESKTOP_POSITIONS;
+  const maxVisible = isMobile ? MOBILE_MAX_VISIBLE : DESKTOP_MAX_VISIBLE;
+
   const [visibleMiniProfiles, setVisibleMiniProfiles] = useState<ForceNode[]>(
     []
   );
@@ -27,28 +50,6 @@ export default function useCardFloating({
   const positionRef = useRef(0);
 
   useEffect(() => {
-    // const positions = [
-    //   { x: -320, y: -180 },
-    //   { x: 0, y: -280 },
-    //   { x: 320, y: -180 },
-    //   { x: -400, y: 0 },
-    //   { x: 400, y: 0 },
-    //   { x: -320, y: 180 },
-    //   { x: 0, y: 280 },
-    //   { x: 320, y: 180 },
-    // ];
-
-    const positions = [
-      { x: 400, y: 0 },
-      { x: 0, y: 280 },
-      { x: -320, y: -180 },
-      { x: 320, y: -180 },
-      { x: -320, y: 180 },
-      { x: 0, y: -280 },
-      { x: 320, y: 180 },
-      { x: -400, y: 0 },
-    ];
-
     const addNextProfile = () => {
       // Reset selected profiles if we've used them all
       if (selectedProfilesRef.current.length === shuffledProfiles.length) {
@@ -75,7 +76,7 @@ export default function useCardFloating({
           vy: 0,
         };
 
-        if (prev.length >= MAX_VISIBLE) {
+        if (prev.length >= maxVisible) {
           return [...prev.slice(1), nextNode];
         } else {
           return [...prev, nextNode];
