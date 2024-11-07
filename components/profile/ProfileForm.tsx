@@ -14,6 +14,12 @@ import { uploadProfilePicture } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ProfileQuery } from "@/lib/airstack/types";
 import { checkForBadWords } from "@/utils/language/badWordChecker";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ProfileFormProps {
   initialData: UserType;
@@ -533,6 +539,25 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             </AlertDescription>
           </Alert>
         )}
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="data-storage">
+            <AccordionTrigger>Data Storage Disclaimer</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>By using this app, you agree to the storage of certain personal data, including:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Chat messages exchanged within the app</li>
+                  <li>Profile information that you provide</li>
+                  <li>Data related to matches made on the platform</li>
+                </ul>
+                <p className="mt-2">We prioritize your privacy and handle your data securely.</p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </motion.div>
 
       <motion.div className="mt-6" variants={itemVariants}>
