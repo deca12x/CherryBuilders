@@ -1,6 +1,14 @@
 import { ApiKeyMode } from "../api-key/types";
 
-export type UserTag = "Frontend dev" | "Backend dev" | "Solidity dev" | "Designer" | "Talent scout" | "Business dev";
+export type UserTag =
+  | "Frontend dev"
+  | "Backend dev"
+  | "Smart contract dev"
+  | "Designer"
+  | "Talent scout"
+  | "Biz dev"
+  | "Artist"
+  | "Here for the lolz";
 
 export interface UserType {
   evm_address: string;

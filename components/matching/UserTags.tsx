@@ -3,11 +3,16 @@ import { UserTag, UserType } from "@/lib/supabase/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface UserTagsProps {
-  user: UserType | null;
+  user: UserType | null | { tags: UserTag[] };
+  size?: "sm" | "default";
 }
 
-export default function UserTags({ user }: UserTagsProps) {
+export default function UserTags({ user, size = "default" }: UserTagsProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Adjust tags for MiniProfileCard
+  const scrollAmount = size === "sm" ? 100 : 300;
+  const tagStyles = size === "sm" ? "px-1.5 py-0.5 text-[8px]" : "px-2 py-1 text-sm";
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -26,26 +31,24 @@ export default function UserTags({ user }: UserTagsProps) {
   }, []);
 
   const slideLeft = () => {
-    var slider = document.getElementById("slider");
-    if (slider) {
-      slider.scrollLeft = slider.scrollLeft - 300;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft -= scrollAmount;
     }
   };
 
   const slideRight = () => {
-    var slider = document.getElementById("slider");
-    if (slider) {
-      slider.scrollLeft = slider.scrollLeft + 300;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft += scrollAmount;
     }
   };
 
   if (!user?.tags) return null;
 
   return (
-    <div className="relative flex items-center hover:px-7 transition-all duration-250 group">
+    <div className="relative flex items-center sm:hover:px-7 transition-all duration-250 group">
       <div
         className="absolute left-0 pr-6 cursor-pointer text-secondary-foreground sm:block hidden opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={slideLeft}
+        onMouseDown={slideLeft}
       >
         <ChevronLeft />
       </div>
@@ -65,7 +68,7 @@ export default function UserTags({ user }: UserTagsProps) {
       </div>
       <div
         className="absolute right-0 pl-6 cursor-pointer text-secondary-foreground sm:block hidden opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={slideRight}
+        onMouseDown={slideRight}
       >
         <ChevronRight />
       </div>
