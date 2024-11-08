@@ -85,8 +85,13 @@ export default function Matching() {
   } else if (user && address && ready && wasUserChecked && wereFiltersChecked) {
     return (
       <>
-        <MatchingParent jwt={jwt} address={address} userFilters={filters} loggedInUserData={loggedInUserData} />
-        {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />}
+        <MatchingParent 
+          jwt={jwt} 
+          address={address} 
+          userFilters={filters} 
+          loggedInUserData={loggedInUserData}
+        />
+        {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
       </>
     );
   } else {

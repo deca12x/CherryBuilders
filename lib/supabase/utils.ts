@@ -873,3 +873,23 @@ export const setUserFilters = async (
     error: undefined,
   };
 };
+
+export async function getSpecificUser(address: string, jwt: string) {
+  try {
+    const response = await fetch(`/api/users/${address}`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error);
+    }
+    
+    return { success: true, data: data.data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error };
+  }
+}

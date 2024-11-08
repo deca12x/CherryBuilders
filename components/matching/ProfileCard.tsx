@@ -23,6 +23,7 @@ interface ProfileCardProps {
   handleReject: () => void;
   handleAccept: () => void;
   handleIcebreaker: (message: string) => void;
+  icebreakerMessage?: string | null;
 }
 
 export default function ProfileCard({
@@ -36,11 +37,15 @@ export default function ProfileCard({
   handleReject,
   handleAccept,
   handleIcebreaker,
+  icebreakerMessage,
 }: ProfileCardProps) {
   const [isIcebreakerModalOpen, setIsIcebreakerModalOpen] = useState(false);
 
   // Prevent scrolling when processing an action
   useEffect(() => {
+
+    console.log(user)
+
     if (processingAction) {
       document.body.classList.add("overflow-hidden");
     } else {
@@ -52,6 +57,8 @@ export default function ProfileCard({
       document.body.classList.remove("overflow-hidden");
     };
   }, [processingAction]);
+
+  
 
   return user || isLoading ? (
     <>
@@ -88,11 +95,29 @@ export default function ProfileCard({
             {/* Card Header with image, name and filters button */}
             <ProfileCardHeader
               user={user}
-              imageIndex={imageIndex}
+              imageIndex={imageIndex || 0}
               animateFrame={animateFrame}
               isLoading={isLoading}
               setAnimateFrame={setAnimateFrame}
             />
+
+            {/* Icebreaker Message if exists */}
+            {icebreakerMessage && (
+              <motion.div
+                className="w-full bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg p-6 mb-4 border-2 border-primary/20 shadow-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", bounce: 0.4 }}
+              >
+                <div className="flex items-center gap-2 text-primary font-semibold mb-2">
+                  <MessageCircle size={20} />
+                  <span className="text-lg">Icebreaker Message</span>
+                </div>
+                <div className="text-foreground text-lg font-medium leading-relaxed">
+                  "{decodeURIComponent(icebreakerMessage)}"
+                </div>
+              </motion.div>
+            )}
 
             {/* Content */}
             <motion.div

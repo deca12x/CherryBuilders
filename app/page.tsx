@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { getUser } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
@@ -14,6 +14,7 @@ export default function Home() {
   // Third-party hooks
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // State hooks
   const [error, setError] = useState(false);
@@ -33,6 +34,17 @@ export default function Home() {
       const token = await getAccessToken();
       setJwt(token);
 
+      // Check for icebreaker reference
+      const ref = searchParams.get('ref');
+      const profile = searchParams.get('profile');
+      const message = searchParams.get('message');
+
+      if (ref === 'icebreaker' && profile) {
+        const redirectUrl = `/matching-icebreaker?profile=${profile}${message ? `&message=${message}` : ''}`;
+        router.push(redirectUrl);
+        return;
+      }
+
       const { success, data, error } = await getUser(address, token);
 
       if (!success && error) {
@@ -45,7 +57,7 @@ export default function Home() {
     };
 
     checkUser();
-  }, [address, router, user, ready]);
+  }, [address, router, user, ready, searchParams]);
 
   // Hooks that depend on state
   const nodes = useCardFloating({

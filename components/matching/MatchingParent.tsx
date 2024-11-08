@@ -248,7 +248,7 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
           // Send email notification if user has opted in
 
 
-           const chatLink = isPartialMatch ? `https://cherry.builders/chat/${matchedChatId}` : `https://cherry.builders/chat`;
+           const chatLink = isPartialMatch ? `https://cherry.builders/matching-icebreaker?profile=${currentUser.evm_address}&message=${message}` : `https://cherry.builders/chat/${matchedChatId}` ;
           if (currentUser.emailMarketing) {
             await sendMatchingEmail({
               matchedWith: loggedInUserData?.name as string,
