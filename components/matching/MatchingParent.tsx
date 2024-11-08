@@ -208,6 +208,8 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
   const handleIcebreaker = async (message: string) => {
     if (!address || !currentUser) return;
     setProcessingAction("icebreaker");
+    let isPartialMatch;
+    let completeMatch;
 
     try {
       const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
@@ -217,6 +219,7 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
       if (partialMatch.data.length === 0) {
         const newMatch = await createMatch(address, currentUser.evm_address, jwt);
         if (!newMatch.success) throw Error(newMatch.error);
+        isPartialMatch = true;
       }
       // If a match is found, update it and create chat
       else if (partialMatch.data.length > 0) {
@@ -232,6 +235,8 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
         if (!specificChat.success) throw new Error(specificChat.error);
 
         // Show match modal and set chat ID
+        isPartialMatch = false;
+        completeMatch = specificChat.data?.id;
         setIsMatchModalOpen(true);
         setIsProfilesEndedModalOpen(false);
         setMatchedChatId(specificChat.data?.id);
@@ -241,12 +246,15 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
 
 
           // Send email notification if user has opted in
+
+
+           const chatLink = isPartialMatch ? `https://cherry.builders/chat/${matchedChatId}` : `https://cherry.builders/chat`;
           if (currentUser.emailMarketing) {
             await sendMatchingEmail({
               matchedWith: loggedInUserData?.name as string,
               matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
               matchedWithBio: loggedInUserData?.bio as string,
-              chatLink: `https://cherry.builders/chat`,
+              chatLink: chatLink,
               receiverEmail: fetchedUsers[currentUserIndex]?.email || "",
               jwt: jwt as string,
               message: message // Include the icebreaker message
