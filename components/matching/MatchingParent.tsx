@@ -26,9 +26,10 @@ interface MatchingContentProps {
   jwt: string | null;
   address: string;
   userFilters: FiltersProp;
+  loggedInUserData: UserType | null;
 }
 
-export default function MatchingParent({ jwt, address, userFilters }: MatchingContentProps) {
+export default function MatchingParent({ jwt, address, userFilters, loggedInUserData }: MatchingContentProps) {
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
   const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
@@ -105,13 +106,13 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         setMatchedChatId(specificChat.data?.id);
 
         
-        if(currentUser.emailMarketing) {
+        if(fetchedUsers[currentUserIndex].emailMarketing) {
           await sendMatchingEmail({
-            matchedWith: currentUser.name,
-            matchedWithImage: currentUser.profile_pictures[0] || "",
-            matchedWithBio: currentUser.bio,
+            matchedWith: loggedInUserData?.name as string,
+            matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
+            matchedWithBio: loggedInUserData?.bio as string,
             chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
-            receiverEmail: currentUser?.email || "" as string,
+            receiverEmail: fetchedUsers[currentUserIndex].email || "" as string,
             jwt: jwt as string
           });
         }
@@ -159,13 +160,13 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
         setMatchedChatId(specificChat.data?.id);
 
         
-        if(currentUser.emailMarketing) {
+        if(fetchedUsers[currentUserIndex].emailMarketing) {
           await sendMatchingEmail({
-            matchedWith: currentUser.name,
-            matchedWithImage: currentUser.profile_pictures[0] || "",
-            matchedWithBio: currentUser.bio,
+            matchedWith: loggedInUserData?.name as string,
+            matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
+            matchedWithBio: loggedInUserData?.bio as string,
             chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
-            receiverEmail: currentUser?.email || "" as string,
+            receiverEmail: fetchedUsers[currentUserIndex]?.email || "" as string,
             jwt: jwt as string
           });
         }
@@ -242,11 +243,11 @@ export default function MatchingParent({ jwt, address, userFilters }: MatchingCo
           // Send email notification if user has opted in
           if (currentUser.emailMarketing) {
             await sendMatchingEmail({
-              matchedWith: currentUser.name,
-              matchedWithImage: currentUser.profile_pictures[0] || "",
-              matchedWithBio: currentUser.bio,
+              matchedWith: loggedInUserData?.name as string,
+              matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
+              matchedWithBio: loggedInUserData?.bio as string,
               chatLink: `https://cherry.builders/chat`,
-              receiverEmail: currentUser?.email || "",
+              receiverEmail: fetchedUsers[currentUserIndex]?.email || "",
               jwt: jwt as string,
               message: message // Include the icebreaker message
             });
