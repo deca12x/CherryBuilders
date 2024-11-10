@@ -162,7 +162,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (checkForBadWords(profileData.name) || checkForBadWords(profileData.bio || '')) {
+    if (
+      checkForBadWords(profileData.name) ||
+      checkForBadWords(profileData.bio || "") ||
+      checkForBadWords(profileData.building || "") ||
+      checkForBadWords(profileData.looking_for || "")
+    ) {
       toast({
         title: "🙈 Oops!",
         description: "Please keep it friendly - no bad words allowed!",
@@ -250,34 +255,37 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     },
   };
 
-  const formatSocialLink = (value: string, platform: 'github' | 'twitter' | 'farcaster') => {
-    if (!value) return '';
-    
+  const formatSocialLink = (
+    value: string,
+    platform: "github" | "twitter" | "farcaster"
+  ) => {
+    if (!value) return "";
+
     // Remove @ if present and trim whitespace
     let handle = value.trim();
-    handle = handle.startsWith('@') ? handle.substring(1) : handle;
+    handle = handle.startsWith("@") ? handle.substring(1) : handle;
 
     // If it's already a full URL with http/https, return as is
-    if (handle.startsWith('http')) return handle;
+    if (handle.startsWith("http")) return handle;
 
     // Extract handle from various URL formats and clean it
-    if (platform === 'github') {
-      if (handle.includes('github.com/')) {
-        handle = handle.split('github.com/').pop() || handle;
+    if (platform === "github") {
+      if (handle.includes("github.com/")) {
+        handle = handle.split("github.com/").pop() || handle;
       }
       return `https://github.com/${handle}`;
     }
-    
-    if (platform === 'twitter') {
-      if (handle.includes('twitter.com/') || handle.includes('x.com/')) {
+
+    if (platform === "twitter") {
+      if (handle.includes("twitter.com/") || handle.includes("x.com/")) {
         handle = handle.split(/(?:twitter\.com\/|x\.com\/)/).pop() || handle;
       }
       return `https://twitter.com/${handle}`;
     }
-    
-    if (platform === 'farcaster') {
-      if (handle.includes('warpcast.com/')) {
-        handle = handle.split('warpcast.com/').pop() || handle;
+
+    if (platform === "farcaster") {
+      if (handle.includes("warpcast.com/")) {
+        handle = handle.split("warpcast.com/").pop() || handle;
       }
       return `https://warpcast.com/${handle}`;
     }
@@ -338,7 +346,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
       <motion.div variants={itemVariants}>
         <Label htmlFor="name" className="text-sm font-medium mb-2 block">
-          Name
+          Name <span className="text-red-500">*</span>
         </Label>
         <Input
           id="name"
@@ -352,21 +360,49 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
       <motion.div variants={itemVariants}>
         <Label htmlFor="bio" className="text-sm font-medium mb-2 block">
-          Bio
+          Bio <span className="text-red-500">*</span>
         </Label>
         <Textarea
           id="bio"
           value={profileData.bio || ""}
           onChange={(e) => handleChange("bio", e.target.value)}
-          className="w-full min-h-[100px]"
-          maxLength={500} // The max length is also checked in the backend
+          className="w-full min-h-[50px]"
+          maxLength={140}
+          required
+        />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Label htmlFor="building" className="text-sm font-medium mb-2 block">
+          What I'm building <span className="text-red-500">*</span>
+        </Label>
+        <Textarea
+          id="building"
+          value={profileData.building || ""}
+          onChange={(e) => handleChange("building", e.target.value)}
+          className="w-full min-h-[50px]"
+          maxLength={140}
+          required
+        />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Label htmlFor="looking_for" className="text-sm font-medium mb-2 block">
+          Who I'm looking for <span className="text-red-500">*</span>
+        </Label>
+        <Textarea
+          id="looking_for"
+          value={profileData.looking_for || ""}
+          onChange={(e) => handleChange("looking_for", e.target.value)}
+          className="w-full min-h-[50px]"
+          maxLength={140}
           required
         />
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <Label htmlFor="email" className="text-sm font-medium mb-2 block">
-          Email
+          Email <span className="text-red-500">*</span>
         </Label>
         <Input
           id="email"
@@ -452,19 +488,34 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         <Input
           placeholder="GitHub"
           value={profileData.github_link || ""}
-          onChange={(e) => handleChange("github_link", formatSocialLink(e.target.value, 'github'))}
+          onChange={(e) =>
+            handleChange(
+              "github_link",
+              formatSocialLink(e.target.value, "github")
+            )
+          }
           maxLength={255}
         />
         <Input
           placeholder="X (Twitter)"
           value={profileData.twitter_link || ""}
-          onChange={(e) => handleChange("twitter_link", formatSocialLink(e.target.value, 'twitter'))}
+          onChange={(e) =>
+            handleChange(
+              "twitter_link",
+              formatSocialLink(e.target.value, "twitter")
+            )
+          }
           maxLength={255}
         />
         <Input
           placeholder="Farcaster"
           value={profileData.farcaster_link || ""}
-          onChange={(e) => handleChange("farcaster_link", formatSocialLink(e.target.value, 'farcaster'))}
+          onChange={(e) =>
+            handleChange(
+              "farcaster_link",
+              formatSocialLink(e.target.value, "farcaster")
+            )
+          }
           maxLength={255}
         />
         <Input
@@ -547,13 +598,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             <AccordionTrigger>Data Storage Disclaimer</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>By using this app, you agree to the storage of certain personal data, including:</p>
+                <p>
+                  By using this app, you agree to the storage of certain
+                  personal data, including:
+                </p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Chat messages exchanged within the app</li>
                   <li>Profile information that you provide</li>
                   <li>Data related to matches made on the platform</li>
                 </ul>
-                <p className="mt-2">We prioritize your privacy and handle your data securely.</p>
+                <p className="mt-2">
+                  We prioritize your privacy and handle your data securely.
+                </p>
               </div>
             </AccordionContent>
           </AccordionItem>

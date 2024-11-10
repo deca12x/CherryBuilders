@@ -17,6 +17,8 @@ export interface UserType {
   profile_pictures: string[];
   tags: UserTag[];
   bio: string;
+  building: string;
+  looking_for: string;
   github_link?: string;
   twitter_link?: string;
   farcaster_link?: string;

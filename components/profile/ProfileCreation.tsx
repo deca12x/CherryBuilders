@@ -17,11 +17,17 @@ interface ProfileCreationProps {
   userProfile: ProfileQuery | null;
 }
 
-const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userProfile }) => {
+const ProfileCreation: React.FC<ProfileCreationProps> = ({
+  jwt,
+  address,
+  userProfile,
+}) => {
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
     bio: "",
+    building: "",
+    looking_for: "",
     profile_pictures: [],
     tags: [],
     github_link: "",
@@ -47,7 +53,9 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
       });
       await setUserFilters([], [], jwt);
       if (passcode && eventSlug) {
-        router.push(`/verify/event?passcode=${passcode}&event-slug=${eventSlug}`);
+        router.push(
+          `/verify/event?passcode=${passcode}&event-slug=${eventSlug}`
+        );
         return;
       } else {
         router.push("/matching");
@@ -62,11 +70,17 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
     }
   };
 
-  async function updateProfileData(address: string, profileData: UserType): Promise<void> {
+  async function updateProfileData(
+    address: string,
+    profileData: UserType
+  ): Promise<void> {
     // Get the talent passport if the user has one
     const response = await fetch("/api/talent", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
       body: JSON.stringify({ address }),
     });
     const passportScore: number = response.ok ? await response.json() : 0;
@@ -84,7 +98,10 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
     if (!updatedUser.success) throw updatedUser.error;
   }
 
-  const handleParamsChange = (passcode: string | null, eventSlug: string | null) => {
+  const handleParamsChange = (
+    passcode: string | null,
+    eventSlug: string | null
+  ) => {
     setPasscode(passcode);
     setEventSlug(eventSlug);
   };
@@ -95,10 +112,11 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address, userPro
         <SearchParamsComponent onParamsChange={handleParamsChange} />
       </Suspense>
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-        <motion.h1 className="text-3xl font-bold text-primary mb-8">Create Your Profile</motion.h1>
+        <motion.h1 className="text-3xl font-bold text-primary mb-8">
+          Create Your Profile
+        </motion.h1>
         <ConnectButton />
         <ProfileForm
-      
           initialData={profileData}
           onSubmit={handleSubmit}
           submitButtonText="Save & Continue"
