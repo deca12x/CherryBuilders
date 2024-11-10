@@ -13,7 +13,7 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
     <div className="flex flex-col gap-3">
       {/* Bio */}
       <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
-        <p className="font-bold text-foreground">Who am I?</p>
+        <p className="font-bold text-foreground">Bio</p>
         <p className="text-muted-foreground">{user.bio}</p>
       </div>
 
