@@ -21,6 +21,7 @@ import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
 import ActionButtons from "./ActionButtons";
 import { sendMatchingEmail } from "@/lib/email/sendMatchingEmail";
+import NoEmailModal from "@/components/matching/NoEmailModal";
 
 interface MatchingContentProps {
   jwt: string | null;
@@ -43,6 +44,7 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
   const [matchedChatId, setMatchedChatId] = useState<string>("");
   const [processingAction, setProcessingAction] = useState<"accept" | "reject" | "icebreaker" | null>(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
+  const [isNoEmailModalOpen, setIsNoEmailModalOpen] = useState(false);
 
   const currentUser = fetchedUsers[currentUserIndex];
 
@@ -249,7 +251,7 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
 
 
            const chatLink = isPartialMatch ? `https://cherry.builders/matching-icebreaker?profile=${currentUser.evm_address}&message=${message}` : `https://cherry.builders/chat/${matchedChatId}` ;
-          if (currentUser.emailMarketing) {
+          if (currentUser.emailNotifications && currentUser.email) {
             await sendMatchingEmail({
               matchedWith: loggedInUserData?.name as string,
               matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
@@ -277,6 +279,20 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
     }
   };
 
+  const handleShowNoEmailModal = () => {
+    setIsNoEmailModalOpen(true);
+  };
+
+  const handleLikeAnyway = async () => {
+    setIsNoEmailModalOpen(false);
+    await handleAccept();
+  };
+
+  const handleSkip = async () => {
+    setIsNoEmailModalOpen(false);
+    await handleReject();
+  };
+
   if (error) {
     return <ErrorCard />;
   } else if (user && address && ready) {
@@ -294,6 +310,7 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
           handleAccept={handleAccept}
           handleReject={handleReject}
           handleIcebreaker={handleIcebreaker}
+          onShowNoEmailModal={() => setIsNoEmailModalOpen(true)}
         />
 
         {/* Navigation */}
@@ -313,6 +330,13 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
 
         {/* Profiles Ended Modal */}
         <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
+
+        <NoEmailModal 
+          isOpen={isNoEmailModalOpen}
+          onClose={() => setIsNoEmailModalOpen(false)}
+          onLikeAnyway={handleLikeAnyway}
+          onSkip={handleSkip}
+        />
       </div>
     );
   } else {

@@ -7,9 +7,10 @@ interface ActionButtonsProps {
   isLoading: boolean;
   userHasEmailNotifsOn: boolean;
   userHasEmail: boolean;
+  onShowNoEmailModal: () => void;
 }
 
-export default function ActionButtons({ onReject, onAccept, onIcebreaker, isLoading, userHasEmailNotifsOn, userHasEmail }: ActionButtonsProps) {
+export default function ActionButtons({ onReject, onAccept, onIcebreaker, isLoading, userHasEmailNotifsOn, userHasEmail, onShowNoEmailModal }: ActionButtonsProps) {
   return (
     <div className="space-x-5">
       <button
@@ -20,23 +21,13 @@ export default function ActionButtons({ onReject, onAccept, onIcebreaker, isLoad
       >
         <X size={24} />
       </button>
-      {userHasEmailNotifsOn && userHasEmail && (
-        <button
-          onClick={onIcebreaker}
+      <button
+        onClick={userHasEmailNotifsOn && userHasEmail ? onIcebreaker : onShowNoEmailModal}
         className="bg-blue-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-blue-500/90 transition-colors disabled:opacity-50"
         aria-label="Send Icebreaker"
         disabled={isLoading}
-        >
-          <MessageCircle size={24} />
-        </button>
-      )}
-      <button
-        onClick={onAccept}
-        className="bg-green-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-green-500/90 transition-colors disabled:opacity-50"
-        aria-label="Like"
-        disabled={isLoading}
       >
-        <Heart size={24} />
+        <MessageCircle size={24} />
       </button>
     </div>
   );

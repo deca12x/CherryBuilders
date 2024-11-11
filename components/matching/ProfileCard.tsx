@@ -24,6 +24,7 @@ interface ProfileCardProps {
   handleAccept: () => void;
   handleIcebreaker: (message: string) => void;
   icebreakerMessage?: string | null;
+  onShowNoEmailModal: () => void;
 }
 
 export default function ProfileCard({
@@ -38,6 +39,7 @@ export default function ProfileCard({
   handleAccept,
   handleIcebreaker,
   icebreakerMessage,
+  onShowNoEmailModal,
 }: ProfileCardProps) {
   const [isIcebreakerModalOpen, setIsIcebreakerModalOpen] = useState(false);
 
@@ -147,7 +149,8 @@ export default function ProfileCard({
             onIcebreaker={() => setIsIcebreakerModalOpen(true)}
             isLoading={isLoading} 
             userHasEmailNotifsOn={user.emailNotifications || false}
-            userHasEmail={user.email ? true : false}
+            userHasEmail={Boolean(user.email)}
+            onShowNoEmailModal={onShowNoEmailModal}
           />
           <div className="absolute right-4">
             <FiltersButton onOpenFilters={() => setIsFiltersModalOpen(true)} showText={false} />
