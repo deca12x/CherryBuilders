@@ -11,7 +11,6 @@ const ErrorCard: React.FC = () => {
           <div className="text-primary text-center text-2xl">An unexpected error occurred, please try again!</div>
         </CardContent>
       </Card>
-      <ConnectButton />
     </main>
   );
 };
