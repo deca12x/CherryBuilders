@@ -9,6 +9,7 @@ import { getChatMessages } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";
 import { ChatMessageType } from "@/lib/supabase/types";
+import { createSupabaseClient } from "@/lib/supabase/supabase-client";
 
 interface ChatWindowProps {
   chat: ChatItem;
@@ -34,6 +35,7 @@ export default function ChatWindow({
   const [newMessage, setNewMessage] = useState("");
   const [chatMessagesError, setChatMessagesError] = useState(false);
   const [chatMessagesLoading, setChatMessagesLoading] = useState(false);
+  const [supabaseClient, setSupabaseClient] = useState<any>(null);
 
   // Fetch chat messages on component mount and when chat changes
   useEffect(() => {
@@ -74,63 +76,88 @@ export default function ChatWindow({
     fetchMessages();
   }, [selectedChatId, authToken]);
 
-  const handleSend = async (messageText: string, type?: string, requestId?: string) => {
-    if (messageText.trim()) {
-      console.log("Sending message:", messageText, "Type:", type, "RequestId:", requestId);
-      const newMessage: ChatMessageType = {
-        id: Date.now(),
-        sender: userAddress,
-        receiver: chat.otherUserData.evm_address,
-        message: messageText.trim(),
-        chat_id: selectedChatId,
-        created_at: new Date().toISOString(),
-        type: type,
-        requestId: requestId,
-        read: false,
-      };
+  // Add useEffect to initialize Supabase client
+  useEffect(() => {
+    const initSupabase = async () => {
+      const client = await createSupabaseClient(userAddress, authToken as string);
+      setSupabaseClient(client);
+    };
 
-      // Set the chat history updating the messages of the selectedChatId
+    initSupabase();
+  }, [userAddress, authToken]);
+
+  const handleSend = async (messageText: string, type?: string, requestId?: string) => {
+    if (!messageText.trim() || !supabaseClient) return;
+
+    const newMessage: ChatMessageType = {
+      id: Date.now(),
+      sender: userAddress,
+      receiver: chat.otherUserData.evm_address,
+      message: messageText.trim(),
+      chat_id: selectedChatId,
+      created_at: new Date().toISOString(),
+      type: type,
+      requestId: requestId,
+      read: false,
+    };
+
+    // Update UI optimistically
+    setChatHistory((prevChats: ChatItem[]) => {
+      return prevChats.map((chatItem) => {
+        if (chatItem.id === selectedChatId) {
+          return {
+            ...chatItem,
+            chatMessages: [...chatItem.chatMessages, newMessage],
+            lastMessage: {
+              text: newMessage.message,
+              date: newMessage.created_at,
+              fromAddress: newMessage.sender,
+            },
+          };
+        }
+        return chatItem;
+      });
+    });
+
+    setNewMessage("");
+
+    // Send to Supabase
+    const { data, error } = await supabaseClient
+      .from("messages")
+      .insert(newMessage)
+      .select();
+
+    if (error) {
+      console.error("Error sending message:", error);
+      // Revert the UI update on error
       setChatHistory((prevChats: ChatItem[]) => {
         return prevChats.map((chatItem) => {
           if (chatItem.id === selectedChatId) {
             return {
               ...chatItem,
-              chatMessages: [...chatItem.chatMessages, newMessage],
-              lastMessage: {
-                text: newMessage.message,
-                date: newMessage.created_at,
-                fromAddress: newMessage.sender,
-              },
+              chatMessages: chatItem.chatMessages.filter((msg) => msg.id !== newMessage.id),
+              lastMessage: chatItem.lastMessage, // Restore previous last message
             };
-          } else {
-            return chatItem;
           }
+          return chatItem;
         });
       });
-
-      setNewMessage("");
-
-      // const { success, data, error } = await createMessage(newMessage, authToken);
-
-      // if (!success && error) {
-      //   console.error("Error sending message:", error);
-      //   console.log("Reverting UI update");
-      //   // Revert the UI update
-      //   setChatHistory((prevChats: ChatItem[]) => {
-      //     return prevChats.map((chatItem) => {
-      //       if (chatItem.id === selectedChatId) {
-      //         return {
-      //           ...chatItem,
-      //           chatMessages: chatItem.chatMessages.filter((msg) => msg.id !== newMessage.id),
-      //         };
-      //       } else {
-      //         return chatItem;
-      //       }
-      //     });
-      //   });
-      // } else if (data) {
-      //   console.log("Message sent successfully to Supabase:", data);
-      // }
+    } else if (data) {
+      console.log("Message sent successfully to Supabase:", data[0]);
+      // Update the message with the server-generated ID and data
+      setChatHistory((prevChats: ChatItem[]) => {
+        return prevChats.map((chatItem) => {
+          if (chatItem.id === selectedChatId) {
+            return {
+              ...chatItem,
+              chatMessages: chatItem.chatMessages.map((msg) => 
+                msg.id === newMessage.id ? data[0] : msg
+              ),
+            };
+          }
+          return chatItem;
+        });
+      });
     }
   };
 

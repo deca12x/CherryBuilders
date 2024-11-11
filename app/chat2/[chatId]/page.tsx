@@ -1,12 +1,11 @@
 "use client";
-import ChatParentNoChat from "@/components/chat/ChatParentNoChat";
 import { usePrivy } from "@privy-io/react-auth";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
-import ChatParentNoChat2 from "@/components/chat/ChatParentNoChat2";
+import ChatParent2 from "@/components/chat2/ChatParent2";
 
 export default function ChatUI() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -49,7 +48,7 @@ export default function ChatUI() {
   if (error) {
     return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
-    return <ChatParentNoChat2 userAddress={address as string} authToken={jwt} />;
+    return <ChatParent2 authToken={jwt} setError={setError} userAddress={address} />;
   } else {
     return <LoadingSpinner />;
   }
