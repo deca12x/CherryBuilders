@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params: { chatId } }: { params: { 
 
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching specific chat from database:", error);
+    console.error("Error fetching chat from database:", error);
     return NextResponse.json({ error: "Error fetching from database" }, { status: 500 });
   }
 }
