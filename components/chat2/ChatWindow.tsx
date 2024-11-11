@@ -80,6 +80,7 @@ export default function ChatWindow({
       const newMessage: ChatMessageType = {
         id: Date.now(),
         sender: userAddress,
+        receiver: chat.otherUserData.evm_address,
         message: messageText.trim(),
         chat_id: selectedChatId,
         created_at: new Date().toISOString(),
@@ -98,6 +99,7 @@ export default function ChatWindow({
               lastMessage: {
                 text: newMessage.message,
                 date: newMessage.created_at,
+                fromAddress: newMessage.sender,
               },
             };
           } else {
@@ -108,15 +110,26 @@ export default function ChatWindow({
 
       setNewMessage("");
 
-      // const { data, error } = await supabaseClient.from("messages").insert(newMessage).select();
+      // const { success, data, error } = await createMessage(newMessage, authToken);
 
-      // if (error) {
+      // if (!success && error) {
       //   console.error("Error sending message:", error);
       //   console.log("Reverting UI update");
-      //   setCurrentChat((prevMessages) => prevMessages.filter((msg) => msg.id !== newMessage.id));
+      //   // Revert the UI update
+      //   setChatHistory((prevChats: ChatItem[]) => {
+      //     return prevChats.map((chatItem) => {
+      //       if (chatItem.id === selectedChatId) {
+      //         return {
+      //           ...chatItem,
+      //           chatMessages: chatItem.chatMessages.filter((msg) => msg.id !== newMessage.id),
+      //         };
+      //       } else {
+      //         return chatItem;
+      //       }
+      //     });
+      //   });
       // } else if (data) {
-      //   console.log("Message sent successfully to Supabase:", data[0]);
-      //   setCurrentChat((prevMessages) => prevMessages.map((msg) => (msg.id === newMessage.id ? data[0] : msg)));
+      //   console.log("Message sent successfully to Supabase:", data);
       // }
     }
   };
@@ -154,9 +167,12 @@ export default function ChatWindow({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0.07 * index }}
                     key={message.id}
-                    className="bg-primary text-primary-foreground p-3 rounded-lg max-w-[70%] ml-auto"
+                    className="flex flex-col bg-primary text-primary-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
                   >
-                    {message.message}
+                    <div>{message.message}</div>
+                    <div className="flex justify-end w-full text-sm text-primary-foreground">
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
                   </motion.div>
                 );
               } else {
@@ -166,9 +182,12 @@ export default function ChatWindow({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0.07 * index }}
                     key={message.id}
-                    className="bg-muted p-3 rounded-lg max-w-[70%]"
+                    className="flex flex-col bg-muted px-3 py-2 rounded-lg max-w-[70%]"
                   >
                     {message.message}
+                    <div className="flex justify-end w-full text-sm text-primary-foreground">
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
                   </motion.div>
                 );
               }
