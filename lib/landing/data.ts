@@ -3,7 +3,7 @@ import { MiniProfile } from "./types";
 export const LANDING_PROFILES: MiniProfile[] = [
   {
     index: 0,
-    name: "deca",
+    name: "Deca",
     image: "/images/landing/deca.png",
     tags: [
       "Frontend dev",
@@ -15,7 +15,7 @@ export const LANDING_PROFILES: MiniProfile[] = [
   },
   {
     index: 1,
-    name: "Blackicon",
+    name: "Blackicon.eth",
     image: "/images/landing/black.png",
     tags: ["Backend dev", "Frontend dev"],
   },
@@ -72,5 +72,11 @@ export const LANDING_PROFILES: MiniProfile[] = [
     name: "Alina",
     image: "/images/landing/alina.png",
     tags: ["Artist"],
+  },
+  {
+    index: 11,
+    name: "Cat McGee",
+    image: "/images/landing/cat.png",
+    tags: ["Backend dev", "Smart contract dev"],
   },
 ];
