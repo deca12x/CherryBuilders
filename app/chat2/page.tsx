@@ -48,7 +48,7 @@ export default function ChatUI() {
   if (error) {
     return <ErrorCard />;
   } else if (address && user && ready && wasUserChecked) {
-    return <ChatParent2 authToken={jwt} />;
+    return <ChatParent2 authToken={jwt} setError={setError} userAddress={address} />;
   } else {
     return <LoadingSpinner />;
   }
