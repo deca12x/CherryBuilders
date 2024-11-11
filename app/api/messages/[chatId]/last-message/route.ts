@@ -9,19 +9,13 @@ export async function GET(req: NextRequest, { params: { chatId } }: { params: { 
   try {
     const { data, error } = await supabase
       .from("messages")
-      .select("message")
+      .select("*")
       .eq("chat_id", chatId)
       .order("created_at", { ascending: false })
-      .limit(1);
+      .limit(1)
+      .single();
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        // No message found in database for this chat
-        console.log("No message found in database for this chat");
-        return NextResponse.json({ data }, { status: 404 });
-      }
-      throw error;
-    }
+    if (error) throw error;
 
     if (!data) {
       console.log("No message found in database for this chat");
