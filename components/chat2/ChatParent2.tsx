@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatWindow from "./ChatWindow";
 import useWindowSize from "./hook";
@@ -11,7 +11,7 @@ import ContactProfilePanel from "./ContactProfilePanel";
 
 export type ChatItem = {
   id: string;
-  lastMessage: { text: string; date: string };
+  lastMessage: { text: string; fromAddress: string; date: string };
   chatMessages: ChatMessageType[];
   otherUserData: UserType;
   fetchedMessages: boolean;
@@ -31,6 +31,7 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
+  const chatsRef = useRef<any>(null);
   const windowSize = useWindowSize();
 
   const isMobile = windowSize.width <= SM_BREAKPOINT;
@@ -50,6 +51,68 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
   // This useEffect function will fetch all chats the user is involved in
   // and fills the chatHistory array with chat items
   useEffect(() => {
+    const setupRealtimeSubscription = () => {
+      if (!supabaseClient) return;
+
+      const channelName = `chat:messages:${userAddress}`;
+      console.log(`Attempting to subscribe to channel: ${channelName}`);
+
+      chatsRef.current = supabaseClient
+        .channel(channelName, { config: { broadcast: { ack: true }, presence: { key: userAddress } } })
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            // Filter by receiver to only get messages directed to the connected user TODO: modify this line
+            filter: `sender=neq.${userAddress}`,
+          },
+          (payload: any) => {
+            console.log("Received real-time update:", payload);
+            const newMessage = payload.new as ChatMessageType;
+            console.log("Processed new message:", newMessage);
+            const chatId = newMessage.chat_id.toString();
+
+            // Create a new last message for the chat history
+            const newLastMessage = {
+              text: newMessage.message,
+              date: newMessage.created_at,
+              fromAddress: newMessage.sender,
+            };
+
+            // Append the new message to the chat messages array if the chat was already fetched
+            const targetChat = chatHistory.find((chatItem) => chatItem.id === chatId);
+            const newChatMessages = targetChat?.fetchedMessages ? [...targetChat.chatMessages, newMessage] : [];
+
+            // Finally set the chat history with the updated chat item
+            setChatHistory((prevHistory) => {
+              const updatedHistory = prevHistory.map((chatItem) => {
+                if (chatItem.id === chatId) {
+                  return {
+                    ...chatItem,
+                    lastMessage: newLastMessage,
+                    chatMessages: newChatMessages,
+                  };
+                } else {
+                  return chatItem;
+                }
+              });
+              return updatedHistory;
+            });
+          }
+        )
+        .subscribe(async (status: string, err?: Error) => {
+          if (err) {
+            console.error("Subscription error:", err);
+          } else {
+            console.log("Subscription status:", status);
+          }
+        });
+
+      console.log("Channel subscription set up");
+    };
+
     const fetchChats = async () => {
       if (supabaseClient) {
         // Find all chats where the user is involved
@@ -74,15 +137,17 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
                 return null;
               }
 
-              const { data: lastMessageData } = await getLastChatMessage(chat.id.toString(), authToken);
-
-              console.log("Last message data:", lastMessageData);
+              const { data: lastMessageData }: { data: ChatMessageType } = await getLastChatMessage(
+                chat.id.toString(),
+                authToken
+              );
 
               const chatItem: ChatItem = {
                 id: chat.id.toString(),
                 lastMessage: {
-                  text: lastMessageData?.message || "",
+                  text: lastMessageData?.message || "No messages yet",
                   date: lastMessageData?.created_at || "",
+                  fromAddress: lastMessageData?.sender || "",
                 },
                 chatMessages: [],
                 otherUserData: userData,
@@ -102,6 +167,14 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
     };
 
     fetchChats();
+    setupRealtimeSubscription();
+
+    // Cleanup function
+    return () => {
+      if (chatsRef.current) {
+        supabaseClient?.removeChannel(chatsRef.current);
+      }
+    };
   }, [supabaseClient, userAddress, authToken]);
 
   return (
