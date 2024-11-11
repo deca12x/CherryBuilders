@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatSidebar from "@/components/chat/ChatSideBar";
@@ -183,11 +182,11 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
       <div className="lg:hidden p-4 border-b border-border">
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button>
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
+          <SheetContent className="w-[300px] sm:w-[400px] p-0">
             <ChatSidebar userAddress={userAddress} activeChatId={chatId} authToken={authToken} />
           </SheetContent>
         </Sheet>
