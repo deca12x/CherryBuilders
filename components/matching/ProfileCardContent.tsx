@@ -62,7 +62,7 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
                 <Image
                   height={26}
                   width={26}
-                  src="/images/github.png"
+                  src="/images/github.svg"
                   alt="github logo"
                 />
                 <a
@@ -79,7 +79,7 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
                 <Image
                   height={20}
                   width={20}
-                  src="/images/x_logo.svg"
+                  src="/images/x.svg"
                   alt="x logo"
                 />
                 <a
