@@ -1,5 +1,5 @@
 import { FiltersProp } from "../types";
-import { ChatMessageType, EventType, UserTag, UserType } from "./types";
+import { ChatMessageType, EventType, UserType } from "./types";
 
 /**
  * A utility function to get a specific partial match from the database
@@ -216,7 +216,7 @@ export const getChatsFromUserAddress = async (
   userAddress: string,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/chats?userAddress=${userAddress}`, {
+  const response = await fetch(`/api/chats/user/${userAddress}`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
     },
