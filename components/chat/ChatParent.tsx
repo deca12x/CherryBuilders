@@ -112,15 +112,10 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
             const newMessage = payload.new as ChatMessageType;
             console.log("Processed new message:", newMessage);
             if (newMessage.sender !== userAddress) {
-              console.log("Updating chat with new message from other user:", newMessage);
               setCurrentChat((prevMessages) => {
-                console.log("Current chat before update:", prevMessages);
                 const updatedChat = [...prevMessages, newMessage];
-                console.log("Updated chat after receiving new message:", updatedChat);
                 return updatedChat;
               });
-            } else {
-              console.log("Received own message, not updating chat:", newMessage);
             }
           }
         }
@@ -142,6 +137,7 @@ export default function ChatParent({ userAddress, chatId, authToken }: ChatParen
       const newMessage: ChatMessageType = {
         id: Date.now(),
         sender: userAddress,
+        receiver: otherUser?.address as string,
         message: messageText.trim(),
         chat_id: chatId,
         created_at: new Date().toISOString(),
