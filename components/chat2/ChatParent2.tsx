@@ -1,74 +1,160 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ChatList from "./ChatList";
 import ChatWindow from "./ChatWindow";
-import ContactProfile from "./ContactProfile";
 import useWindowSize from "./hook";
+import { ChatMessageType, ChatType, UserType } from "@/lib/supabase/types";
+import { createSupabaseClient } from "@/lib/supabase/supabase-client";
+import { getChatsFromUserAddress, getLastChatMessage, getUser } from "@/lib/supabase/utils";
+import ChatListPanel from "./ChatListPanel";
+import ContactProfilePanel from "./ContactProfilePanel";
 
-type ChatHistoryItem = {
+export type ChatItem = {
   id: string;
-  name: string;
-  lastMessage: string;
-  otherUserAddress: string;
-  profilePicture: string;
+  lastMessage: { text: string; date: string };
+  chatMessages: ChatMessageType[];
+  otherUserData: UserType;
+  fetchedMessages: boolean;
 };
+
+interface ChatParentProps {
+  authToken: string | null;
+  setError: (error: boolean) => void;
+  userAddress: string;
+}
 
 // Breakpoint for switching to mobile layout
 const SM_BREAKPOINT = 640;
 
-export default function ChatApp({ authToken }: { authToken: string | null }) {
-  const [selectedChat, setSelectedChat] = useState<ChatHistoryItem | null>(null);
+export default function ChatParent({ authToken, setError, userAddress }: ChatParentProps) {
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
+  const [supabaseClient, setSupabaseClient] = useState<any>(null);
   const windowSize = useWindowSize();
 
   const isMobile = windowSize.width <= SM_BREAKPOINT;
+  const selectedChat = chatHistory.find((chat) => chat.id === selectedChatId);
+
+  // This will create a supabase client used for subscription when the user logs in or changes
+  useEffect(() => {
+    const initSupabase = async () => {
+      const client = await createSupabaseClient(userAddress, authToken as string);
+      console.log("Supabase client created with address:", userAddress);
+      setSupabaseClient(client);
+    };
+
+    initSupabase();
+  }, [userAddress]);
+
+  // This useEffect function will fetch all chats the user is involved in
+  // and fills the chatHistory array with chat items
+  useEffect(() => {
+    const fetchChats = async () => {
+      if (supabaseClient) {
+        // Find all chats where the user is involved
+        const {
+          success: chatsSuccess,
+          data: chatsData,
+          error: chatsError,
+        } = await getChatsFromUserAddress(userAddress, authToken);
+        if (!chatsSuccess && chatsError) {
+          setError(true);
+        } else if (chatsData) {
+          console.log("Chat data:", chatsData);
+
+          // Fetch user data for each chat
+          const chatItems = await Promise.all(
+            chatsData.map(async (chat: ChatType) => {
+              const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
+              const { success: userSuccess, data: userData, error: userError } = await getUser(otherUserAddress, authToken);
+
+              if (!userSuccess && userError) {
+                setError(true);
+                return null;
+              }
+
+              const { data: lastMessageData } = await getLastChatMessage(chat.id.toString(), authToken);
+
+              console.log("Last message data:", lastMessageData);
+
+              const chatItem: ChatItem = {
+                id: chat.id.toString(),
+                lastMessage: {
+                  text: lastMessageData?.message || "",
+                  date: lastMessageData?.created_at || "",
+                },
+                chatMessages: [],
+                otherUserData: userData,
+                fetchedMessages: false,
+              };
+
+              return chatItem;
+            })
+          );
+
+          // Filter out any null values (in case of errors)
+          const validChatItems = chatItems.filter((item) => item !== null);
+
+          setChatHistory(validChatItems as ChatItem[]);
+        }
+      }
+    };
+
+    fetchChats();
+  }, [supabaseClient, userAddress, authToken]);
 
   return (
     <div className="flex h-screen overflow-hidden">
       <motion.div
         initial={{ width: "100%" }}
         animate={{
-          width: selectedChat && isMobile ? "0%" : "100%",
-          x: selectedChat && isMobile ? -50 : 0,
+          width: selectedChatId && isMobile ? "0%" : "100%",
+          x: selectedChatId && isMobile ? -50 : 0,
         }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2 }}
         className="h-full sm:w-1/3 pb-[58px] sm:max-w-sm border-r border-border"
       >
-        <ChatList onSelectChat={setSelectedChat} />
+        <ChatListPanel setSelectedChatId={setSelectedChatId} selectedChatId={selectedChatId} chatHistory={chatHistory} />
       </motion.div>
 
       <AnimatePresence>
-        {selectedChat && (
+        {selectedChat && selectedChat.otherUserData && selectedChatId && (
           <motion.div
             key="chat-window"
-            initial={isMobile ? { x: "100%" } : { width: "100%" }}
-            animate={isMobile ? { x: isProfileOpen ? -50 : 0 } : {}}
+            initial={isMobile ? { x: "100%" } : { opacity: 0 }}
+            animate={isMobile ? { x: isProfileOpen ? -50 : 0 } : { opacity: 1 }}
             exit={isMobile ? { x: "100%" } : {}}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className={`${isMobile ? "fixed inset-0" : "relative flex-grow"}`}
           >
             <ChatWindow
               chat={selectedChat}
-              onBack={() => setSelectedChat(null)}
+              selectedChatId={selectedChatId}
+              onBack={() => setSelectedChatId(null)}
               onOpenProfile={() => setIsProfileOpen(true)}
+              authToken={authToken}
+              userAddress={userAddress}
+              chatHistory={chatHistory}
+              setChatHistory={(updateFn: (prevHistory: ChatItem[]) => ChatItem[]) => {
+                setChatHistory((prevHistory) => updateFn(prevHistory));
+              }}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {isProfileOpen && (
+        {isProfileOpen && selectedChat && selectedChat.otherUserData && (
           <motion.div
             key="contact-profile"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 sm:w-1/3 sm:relative"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 w-full sm:w-[450px] sm:relative"
           >
-            <ContactProfile contact={selectedChat} onClose={() => setIsProfileOpen(false)} />
+            <ContactProfilePanel contact={selectedChat.otherUserData} onClose={() => setIsProfileOpen(false)} />
           </motion.div>
         )}
       </AnimatePresence>
