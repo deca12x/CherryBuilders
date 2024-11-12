@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send } from "lucide-react";
-import { ChatItem } from "./ChatParent2";
-import { getChatMessages } from "@/lib/supabase/utils";
+import { ChatItem } from "./ChatParent";
+import { createMessage, getChatMessages } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";
 import { ChatMessageType } from "@/lib/supabase/types";
-import { createSupabaseClient } from "@/lib/supabase/supabase-client";
 
 interface ChatWindowProps {
   chat: ChatItem;
@@ -36,6 +35,8 @@ export default function ChatWindow({
   const [chatMessagesError, setChatMessagesError] = useState(false);
   const [chatMessagesLoading, setChatMessagesLoading] = useState(false);
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat messages on component mount and when chat changes
   useEffect(() => {
@@ -76,18 +77,15 @@ export default function ChatWindow({
     fetchMessages();
   }, [selectedChatId, authToken]);
 
-  // Add useEffect to initialize Supabase client
+  // Modified scroll effect
   useEffect(() => {
-    const initSupabase = async () => {
-      const client = await createSupabaseClient(userAddress, authToken as string);
-      setSupabaseClient(client);
-    };
-
-    initSupabase();
-  }, [userAddress, authToken]);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "instant" });
+    }
+  }, [chat.chatMessages]);
 
   const handleSend = async (messageText: string, type?: string, requestId?: string) => {
-    if (!messageText.trim() || !supabaseClient) return;
+    if (!messageText.trim()) return;
 
     const newMessage: ChatMessageType = {
       id: Date.now(),
@@ -100,6 +98,9 @@ export default function ChatWindow({
       requestId: requestId,
       read: false,
     };
+
+    // Save the last message in case of UI revert
+    const lastMessage = chat.lastMessage;
 
     // Update UI optimistically
     setChatHistory((prevChats: ChatItem[]) => {
@@ -122,10 +123,7 @@ export default function ChatWindow({
     setNewMessage("");
 
     // Send to Supabase
-    const { data, error } = await supabaseClient
-      .from("messages")
-      .insert(newMessage)
-      .select();
+    const { error } = await createMessage(newMessage, authToken);
 
     if (error) {
       console.error("Error sending message:", error);
@@ -136,23 +134,7 @@ export default function ChatWindow({
             return {
               ...chatItem,
               chatMessages: chatItem.chatMessages.filter((msg) => msg.id !== newMessage.id),
-              lastMessage: chatItem.lastMessage, // Restore previous last message
-            };
-          }
-          return chatItem;
-        });
-      });
-    } else if (data) {
-      console.log("Message sent successfully to Supabase:", data[0]);
-      // Update the message with the server-generated ID and data
-      setChatHistory((prevChats: ChatItem[]) => {
-        return prevChats.map((chatItem) => {
-          if (chatItem.id === selectedChatId) {
-            return {
-              ...chatItem,
-              chatMessages: chatItem.chatMessages.map((msg) => 
-                msg.id === newMessage.id ? data[0] : msg
-              ),
+              lastMessage: lastMessage, // Restore previous last message
             };
           }
           return chatItem;
@@ -163,7 +145,7 @@ export default function ChatWindow({
 
   return (
     <div className="flex flex-col h-full pb-[58px]">
-      <div className="flex items-center h-20 p-4 bg-background border-b border-border">
+      <div className="flex flex-shrink-0 items-center h-20 p-4 bg-background border-b border-border">
         <Button variant="ghost" size="icon" className="sm:hidden mr-2" onClick={onBack}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
@@ -183,8 +165,8 @@ export default function ChatWindow({
       </div>
       {chatMessagesLoading ? (
         <LoadingSpinner className="justify-start mt-28" />
-      ) : (
-        <ScrollArea className="flex-grow p-4">
+      ) : chat.chatMessages.length > 0 && !chatMessagesError ? (
+        <ScrollArea className="flex-grow p-5" ref={scrollAreaRef}>
           <div className="space-y-4">
             {chat.chatMessages.map((message, index) => {
               if (message.sender === userAddress) {
@@ -219,8 +201,22 @@ export default function ChatWindow({
                 );
               }
             })}
+            {/* Dummy div to have a direct connection to the end of the chat */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
+      ) : chatMessagesError ? (
+        <div className="flex justify-center text-lg text-primary items-center text-center h-full">
+          {"An unexpected error occurred while fetching you messages :("}
+          <br />
+          {"Please try again!"}
+        </div>
+      ) : (
+        <div className="flex justify-center text-lg items-center text-center h-full">
+          {"You didn't exchange any message yet."}
+          <br />
+          {"Why don't you say hi? :)"}
+        </div>
       )}
       <div className="p-4 border-t border-border">
         <div className="flex space-x-2">

@@ -1,7 +1,7 @@
 import React from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChatItem } from "./ChatParent2";
+import { ChatItem } from "./ChatParent";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";

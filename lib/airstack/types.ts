@@ -267,6 +267,7 @@ export enum EveryBlockchain {
 export type FarScore = {
   farRank: Maybe<Scalars['Int']['output']>;
   farScore: Maybe<Scalars['Float']['output']>;
+  heroBoost: Maybe<Scalars['Float']['output']>;
   lpBoost: Maybe<Scalars['Float']['output']>;
   organicScore: Maybe<Scalars['Float']['output']>;
   organicScoreRank: Maybe<Scalars['Int']['output']>;
@@ -285,6 +286,7 @@ export type FarScoreFilter = {
   farRank: InputMaybe<Int_Comparator_Exp>;
   farScore: InputMaybe<Float_Comparator_Exp>;
   fid: InputMaybe<Int_Comparator_Exp>;
+  heroBoost: InputMaybe<Float_Comparator_Exp>;
   lpBoost: InputMaybe<Float_Comparator_Exp>;
   organicScore: InputMaybe<Float_Comparator_Exp>;
   organicScoreRank: InputMaybe<Int_Comparator_Exp>;
@@ -931,6 +933,7 @@ export type FarcasterScore = {
   farRank: Maybe<Scalars['Int']['output']>;
   farScore: Maybe<Scalars['Float']['output']>;
   farScoreRaw: Maybe<Scalars['String']['output']>;
+  heroBoost: Maybe<Scalars['Float']['output']>;
   liquidityBoost: Maybe<Scalars['Float']['output']>;
   powerBoost: Maybe<Scalars['Float']['output']>;
   tvl: Maybe<Scalars['String']['output']>;
@@ -1380,6 +1383,7 @@ export type Range_Comparator_Exp = {
 export type RealTimeFarScore = {
   farRank: Maybe<Scalars['Int']['output']>;
   farScore: Maybe<Scalars['Float']['output']>;
+  heroBoost: Maybe<Scalars['Float']['output']>;
   lpBoost: Maybe<Scalars['Float']['output']>;
   organicScore: Maybe<Scalars['Float']['output']>;
   organicScoreRank: Maybe<Scalars['Int']['output']>;
@@ -1463,6 +1467,7 @@ export type Social = {
   profileUrl: Maybe<Scalars['String']['output']>;
   realTimeFarScore: Maybe<RealTimeFarScore>;
   socialCapital: Maybe<SocialCapital>;
+  totalSpendAllowance: Maybe<TotalSpendAllowance>;
   twitterUserName: Maybe<Scalars['String']['output']>;
   updatedAt: Maybe<Scalars['Time']['output']>;
   userAddress: Maybe<Scalars['Address']['output']>;
@@ -1492,6 +1497,7 @@ export type SocialFollowingsArgs = {
 
 export type SocialCapital = {
   farBoost: Maybe<Scalars['Float']['output']>;
+  heroBoost: Maybe<Scalars['Float']['output']>;
   liquidityBoost: Maybe<Scalars['Float']['output']>;
   powerBoost: Maybe<Scalars['Float']['output']>;
   socialCapitalRank: Maybe<Scalars['Int']['output']>;
@@ -1727,6 +1733,13 @@ export enum TokenType {
 export type TokenType_Comparator_Exp = {
   _eq: InputMaybe<TokenType>;
   _in: InputMaybe<Array<TokenType>>;
+};
+
+export type TotalSpendAllowance = {
+  frameInteractions: Maybe<Scalars['Int']['output']>;
+  likes: Maybe<Scalars['Int']['output']>;
+  recasts: Maybe<Scalars['Int']['output']>;
+  replies: Maybe<Scalars['Int']['output']>;
 };
 
 export type TrendingCast = {

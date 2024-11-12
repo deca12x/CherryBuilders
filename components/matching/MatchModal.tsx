@@ -28,7 +28,7 @@ export default function MatchModal({ isOpen, onClose, chatId }: MatchModalProps)
   };
 
   const handleRedirect = () => {
-    router.push(`/chat/${chatId}`);
+    router.push(`/chat?chatId=${chatId}`);
   };
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {

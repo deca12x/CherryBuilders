@@ -1,15 +1,30 @@
-import { Link } from "lucide-react";
+import { Link, Copy, CheckCircle } from "lucide-react";
 import UserEvents from "../matching/UserEvents";
-import { UserType } from "@/lib/supabase/types";
+import { UserTag, UserType } from "@/lib/supabase/types";
 import Image from "next/image";
 import { Avatar, AvatarImage } from "../ui/avatar";
-import UserTags from "../matching/UserTags";
+import { shortenAddress } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 interface ContactProfileCardProps {
   user: UserType;
 }
 
 export default function ContactProfileCard({ user }: ContactProfileCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy: () => void = () => {
+    navigator.clipboard.writeText(user.evm_address);
+    setCopied(true);
+  };
+
+  useEffect(() => {
+    if (copied) {
+      const timer = setTimeout(() => setCopied(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [copied]);
+
   return (
     <div className="flex flex-col items-center min-w-full w-full space-y-4 pb-10">
       <Avatar className="h-28 w-28">
@@ -20,14 +35,28 @@ export default function ContactProfileCard({ user }: ContactProfileCardProps) {
       </Avatar>
       <div className="flex flex-col justify-center items-center gap-1 mb-5">
         <h3 className="text-2xl font-semibold">{user.name}</h3>
-        <div className="text-sm text-muted-foreground">{user.evm_address}</div>
-        <UserTags user={user} />
+        <div className="flex justify-center items-center gap-2 text-sm text-muted-foreground">
+          <label>{shortenAddress(user.evm_address)}</label>
+          <button onClick={handleCopy} className="focus:outline-none">
+            {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
+          </button>
+        </div>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {user.tags.map((tag: UserTag, index: number) => (
+            <div
+              key={index}
+              className="flex text-nowrap bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-sm"
+            >
+              {tag.charAt(0).toUpperCase() + tag.slice(1)}
+            </div>
+          ))}
+        </div>
       </div>
       <div className="flex flex-col w-full gap-3">
         {/* Bio */}
         <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
           <p className="font-bold text-foreground">Who am I?</p>
-          <p className="text-muted-foreground">{user.bio}</p>
+          <p className="text-muted-foreground break-words text-wrap">{user.bio}</p>
         </div>
 
         {/* Events */}

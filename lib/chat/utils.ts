@@ -1,4 +1,4 @@
-import { ChatItem } from "@/components/chat2/ChatParent2";
+import { ChatItem } from "@/components/chat/ChatParent";
 
 /**
  * A function to sort chat history by last message date, if the last message date is not available, the chat will be placed at the bottom
