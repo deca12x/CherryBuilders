@@ -84,8 +84,7 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
             schema: "public",
             table: "messages",
             // Filter by receiver to only get messages directed to the connected user
-            // TODO: modify this line
-            filter: `sender=neq.${userAddress}`,
+            filter: `receiver=eq.${userAddress}`,
           },
           (payload: any) => {
             console.log("Received real-time update:", payload);
