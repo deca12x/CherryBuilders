@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send } from "lucide-react";
 import { ChatItem } from "./ChatParent";
-import { createMessage, getChatMessages } from "@/lib/supabase/utils";
+import { createMessage, getChatMessages, updateMessagesReadValue } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";
 import { ChatMessageType } from "@/lib/supabase/types";
@@ -34,7 +34,6 @@ export default function ChatWindow({
   const [newMessage, setNewMessage] = useState("");
   const [chatMessagesError, setChatMessagesError] = useState(false);
   const [chatMessagesLoading, setChatMessagesLoading] = useState(false);
-  const [supabaseClient, setSupabaseClient] = useState<any>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +53,12 @@ export default function ChatWindow({
         setChatMessagesError(true);
       } else if (data) {
         console.log("Fetched messages:", data);
+
+        // Set the messages read value to true before adding them to the chat history
+        // const updatedMessages = data.map((msg: ChatMessageType) => {
+        //   return { ...msg, read: true };
+        // });
+
         // Search and set the messages in the correct chat
         const updatedChatHistory = chatHistory.map((chatItem) => {
           if (chatItem.id === chat.id) {
@@ -68,6 +73,13 @@ export default function ChatWindow({
         });
         // Update the chat history
         setChatHistory(() => updatedChatHistory);
+
+        // Update the messages read value in the database
+        // console.log("Setting chat messages as read for chat: ", selectedChatId);
+        // const { success, error } = await updateMessagesReadValue(selectedChatId, true, authToken);
+        // if (!success && error) {
+        //   console.error("Error updating messages read value:", error);
+        // }
 
         // Set loading state to false
         setChatMessagesLoading(false);
@@ -96,7 +108,7 @@ export default function ChatWindow({
       created_at: new Date().toISOString(),
       type: type,
       requestId: requestId,
-      read: false,
+      //read: false,
     };
 
     // Save the last message in case of UI revert
@@ -113,6 +125,7 @@ export default function ChatWindow({
               text: newMessage.message,
               date: newMessage.created_at,
               fromAddress: newMessage.sender,
+              //read: true,
             },
           };
         }
@@ -165,7 +178,7 @@ export default function ChatWindow({
       </div>
       {chatMessagesLoading ? (
         <LoadingSpinner className="justify-start mt-28" />
-      ) : chat.chatMessages.length > 0 && !chatMessagesError ? (
+      ) : chat.chatMessages && !chatMessagesError ? (
         <ScrollArea className="flex-grow p-5" ref={scrollAreaRef}>
           <div className="space-y-4">
             {chat.chatMessages.map((message, index) => {
