@@ -57,8 +57,9 @@ export default function ChatListPanel({ setSelectedChatId, selectedChatId, chatH
                           {chat.lastMessage.date ? formatDate(chat.lastMessage.date) : ""}
                         </div>
                       </div>
-                      <div className="flex justify-start text-sm text-muted-foreground truncate">
-                        {chat.lastMessage.text}
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-muted-foreground truncate">{chat.lastMessage.text}</div>
+                        {/* {!chat.lastMessage?.read && <div className="bg-primary rounded-full h-3 w-3" />} */}
                       </div>
                     </div>
                   </motion.div>
