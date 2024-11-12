@@ -40,26 +40,26 @@ export default function ChatListPanel({ setSelectedChatId, selectedChatId, chatH
                     )}
                     onClick={() => setSelectedChatId(chat.id)}
                   >
-                    <Avatar>
+                    <Avatar className="flex-shrink-0">
                       <AvatarImage
                         src={
                           chat.otherUserData.profile_pictures.length > 0
                             ? chat.otherUserData.profile_pictures[0]
                             : "/images/default_propic.jpeg"
                         }
-                        alt="Other Users Propic"
+                        alt="Other User's Profile Picture"
                       />
                     </Avatar>
-                    <div className="flex flex-col w-full">
-                      <div className="flex justify-between">
-                        <div className="flex items-center w-full text-md font-semibold">{chat.otherUserData.name}</div>
-                        <div className="flex items-center justify-end w-full text-sm">
+                    <div className="flex flex-col w-full min-w-0">
+                      <div className="flex justify-between items-center w-full">
+                        <div className="text-md font-semibold truncate">{chat.otherUserData.name}</div>
+                        <div className="text-sm text-muted-foreground whitespace-nowrap ml-2">
                           {chat.lastMessage.date ? formatDate(chat.lastMessage.date) : ""}
                         </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm text-muted-foreground truncate">{chat.lastMessage.text}</div>
-                        {/* {!chat.lastMessage?.read && <div className="bg-primary rounded-full h-3 w-3" />} */}
+                      <div className="flex justify-between items-center w-full">
+                        <div className="text-sm text-muted-foreground truncate flex-grow">{chat.lastMessage.text}</div>
+                        {/* {!chat.lastMessage.read && <div className="bg-primary rounded-full h-3 w-3 flex-shrink-0 ml-2" />} */}
                       </div>
                     </div>
                   </motion.div>
