@@ -12,7 +12,7 @@ import { useQueryState } from "nuqs";
 
 export type ChatItem = {
   id: string;
-  lastMessage: { text: string; fromAddress: string; date: string };
+  lastMessage: { text: string; fromAddress: string; date: string }; // {text: string; fromAddress: string; date: string, read: boolean};
   chatMessages: ChatMessageType[];
   otherUserData: UserType;
   fetchedMessages: boolean;
@@ -31,8 +31,10 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
+  const [wasChatHistoryFetched, setWasChatHistoryFetched] = useState(false);
   const supabaseRef = useRef<any>(null);
   const chatHistoryRef = useRef<ChatItem[]>(chatHistory);
+  const selectedChatIdRef = useRef<string | null>(null);
   const windowSize = useWindowSize();
 
   // Routing things with nuqs
@@ -46,6 +48,12 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
   useEffect(() => {
     chatHistoryRef.current = chatHistory;
   }, [chatHistory]);
+
+  // Update the ref whenever selectedChatId state changes
+  // This is needed otherwise the state will be outdated in the subscription
+  useEffect(() => {
+    selectedChatIdRef.current = selectedChatId;
+  }, [selectedChatId]);
 
   // This will create a supabase client used for subscription when the user logs in or changes
   useEffect(() => {
@@ -90,6 +98,7 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
               text: newMessage.message,
               date: newMessage.created_at,
               fromAddress: newMessage.sender,
+              //read: newMessage.chat_id === selectedChatIdRef.current ? true : false,
             };
 
             // Append the new message to the chat messages array if the chat was already fetched
@@ -159,6 +168,7 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
                   text: lastMessageData?.message || "No messages yet",
                   date: lastMessageData?.created_at || "",
                   fromAddress: lastMessageData?.sender || "",
+                  // read: lastMessageData ? lastMessageData.read : true,
                 },
                 chatMessages: [],
                 otherUserData: userData,
@@ -173,6 +183,7 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
           const validChatItems = chatItems.filter((item) => item !== null);
 
           setChatHistory(validChatItems as ChatItem[]);
+          setWasChatHistoryFetched(true);
         }
       }
     };
@@ -193,8 +204,8 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
       <motion.div
         initial={{ width: "100%" }}
         animate={{
-          width: selectedChatId && isMobile ? "0%" : "100%",
-          x: selectedChatId && isMobile ? -50 : 0,
+          width: selectedChatId && isMobile && wasChatHistoryFetched ? "0%" : "100%",
+          x: selectedChatId && isMobile && wasChatHistoryFetched ? -50 : 0,
         }}
         transition={{ duration: 0.2 }}
         className="h-full sm:w-1/3 pb-[58px] sm:max-w-sm border-r border-border"
@@ -203,7 +214,7 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
       </motion.div>
 
       <AnimatePresence>
-        {selectedChat && selectedChat.otherUserData && selectedChatId && (
+        {selectedChat && selectedChat.otherUserData && selectedChatId && wasChatHistoryFetched && (
           <motion.div
             key="chat-window"
             initial={isMobile ? { x: "100%" } : { opacity: 0 }}
