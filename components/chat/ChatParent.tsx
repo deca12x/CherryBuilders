@@ -1,217 +1,257 @@
 "use client";
-
-import { useState, useEffect, useRef } from "react";
-import ChatHeader from "@/components/chat/ChatHeader";
-import ChatSidebar from "@/components/chat/ChatSideBar";
-import MessageList from "@/components/chat/MessageList";
-import MessageInput from "@/components/chat/MessageInput";
-import { supabase } from "@/lib/supabase/supabase-client";
-import {ChatParentProps, User } from "@/lib/types";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "../ui/button";
-import { Menu } from "lucide-react";
-import BottomNavigationBar from "../navbar/BottomNavigationBar";
-import { ChatMessageType } from "@/lib/supabase/types";
-import { getUser } from "@/lib/supabase/utils";
-import { usePrivy } from '@privy-io/react-auth';
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ChatWindow from "./ChatWindow";
+import useWindowSize from "./hook";
+import { ChatMessageType, ChatType, UserType } from "@/lib/supabase/types";
 import { createSupabaseClient } from "@/lib/supabase/supabase-client";
+import { getChatsFromUserAddress, getLastChatMessage, getUser } from "@/lib/supabase/utils";
+import ChatListPanel from "./ChatListPanel";
+import ContactProfilePanel from "./ContactProfilePanel";
+import { useQueryState } from "nuqs";
 
-export default function ChatParent({ userAddress, chatId, authToken }: ChatParentProps) {
-  const [message, setMessage] = useState("");
-  const [currentChat, setCurrentChat] = useState<ChatMessageType[]>([]);
-  const [otherUser, setOtherUser] = useState<User | null>(null);
-  const channelRef = useRef<any>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+export type ChatItem = {
+  id: string;
+  lastMessage: { text: string; fromAddress: string; date: string }; // {text: string; fromAddress: string; date: string, read: boolean};
+  chatMessages: ChatMessageType[];
+  otherUserData: UserType;
+  fetchedMessages: boolean;
+};
+
+interface ChatParentProps {
+  authToken: string | null;
+  setError: (error: boolean) => void;
+  userAddress: string;
+}
+
+// Breakpoint for switching to mobile layout
+const SM_BREAKPOINT = 640;
+
+export default function ChatParent({ authToken, setError, userAddress }: ChatParentProps) {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
-  const { user } = usePrivy();
+  const [wasChatHistoryFetched, setWasChatHistoryFetched] = useState(false);
+  const supabaseRef = useRef<any>(null);
+  const chatHistoryRef = useRef<ChatItem[]>(chatHistory);
+  const selectedChatIdRef = useRef<string | null>(null);
+  const windowSize = useWindowSize();
 
+  // Routing things with nuqs
+  const [selectedChatId, setSelectedChatId] = useQueryState("chatId");
+
+  const isMobile = windowSize.width <= SM_BREAKPOINT;
+  const selectedChat = chatHistory.find((chat) => chat.id === selectedChatId);
+
+  // Update the ref whenever chatHistory state changes
+  // This is needed otherwise the state will be outdated in the subscription
+  useEffect(() => {
+    chatHistoryRef.current = chatHistory;
+  }, [chatHistory]);
+
+  // Update the ref whenever selectedChatId state changes
+  // This is needed otherwise the state will be outdated in the subscription
+  useEffect(() => {
+    selectedChatIdRef.current = selectedChatId;
+  }, [selectedChatId]);
+
+  // This will create a supabase client used for subscription when the user logs in or changes
   useEffect(() => {
     const initSupabase = async () => {
-      if (user?.wallet?.address) {
-        const client = await createSupabaseClient(user.wallet.address, authToken as string);
-        console.log("Supabase client created with address:", user.wallet.address);
-        setSupabaseClient(client);
-      }
+      const client = await createSupabaseClient(userAddress, authToken as string);
+      console.log("Supabase client created with address:", userAddress);
+      setSupabaseClient(client);
     };
 
     initSupabase();
-  }, [user]);
+  }, [userAddress]);
 
+  // This useEffect function will fetch all chats the user is involved in
+  // and fills the chatHistory array with chat items
   useEffect(() => {
-    if (supabaseClient && chatId && user?.wallet?.address) {
-      fetchChatDetails();
-      fetchMessages();
-      setupRealtimeSubscription();
-    }
+    const setupRealtimeSubscription = () => {
+      if (!supabaseClient) return;
 
-    return () => {
-      if (channelRef.current) {
-        supabaseClient?.removeChannel(channelRef.current);
-      }
-    };
-  }, [supabaseClient, chatId, user?.wallet?.address]);
+      const channelName = `chat:messages:${userAddress}`;
+      console.log(`Attempting to subscribe to channel: ${channelName}`);
 
-  const fetchChatDetails = async () => {
-    if (!supabaseClient) return;
-    console.log("Fetching chat details for chat ID:", chatId);
-    const { data, error } = await supabaseClient.from("chats").select("*").eq("id", chatId).single();
-
-    if (error) {
-      console.error("Error fetching chat details:", error);
-      return;
-    }
-
-    if (data) {
-      console.log("Chat data:", data);
-      const otherUserAddress = data.user_1 === userAddress ? data.user_2 : data.user_1;
-      const otherUserData = await getUser(otherUserAddress, authToken);
-      console.log("Determined other user address:", otherUserAddress);
-
-      setOtherUser({
-        address: otherUserAddress,
-        name: otherUserData?.data.name || otherUserAddress,
-      });
-    } else {
-      console.log("No chat data found for chat ID:", chatId);
-    }
-  };
-
-  const fetchMessages = async () => {
-    if (!supabaseClient) return;
-    console.log("Fetching messages for chat:", chatId);
-    const { data, error } = await supabaseClient
-      .from("messages")
-      .select("*")
-      .eq("chat_id", chatId)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching messages:", error);
-    } else {
-      console.log("Fetched messages:", data);
-      setCurrentChat(data as ChatMessageType[]);
-    }
-  };
-
-  const setupRealtimeSubscription = () => {
-    if (!supabaseClient) return;
-
-    const channelName = `chat:${chatId}:${user?.wallet?.address}`;
-    console.log(`Attempting to subscribe to channel: ${channelName}`);
-
-    channelRef.current = supabaseClient
-      .channel(channelName, { config: { broadcast: { ack: true }, presence: { key: user?.wallet?.address } } })
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-          filter: `chat_id=eq.${chatId}`,
-        },
-        (payload: any) => {
-          console.log("Received real-time update:", payload);
-          if (payload.eventType === "INSERT") {
+      supabaseRef.current = supabaseClient
+        .channel(channelName, { config: { broadcast: { ack: true }, presence: { key: userAddress } } })
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            // Filter by receiver to only get messages directed to the connected user
+            filter: `receiver=eq.${userAddress}`,
+          },
+          (payload: any) => {
+            console.log("Received real-time update:", payload);
             const newMessage = payload.new as ChatMessageType;
             console.log("Processed new message:", newMessage);
-            if (newMessage.sender !== userAddress) {
-              console.log("Updating chat with new message from other user:", newMessage);
-              setCurrentChat((prevMessages) => {
-                console.log("Current chat before update:", prevMessages);
-                const updatedChat = [...prevMessages, newMessage];
-                console.log("Updated chat after receiving new message:", updatedChat);
-                return updatedChat;
+            const chatId = newMessage.chat_id.toString();
+
+            // Create a new last message for the chat history
+            const newLastMessage = {
+              text: newMessage.message,
+              date: newMessage.created_at,
+              fromAddress: newMessage.sender,
+              //read: newMessage.chat_id === selectedChatIdRef.current ? true : false,
+            };
+
+            // Append the new message to the chat messages array if the chat was already fetched
+            const targetChat = chatHistoryRef.current.find((chatItem) => chatItem.id === chatId);
+            const newChatMessages = targetChat?.fetchedMessages ? [...targetChat.chatMessages, newMessage] : [];
+
+            // Finally set the chat history with the updated chat item
+            setChatHistory((prevHistory) => {
+              const updatedHistory = prevHistory.map((chatItem) => {
+                if (chatItem.id === chatId) {
+                  return {
+                    ...chatItem,
+                    lastMessage: newLastMessage,
+                    chatMessages: newChatMessages,
+                  };
+                } else {
+                  return chatItem;
+                }
               });
-            } else {
-              console.log("Received own message, not updating chat:", newMessage);
-            }
+              return updatedHistory;
+            });
           }
-        }
-      )
-      .subscribe(async (status: string, err?: Error) => {
-        if (err) {
-          console.error("Subscription error:", err);
-        } else {
-          console.log("Subscription status:", status);
-        }
-      });
+        )
+        .subscribe(async (status: string, err?: Error) => {
+          if (err) {
+            console.error("Subscription error:", err);
+          } else {
+            console.log("Subscription status:", status);
+          }
+        });
 
-    console.log("Channel subscription set up");
-  };
+      console.log("Channel subscription set up");
+    };
 
-  const handleSend = async (messageText: string, type?: string, requestId?: string) => {
-    if (messageText.trim()) {
-      console.log("Sending message:", messageText, "Type:", type, "RequestId:", requestId);
-      const newMessage: ChatMessageType = {
-        id: Date.now(),
-        sender: userAddress,
-        message: messageText.trim(),
-        chat_id: chatId,
-        created_at: new Date().toISOString(),
-        type: type,
-        requestId: requestId,
-      };
+    const fetchChats = async () => {
+      if (supabaseClient) {
+        // Find all chats where the user is involved
+        const {
+          success: chatsSuccess,
+          data: chatsData,
+          error: chatsError,
+        } = await getChatsFromUserAddress(userAddress, authToken);
+        if (!chatsSuccess && chatsError) {
+          setError(true);
+        } else if (chatsData) {
+          console.log("Chat data:", chatsData);
 
-      console.log("Adding message to UI:", newMessage);
-      setCurrentChat((prevMessages) => {
-        console.log("Current chat before sending:", prevMessages);
-        const updatedChat = [...prevMessages, newMessage];
-        console.log("Updated chat after sending:", updatedChat);
-        return updatedChat;
-      });
-      setMessage("");
+          // Fetch user data for each chat
+          const chatItems = await Promise.all(
+            chatsData.map(async (chat: ChatType) => {
+              const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
+              const { success: userSuccess, data: userData, error: userError } = await getUser(otherUserAddress, authToken);
 
-      const { data, error } = await supabaseClient.from("messages").insert(newMessage).select();
+              if (!userSuccess && userError) {
+                setError(true);
+                return null;
+              }
 
-      if (error) {
-        console.error("Error sending message:", error);
-        console.log("Reverting UI update");
-        setCurrentChat((prevMessages) => prevMessages.filter((msg) => msg.id !== newMessage.id));
-      } else if (data) {
-        console.log("Message sent successfully to Supabase:", data[0]);
-        setCurrentChat((prevMessages) => prevMessages.map((msg) => (msg.id === newMessage.id ? data[0] : msg)));
+              const { data: lastMessageData }: { data: ChatMessageType } = await getLastChatMessage(
+                chat.id.toString(),
+                authToken
+              );
 
-        if (type === "request" && requestId) {
-          console.log("Request message stored with requestId:", requestId);
+              const chatItem: ChatItem = {
+                id: chat.id.toString(),
+                lastMessage: {
+                  text: lastMessageData?.message || "No messages yet",
+                  date: lastMessageData?.created_at || "",
+                  fromAddress: lastMessageData?.sender || "",
+                  // read: lastMessageData ? lastMessageData.read : true,
+                },
+                chatMessages: [],
+                otherUserData: userData,
+                fetchedMessages: false,
+              };
+
+              return chatItem;
+            })
+          );
+
+          // Filter out any null values (in case of errors)
+          const validChatItems = chatItems.filter((item) => item !== null);
+
+          setChatHistory(validChatItems as ChatItem[]);
+          setWasChatHistoryFetched(true);
         }
       }
-    }
-  };
+    };
+
+    fetchChats();
+    setupRealtimeSubscription();
+
+    // Cleanup function
+    return () => {
+      if (supabaseRef.current) {
+        supabaseClient?.removeChannel(supabaseRef.current);
+      }
+    };
+  }, [supabaseClient, userAddress, authToken]);
 
   return (
-    <div className="flex flex-col h-screen bg-background lg:flex-row">
-      {/* Mobile Sidebar Trigger */}
-      <div className="lg:hidden p-4 border-b border-border">
-        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-            <ChatSidebar userAddress={userAddress} activeChatId={chatId} authToken={authToken} />
-          </SheetContent>
-        </Sheet>
-      </div>
+    <div className="flex h-screen overflow-hidden">
+      <motion.div
+        initial={{ width: "100%" }}
+        animate={{
+          width: selectedChatId && isMobile && wasChatHistoryFetched ? "0%" : "100%",
+          x: selectedChatId && isMobile && wasChatHistoryFetched ? -50 : 0,
+        }}
+        transition={{ duration: 0.2 }}
+        className="h-full sm:w-1/3 pb-[58px] sm:max-w-sm border-r border-border"
+      >
+        <ChatListPanel setSelectedChatId={setSelectedChatId} selectedChatId={selectedChatId} chatHistory={chatHistory} />
+      </motion.div>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-1/4 border-r border-border">
-        <ChatSidebar userAddress={userAddress} activeChatId={chatId} authToken={authToken} />
-      </div>
+      <AnimatePresence>
+        {selectedChat && selectedChat.otherUserData && selectedChatId && wasChatHistoryFetched && (
+          <motion.div
+            key="chat-window"
+            initial={isMobile ? { x: "100%" } : { opacity: 0 }}
+            animate={isMobile ? { x: isProfileOpen ? -50 : 0 } : { opacity: 1 }}
+            exit={isMobile ? { x: "100%" } : {}}
+            transition={{ duration: 0.2 }}
+            className={`${isMobile ? "fixed inset-0" : "relative flex-grow"}`}
+          >
+            <ChatWindow
+              chat={selectedChat}
+              selectedChatId={selectedChatId}
+              onBack={() => setSelectedChatId(null)}
+              onOpenProfile={() => setIsProfileOpen(true)}
+              authToken={authToken}
+              userAddress={userAddress}
+              chatHistory={chatHistory}
+              setChatHistory={(updateFn: (prevHistory: ChatItem[]) => ChatItem[]) => {
+                setChatHistory((prevHistory) => updateFn(prevHistory));
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col p-2 pb-12">
-        <ChatHeader name={otherUser?.name || "Loading..."} />
-        <MessageList key={currentChat.length} messages={currentChat} currentUserAddress={userAddress} authToken={authToken} />
-        <MessageInput
-          payeeAddress={userAddress}
-          payerAddress={otherUser?.address as string}
-          message={message}
-          setMessage={setMessage}
-          handleSend={handleSend}
-        />
-      </div>
-      <BottomNavigationBar />
+      <AnimatePresence>
+        {isProfileOpen && selectedChat && selectedChat.otherUserData && (
+          <motion.div
+            key="contact-profile"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 w-full sm:w-[450px] sm:relative"
+          >
+            <ContactProfilePanel contact={selectedChat.otherUserData} onClose={() => setIsProfileOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

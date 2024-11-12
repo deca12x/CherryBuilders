@@ -9,18 +9,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const createSupabaseClient = async (evmAddress?: string, privyAuthToken?: string) => {
   let supabaseJWT;
-  
+
   if (evmAddress && privyAuthToken) {
-    const response = await fetch('/api/auth/supabase-token', {
+    const response = await fetch("/api/auth/supabase-token", {
       headers: {
-        Authorization: `Bearer ${privyAuthToken}`
-      }
+        Authorization: `Bearer ${privyAuthToken}`,
+      },
     });
-    
+
     if (!response.ok) {
-      throw new Error('Failed to get Supabase token');
+      throw new Error("Failed to get Supabase token");
     }
-    
+
     const data = await response.json();
     supabaseJWT = data.token;
   }
@@ -42,7 +42,7 @@ export const createSupabaseClient = async (evmAddress?: string, privyAuthToken?:
   });
 
   if (supabaseJWT) {
-    client.auth.setSession({ access_token: supabaseJWT, refresh_token: '' });
+    client.auth.setSession({ access_token: supabaseJWT, refresh_token: "" });
     client.realtime.setAuth(supabaseJWT);
   }
 

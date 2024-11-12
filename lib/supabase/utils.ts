@@ -1,11 +1,11 @@
 import { FiltersProp } from "../types";
-import { ChatMessageType, EventType, UserTag, UserType } from "./types";
+import { ChatMessageType, EventType, UserType } from "./types";
 
 /**
  * A utility function to get a specific partial match from the database
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getPartialMatch = async (
@@ -48,7 +48,7 @@ export const getPartialMatch = async (
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
  * @param value - The boolean value that must be set in the database record
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updateMatch = async (
@@ -90,7 +90,7 @@ export const updateMatch = async (
  * A utility function to create a new match inside the database
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMatch = async (
@@ -130,7 +130,7 @@ export const createMatch = async (
  * A utility function to create a new chat inside the database
  * @param user_1_address - The address of the first user of the chat
  * @param user_2_address - The address of the second user of the chat
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createChat = async (
@@ -169,7 +169,7 @@ export const createChat = async (
 /**
  * A utility function that, given a chat id, gets the chat from the database
  * @param chatId - the unique id of the chat
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getChatFromId = async (
@@ -209,14 +209,14 @@ export const getChatFromId = async (
 /**
  * A utility function that, given a user address, gets the chat from the database
  * @param userAddress - The address of one of the two user that participate to the chat
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getChatsFromUserAddress = async (
   userAddress: string,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/chats?userAddress=${userAddress}`, {
+  const response = await fetch(`/api/chats/user/${userAddress}`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
     },
@@ -254,7 +254,7 @@ export const getChatsFromUserAddress = async (
  * A utility function to get a specific chat from the database
  * @param user_1_address - The address of the first user of the chat
  * @param user_2_address - The address of the second user of the chat
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getSpecificChat = async (
@@ -297,7 +297,7 @@ export const getSpecificChat = async (
  * @param address - The address of the user
  * @param fileName - The name of the file
  * @param file - The file to upload
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const uploadProfilePicture = async (
@@ -340,7 +340,7 @@ export const uploadProfilePicture = async (
  * @param events - The events that the users must have attended
  * @param offset - The number of users that must be skipped. It's used for pagination
  * @param limit - The number of users that must be fetched
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getFilteredUsers = async (
@@ -391,7 +391,7 @@ export const getFilteredUsers = async (
 /**
  * A utility function that, given a user address, gets their profile from the database
  * @param address - The address of the target user
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getUser = async (
@@ -431,7 +431,7 @@ export const getUser = async (
 /**
  * A utility function to update a user profile inside the database
  * @param profileData - The data of the user to update
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updateUser = async (
@@ -470,7 +470,7 @@ export const updateUser = async (
  * A utility function that, given a chat id, gets the messages of the chat from the database
  * @param chatId - the unique id of the chat
  * @param ascending - if the messages should be get in an ascending way
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getChatMessages = async (
@@ -511,7 +511,7 @@ export const getChatMessages = async (
 /**
  * A utility function that, given a chat id, gets the last message of the chat from the database
  * @param chatId - the unique id of the chat
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getLastChatMessage = async (
@@ -551,7 +551,7 @@ export const getLastChatMessage = async (
 /**
  * A utility function to create a new message inside the database
  * @param newMessage - The new message to be added to the database
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMessage = async (
@@ -586,9 +586,57 @@ export const createMessage = async (
 };
 
 /**
+ * A utility function to update the read value of all the messages of a chat inside the database
+ * @param chatId - The chat id of the chat whose messages must be updated
+ * @param readValue - The boolean value that must be set for all the messages of the chat
+ * @param jwt - The jwt needed to authorize the call
+ * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ */
+export const updateMessagesReadValue = async (
+  chatId: string,
+  readValue: boolean,
+  jwt: string | null
+): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  const response = await fetch(`/api/messages/read`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chatId,
+      readValue,
+    }),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
  * A utility function to update a message containing a request inside the database
  * @param requestId - The request id that identifies a request message
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updateRequestMessage = async (
@@ -626,7 +674,7 @@ export const updateRequestMessage = async (
 /**
  * A utility function that, given a code, retrieves a passcode item from the database
  * @param code - The unique passcode's code
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getPasscodeByCode = async (
@@ -669,7 +717,7 @@ export const getPasscodeByCode = async (
  * @param userAddress - The address of the user that will be associated with the passcode
  * @param eventSlug - The event's slug for the creation of a record in the users_events_rel table
  * @param consumedValue - The boolean value that must be set in the database record
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const updatePasscodeByCode = async (
@@ -711,7 +759,7 @@ export const updatePasscodeByCode = async (
 /**
  * A utility function that, given an event slug, retrieves the corresponding event item from the database
  * @param eventSlug - The event's slug
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getEventBySlug = async (
@@ -751,7 +799,7 @@ export const getEventBySlug = async (
 /**
  * A utility function that, given a user address, retrieves all the events the user is attending from the database
  * @param address - The address of the user
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getEventsByAddress = async (
@@ -790,7 +838,7 @@ export const getEventsByAddress = async (
 
 /**
  * A utility function that gets the connected user's memorized filters from the database
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const getUserFilters = async (
@@ -830,7 +878,7 @@ export const getUserFilters = async (
  * A utility function that sets the connected user's newly selected filters in the database
  * @param tags - The tag filters
  * @param events - The event filters
- * @param jwt - The jwt needed to authotize the call
+ * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const setUserFilters = async (

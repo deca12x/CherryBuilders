@@ -34,6 +34,7 @@ export interface UserType {
 export interface ChatMessageType {
   id: number;
   sender: string;
+  receiver: string;
   message: string;
   created_at: string;
   updated_at?: string;
@@ -42,6 +43,7 @@ export interface ChatMessageType {
   requestId?: string;
   paid?: boolean;
   chain_id?: number;
+  //read: boolean;
 }
 
 export interface ApiKeyType {
