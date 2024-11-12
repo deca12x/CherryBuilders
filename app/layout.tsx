@@ -8,7 +8,7 @@ import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cherry 🍒",
+  title: "Cherry",
   description: "A webapp to meet new developers, connect with them and start great collaborations",
 };
 
