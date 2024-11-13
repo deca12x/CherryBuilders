@@ -79,4 +79,16 @@ export const LANDING_PROFILES: MiniProfile[] = [
     image: "/images/landing/cat.png",
     tags: ["Backend dev", "Smart contract dev"],
   },
+  {
+    index: 12,
+    name: "Darryl Yeo",
+    image: "/images/landing/darryl.png",
+    tags: ["Frontend dev", "Talent scout"],
+  },
+  {
+    index: 13,
+    name: "Natalie",
+    image: "/images/landing/nat.png",
+    tags: ["Designer"],
+  },
 ];
