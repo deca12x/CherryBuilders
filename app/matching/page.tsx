@@ -103,6 +103,7 @@ export default function Matching() {
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
         {showDevconDialog && (
           <DevconDialog onDontShowAgain={handleDontShowAgain} />
+        )}
 
       </>
     );
