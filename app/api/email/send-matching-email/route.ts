@@ -22,12 +22,18 @@ export async function POST(request: Request) {
 
 
     if (!matchedWith || !matchedWithImage || !matchedWithBio || !chatLink || !receiverEmail) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(receiverEmail)) {
-      return Response.json({ error: 'Invalid email address' }, { status: 400 });
+      return new Response(JSON.stringify({ error: 'Invalid email address' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const { data, error } = await resend.emails.send({
@@ -39,12 +45,20 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Resend API error:', error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    return Response.json(data);
+    return new Response(JSON.stringify(data), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error: any) {
     console.error('Unexpected error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
