@@ -1,6 +1,6 @@
 import { UserType } from "@/lib/supabase/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { Frown, Smile } from "lucide-react";
+import { Frown, Smile, MessageCircle } from "lucide-react";
 import ProfileCardSkeleton from "./ProfileCardSkeleton";
 import ProfileCardContent from "./ProfileCardContent";
 import NoUsersFound from "./NoUsersFound";
@@ -9,18 +9,22 @@ import UserEvents from "./UserEvents";
 import ProfileCardHeader from "./ProfileCardHeader";
 import ActionButtons from "./ActionButtons";
 import FiltersButton from "./FiltersButton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import IcebreakerModal from "./IcebreakerModal";
 
 interface ProfileCardProps {
   user: UserType | null;
   imageIndex: number;
   isLoading: boolean;
-  processingAction: "accept" | "reject" | null;
+  processingAction: "accept" | "reject" | "icebreaker" | null;
   animateFrame: boolean;
   setAnimateFrame: (value: boolean) => void;
   setIsFiltersModalOpen: (value: boolean) => void;
   handleReject: () => void;
   handleAccept: () => void;
+  handleIcebreaker: (message: string) => void;
+  icebreakerMessage?: string | null;
+  onShowNoEmailModal: () => void;
 }
 
 export default function ProfileCard({
@@ -33,9 +37,17 @@ export default function ProfileCard({
   setIsFiltersModalOpen,
   handleReject,
   handleAccept,
+  handleIcebreaker,
+  icebreakerMessage,
+  onShowNoEmailModal,
 }: ProfileCardProps) {
+  const [isIcebreakerModalOpen, setIsIcebreakerModalOpen] = useState(false);
+
   // Prevent scrolling when processing an action
   useEffect(() => {
+
+    console.log(user)
+
     if (processingAction) {
       document.body.classList.add("overflow-hidden");
     } else {
@@ -47,6 +59,8 @@ export default function ProfileCard({
       document.body.classList.remove("overflow-hidden");
     };
   }, [processingAction]);
+
+  
 
   return user || isLoading ? (
     <>
@@ -63,6 +77,16 @@ export default function ProfileCard({
             >
               {processingAction === "accept" ? (
                 <Smile size={64} className="text-green-500" />
+              ) : processingAction === "icebreaker" ? (
+                <motion.div 
+                  className="flex flex-col items-center gap-2"
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", bounce: 0.5 }}
+                >
+                  <MessageCircle size={64} className="text-blue-500" />
+                 
+                </motion.div>
               ) : (
                 <Frown size={64} className="text-gray-500" />
               )}
@@ -73,11 +97,29 @@ export default function ProfileCard({
             {/* Card Header with image, name and filters button */}
             <ProfileCardHeader
               user={user}
-              imageIndex={imageIndex}
+              imageIndex={imageIndex || 0}
               animateFrame={animateFrame}
               isLoading={isLoading}
               setAnimateFrame={setAnimateFrame}
             />
+
+            {/* Icebreaker Message if exists */}
+            {icebreakerMessage && (
+              <motion.div
+                className="w-full bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg p-6 mb-4 border-2 border-primary/20 shadow-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", bounce: 0.4 }}
+              >
+                <div className="flex items-center gap-2 text-primary font-semibold mb-2">
+                  <MessageCircle size={20} />
+                  <span className="text-lg">Icebreaker Message</span>
+                </div>
+                <div className="text-foreground text-lg font-medium leading-relaxed">
+                  "{decodeURIComponent(icebreakerMessage)}"
+                </div>
+              </motion.div>
+            )}
 
             {/* Content */}
             <motion.div
@@ -101,11 +143,29 @@ export default function ProfileCard({
       {/* Buttons */}
       {user && (
         <div className="fixed w-full max-w-xl flex bottom-[75px] justify-center items-center">
-          <ActionButtons onReject={handleReject} onAccept={handleAccept} isLoading={isLoading} />
+          <ActionButtons 
+            onReject={handleReject} 
+            onAccept={handleAccept} 
+            onIcebreaker={() => setIsIcebreakerModalOpen(true)}
+            isLoading={isLoading} 
+            userHasEmailNotifsOn={user.emailNotifications || false}
+            userHasEmail={Boolean(user.email)}
+            onShowNoEmailModal={onShowNoEmailModal}
+          />
           <div className="absolute right-4">
             <FiltersButton onOpenFilters={() => setIsFiltersModalOpen(true)} showText={false} />
           </div>
         </div>
+      )}
+
+      {/* Icebreaker Modal */}
+      {user && (
+        <IcebreakerModal
+          isOpen={isIcebreakerModalOpen}
+          onClose={() => setIsIcebreakerModalOpen(false)}
+          onSend={handleIcebreaker}
+          user={user}
+        />
       )}
     </>
   ) : (
