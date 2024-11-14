@@ -2,27 +2,28 @@
 const nextConfig = {
 	reactStrictMode: true,
 	experimental: {
-	  serverComponentsExternalPackages: ['pdfkit', 'canvas'],
+		serverComponentsExternalPackages: ['pdfkit', 'canvas'],
+		missingSuspenseWithCSRBailout: false,
 	},
 	images: {
 		remotePatterns: [
-		  {
-			protocol: 'https',
-			hostname: '**',
-		  },
+			{
+				protocol: 'https',
+				hostname: '**',
+			},
 		],
-	  },
+	},
 	webpack: (config, { isServer }) => {
-	  if (!isServer) {
-		config.resolve.fallback = {
-		  ...config.resolve.fallback,
-		  fs: false,
-		  stream: false,
-		  canvas: false,
-		};
-	  }
-	  config.externals.push('pino-pretty', 'lokijs', 'encoding');
-	  return config;
+		if (!isServer) {
+			config.resolve.fallback = {
+				...config.resolve.fallback,
+				fs: false,
+				stream: false,
+				canvas: false,
+			};
+		}
+		config.externals.push('pino-pretty', 'lokijs', 'encoding');
+		return config;
 	},
 };
 
