@@ -6,6 +6,7 @@ interface SendMatchingEmailParams {
   receiverEmail?: string;
   jwt: string;
   message?: string;
+  isMatchComplete?: boolean;
 }
 
 export async function sendMatchingEmail({
@@ -15,7 +16,8 @@ export async function sendMatchingEmail({
   chatLink,
   receiverEmail,
   jwt,
-  message
+  message,
+  isMatchComplete
 }: SendMatchingEmailParams) {
   try {
 
@@ -35,7 +37,8 @@ export async function sendMatchingEmail({
         matchedWithBio,
         chatLink,
         receiverEmail,
-        message
+        message,
+        isMatchComplete
       }),
     });
 

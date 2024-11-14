@@ -70,7 +70,7 @@ export default function MatchingParentIcebreaker({
         setIsMatchModalOpen(true);
         setMatchedChatId(specificChat.data?.id);
 
-        if(specificUser.emailMarketing) {
+        if(specificUser.emailNotifications) {
           await sendMatchingEmail({
             matchedWith: loggedInUserData?.name as string,
             matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
@@ -78,7 +78,8 @@ export default function MatchingParentIcebreaker({
             chatLink: `https://cherry.builders/chat/${matchedChatId}`,
             receiverEmail: specificUser.email || "",
             jwt: jwt as string,
-            message: icebreakerMessage || undefined
+            message: icebreakerMessage || undefined,
+            isMatchComplete: true
           });
         }
       }
@@ -133,6 +134,7 @@ export default function MatchingParentIcebreaker({
           handleReject={handleReject}
           handleIcebreaker={handleIcebreaker}
           icebreakerMessage={icebreakerMessage}
+          onShowNoEmailModal={() => {}} 
         />
 
         {/* Navigation */}

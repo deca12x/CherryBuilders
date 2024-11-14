@@ -10,13 +10,14 @@ type MatchedEmailProps = {
   chatLink: string;
   receiverEmail: string;
   message?: string;
+  isMatchComplete?: boolean;
 }
 
 export async function POST(request: Request) {
   try {
-    const { matchedWith, matchedWithImage, matchedWithBio, chatLink, receiverEmail, message }: MatchedEmailProps = await request.json();
+    const { matchedWith, matchedWithImage, matchedWithBio, chatLink, receiverEmail, message, isMatchComplete }: MatchedEmailProps = await request.json();
 
-    console.log('Received email data:', { matchedWith, matchedWithImage, matchedWithBio, chatLink, receiverEmail, message });
+    console.log('Received email data:', { matchedWith, matchedWithImage, matchedWithBio, chatLink, receiverEmail, message, isMatchComplete });
 
 
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     const { data, error } = await resend.emails.send({
       from: 'noreply@info.cherry.builders',
       to: [receiverEmail],
-      subject: message ? '💌 Someone sent you an icebreaker!' : '🎉 New match!',
+      subject: message && isMatchComplete ? "💌 New match!" : "💌 Someone sent you an icebreaker!",
       react: MatchedEmail({ matchedWith, matchedWithImage, matchedWithBio, chatLink, message }),
     });
 
