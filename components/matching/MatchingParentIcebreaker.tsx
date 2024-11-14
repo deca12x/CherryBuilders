@@ -53,6 +53,19 @@ export default function MatchingParentIcebreaker({
       if (partialMatch.data.length === 0) {
         const newMatch = await createMatch(address, specificUser.evm_address, jwt);
         if (!newMatch.success) throw Error(newMatch.error);
+
+        
+        await sendMatchingEmail({
+          matchedWith: loggedInUserData?.name as string,
+          matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
+          matchedWithBio: loggedInUserData?.bio as string,
+          chatLink: `https://cherry.builders/chat/${matchedChatId}`,
+          receiverEmail: specificUser.email || "",
+          jwt: jwt as string,
+          message: icebreakerMessage || undefined,
+          isMatchComplete: false
+        });
+
       }
       // If a match is found, update it
       else if (partialMatch.data.length > 0) {
