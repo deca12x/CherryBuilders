@@ -21,5 +21,5 @@ badwords.add(pl);
 badwords.add(ch);
 
 export function checkForBadWords(text: string): boolean {
-  return badwords.check(text);
+  return Boolean(badwords.check(text));
 }

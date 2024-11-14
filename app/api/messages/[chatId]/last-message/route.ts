@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params: { chatId } }: { params: { 
   try {
     const { data, error } = await supabase
       .from("messages")
-      .select("message")
+      .select("*")
       .eq("chat_id", chatId)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest, { params: { chatId } }: { params: { 
       return NextResponse.json({ data }, { status: 404 });
     }
 
-    return NextResponse.json({ data }, { status: 200 });
+    return NextResponse.json({ data: data[0] }, { status: 200 });
   } catch (error) {
     console.error("Error fetching specific chat from database:", error);
     return NextResponse.json({ error: "Error fetching from database" }, { status: 500 });

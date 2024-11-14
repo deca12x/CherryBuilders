@@ -6,7 +6,6 @@ import { getEventsByAddress, getUser } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import ErrorCard from "@/components/ui/error-card";
 import ProfileEditParent from "@/components/profile/ProfileEditParent";
-import BottomNavigationBar from "@/components/navbar/BottomNavigationBar";
 import { EventType, UserType } from "@/lib/supabase/types";
 
 const ProfilePage: React.FC = () => {
@@ -75,17 +74,14 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <>
-      <main className="flex flex-col min-h-screen bg-background pb-16">
-        <ProfileEditParent
-          initialProfileData={profileData}
-          jwt={jwt}
-          userAddress={user.wallet.address}
-          userEvents={userEvents}
-        />
-      </main>
-      <BottomNavigationBar />
-    </>
+    <main className="flex flex-col min-h-screen bg-background pb-16">
+      <ProfileEditParent
+        initialProfileData={profileData}
+        jwt={jwt}
+        userAddress={user.wallet.address}
+        userEvents={userEvents}
+      />
+    </main>
   );
 };
 

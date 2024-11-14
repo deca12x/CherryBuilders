@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { celo, mantle, sepolia } from "wagmi/chains";
 import { createConfig, WagmiProvider } from "@privy-io/wagmi";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { http } from "wagmi";
 
 const wagmiConfig = createConfig({
@@ -26,7 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         appearance: {
           theme: "light",
           accentColor: "#676FFF",
-          logo: "/logo/cherries.png",
+          logo: "/images/logo.svg",
         },
         // Create embedded wallets for users who don't have a wallet
         embeddedWallets: {
@@ -35,7 +36,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }}
     >
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
+        <WagmiProvider config={wagmiConfig}>
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>
   );

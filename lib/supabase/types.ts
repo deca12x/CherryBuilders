@@ -17,6 +17,8 @@ export interface UserType {
   profile_pictures: string[];
   tags: UserTag[];
   bio: string;
+  building: string;
+  looking_for: string;
   github_link?: string;
   twitter_link?: string;
   farcaster_link?: string;
@@ -32,6 +34,7 @@ export interface UserType {
 export interface ChatMessageType {
   id: number;
   sender: string;
+  receiver: string;
   message: string;
   created_at: string;
   updated_at?: string;
@@ -40,6 +43,7 @@ export interface ChatMessageType {
   requestId?: string;
   paid?: boolean;
   chain_id?: number;
+  //read: boolean;
 }
 
 export interface ApiKeyType {

@@ -7,8 +7,12 @@ import { getUser, getUserFilters } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
+
 import G22Dialog from "@/components/promo/G22Dialog";
 import { UserType } from "@/lib/supabase/types";
+
+import DevconDialog from "@/components/promo/DevconDialog";
+
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -21,8 +25,12 @@ export default function Matching() {
     tags: {},
     events: {},
   });
+
   const [showG22Dialog, setShowG22Dialog] = useState(true);
   const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(null);
+
+  const [showDevconDialog, setShowDevconDialog] = useState(true);
+
 
   const address = user?.wallet?.address;
 
@@ -69,15 +77,15 @@ export default function Matching() {
 
   useEffect(() => {
     // Check if user has dismissed the dialog before
-    const hasSeenG22Dialog = localStorage.getItem("hasSeenG22Dialog");
-    if (hasSeenG22Dialog) {
-      setShowG22Dialog(false);
+    const hasSeenDevconDialog = localStorage.getItem("hasSeenDevconDialog");
+    if (hasSeenDevconDialog) {
+      setShowDevconDialog(false);
     }
   }, []);
 
   const handleDontShowAgain = () => {
-    localStorage.setItem("hasSeenG22Dialog", "true");
-    setShowG22Dialog(false);
+    localStorage.setItem("hasSeenDevconDialog", "true");
+    setShowDevconDialog(false);
   };
 
   if (error) {
@@ -85,6 +93,7 @@ export default function Matching() {
   } else if (user && address && ready && wasUserChecked && wereFiltersChecked) {
     return (
       <>
+
         <MatchingParent 
           jwt={jwt} 
           address={address} 
@@ -92,6 +101,9 @@ export default function Matching() {
           loggedInUserData={loggedInUserData}
         />
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
+        {showDevconDialog && (
+          <DevconDialog onDontShowAgain={handleDontShowAgain} />
+
       </>
     );
   } else {
