@@ -70,7 +70,7 @@ export default function MatchingParentIcebreaker({
         setIsMatchModalOpen(true);
         setMatchedChatId(specificChat.data?.id);
 
-        if(specificUser.emailNotifications) {
+
           await sendMatchingEmail({
             matchedWith: loggedInUserData?.name as string,
             matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
@@ -80,8 +80,7 @@ export default function MatchingParentIcebreaker({
             jwt: jwt as string,
             message: icebreakerMessage || undefined,
             isMatchComplete: true
-          });
-        }
+        });
       }
     } catch (error) {
       console.error("Error in checkMatch:", error);
