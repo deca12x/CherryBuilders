@@ -536,8 +536,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailNotifications" className="text-sm">
-            I agree to receive essential notifications about matches and
-            messages (required for core app functionality)
+            Required for core functionality: I agree to receive emails about
+            matches and messages
           </label>
         </div>
         <div className="flex items-center space-x-2">
@@ -549,8 +549,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailMarketing" className="text-sm">
-            I would like to receive marketing emails about new features and
-            special offers (optional)
+            Optional: I would like to receive relevant emails about future Web3
+            builder-focused events (change at any time)
           </label>
         </div>
       </motion.div>
@@ -575,17 +575,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                   <li>
                     Essential notifications about your matches and messages
                   </li>
-                  <li>Marketing communications (only if you opt-in)</li>
+                  <li>Info on relevant future events (only if you opt-in)</li>
                 </ul>
                 <p>
-                  You can update your preferences at any time in account
-                  settings.
+                  You can update your preferences at any time in your profile
+                  tab.
                 </p>
                 <p>We never share your email with third parties.</p>
-                <p>
-                  For marketing emails, you can unsubscribe at any time via the
-                  link in the email footer.
-                </p>
               </div>
             </AlertDescription>
           </Alert>
