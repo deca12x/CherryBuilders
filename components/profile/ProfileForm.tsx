@@ -176,6 +176,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       return;
     }
 
+    if (!profileData.emailNotifications) {
+      toast({
+        title: "🙉 We know, emails are annoying",
+        description:
+          "Email notifications for matches and messages are required for core functionality",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit(profileData);
@@ -536,8 +546,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailNotifications" className="text-sm">
-            Required for core functionality: I agree to receive emails about
-            matches and messages
+            I agree to receive emails about matches and messages
           </label>
         </div>
         <div className="flex items-center space-x-2">
@@ -550,7 +559,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           />
           <label htmlFor="emailMarketing" className="text-sm">
             Optional: I would like to receive relevant emails about future Web3
-            builder-focused events (change at any time)
+            builder-focused events
           </label>
         </div>
       </motion.div>
@@ -577,10 +586,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                   </li>
                   <li>Info on relevant future events (only if you opt-in)</li>
                 </ul>
-                <p>
-                  You can update your preferences at any time in your profile
-                  tab.
-                </p>
+                <p>You can unsubscribe from both checkboxes at any time</p>
                 <p>We never share your email with third parties.</p>
               </div>
             </AlertDescription>

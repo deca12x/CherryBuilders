@@ -44,6 +44,16 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({
   const [eventSlug, setEventSlug] = useState<string | null>(null);
 
   const handleSubmit = async (data: UserType) => {
+    if (!data.emailNotifications) {
+      toast({
+        title: "🙈 Required field",
+        description:
+          "Email notifications for matches and messages are required for core functionality",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await updateProfileData(address, data);
       toast({
