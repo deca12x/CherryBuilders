@@ -558,7 +558,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailMarketing" className="text-sm">
-            Optional: I would like to receive relevant emails about future Web3
+            I would like to receive relevant emails about future Web3
             builder-focused events
           </label>
         </div>
