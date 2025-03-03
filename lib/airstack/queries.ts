@@ -2,7 +2,13 @@
 export const profileQuery = /* GraphQL */ `
   query Profile($address: Address!) {
     Socials(
-      input: { filter: { dappName: { _eq: farcaster }, userAssociatedAddresses: { _eq: $address } }, blockchain: ethereum }
+      input: {
+        filter: {
+          dappName: { _eq: farcaster }
+          userAssociatedAddresses: { _eq: $address }
+        }
+        blockchain: ethereum
+      }
     ) {
       Social {
         userId
@@ -13,10 +19,6 @@ export const profileQuery = /* GraphQL */ `
         connectedAddresses {
           address
           blockchain
-        }
-        socialCapital {
-          socialCapitalRank
-          socialCapitalScore
         }
         followerCount
         followingCount

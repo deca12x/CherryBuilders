@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { UserType } from "@/lib/supabase/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
@@ -12,10 +17,16 @@ interface IcebreakerModalProps {
   user: UserType;
 }
 
-export default function IcebreakerModal({ isOpen, onClose, onSend, user }: IcebreakerModalProps) {
+export default function IcebreakerModal({
+  isOpen,
+  onClose,
+  onSend,
+  user,
+}: IcebreakerModalProps) {
   const [message, setMessage] = useState("");
 
   const handleSend = () => {
+    console.log("1 March Test 1: IcebreakerModal sending message:", message);
     onSend(message);
     setMessage("");
     onClose();
@@ -32,9 +43,9 @@ export default function IcebreakerModal({ isOpen, onClose, onSend, user }: Icebr
             <AvatarImage src={user?.profile_pictures?.[0]} alt={user?.name} />
             <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
           </Avatar>
-          
+
           <p className="text-lg font-medium">{user?.name}</p>
-          
+
           <p className="text-sm text-muted-foreground text-center px-4">
             {user?.name} will receive an email notification with your message
           </p>
@@ -46,13 +57,9 @@ export default function IcebreakerModal({ isOpen, onClose, onSend, user }: Icebr
             className="min-h-[100px]"
             maxLength={300}
           />
-          
+
           <div className="flex gap-3 w-full">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
             <Button
@@ -67,4 +74,4 @@ export default function IcebreakerModal({ isOpen, onClose, onSend, user }: Icebr
       </DialogContent>
     </Dialog>
   );
-} 
+}

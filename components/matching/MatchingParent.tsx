@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import MatchModal from "@/components/matching/MatchModal";
 import ProfilesEndedModal from "@/components/matching/ProfilesEndedModal";
 import { usePrivy } from "@privy-io/react-auth";
@@ -18,10 +18,8 @@ import FiltersModal from "@/components/matching/FiltersModal";
 import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
 
-import ActionButtons from "./ActionButtons";
 import { sendMatchingEmail } from "@/lib/email/sendMatchingEmail";
 import NoEmailModal from "@/components/matching/NoEmailModal";
-
 
 interface MatchingContentProps {
   jwt: string | null;
@@ -30,7 +28,12 @@ interface MatchingContentProps {
   loggedInUserData: UserType | null;
 }
 
-export default function MatchingParent({ jwt, address, userFilters, loggedInUserData }: MatchingContentProps) {
+export default function MatchingParent({
+  jwt,
+  address,
+  userFilters,
+  loggedInUserData,
+}: MatchingContentProps) {
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
   const { user, ready } = usePrivy();
   const [error, setError] = useState(false);
@@ -39,27 +42,51 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
   const [isLoading, setIsLoading] = useState(true);
   const [animateFrame, setAnimateFrame] = useState(false);
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
-  const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] = useState(false);
+  const [isProfilesEndedModalOpen, setIsProfilesEndedModalOpen] =
+    useState(false);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [matchedChatId, setMatchedChatId] = useState<string>("");
-  const [processingAction, setProcessingAction] = useState<"accept" | "reject" | "icebreaker" | null>(null);
+  const [processingAction, setProcessingAction] = useState<
+    "accept" | "reject" | "icebreaker" | null
+  >(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
   const [isNoEmailModalOpen, setIsNoEmailModalOpen] = useState(false);
+  const mounted = useRef(false);
 
   const currentUser = fetchedUsers[currentUserIndex];
 
-  // A useEffect that fetches users based on the filters
+  // A useEffect that fetches users based on the filters (avoiding first render double fetch)
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    console.log("£££££££££££££££££££ Dependencies changed:", { filters, jwt });
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const activeTags = Object.keys(filters.tags).filter((key) => filters.tags[key as UserTag]);
-        const activeEvents = Object.keys(filters.events).filter((key) => filters.events[key].selected);
+        console.log("1. Starting fetch");
+        const activeTags = Object.keys(filters.tags).filter(
+          (key) => filters.tags[key as UserTag]
+        );
+        const activeEvents = Object.keys(filters.events).filter(
+          (key) => filters.events[key].selected
+        );
 
-        const foundFilteredUsers = await getFilteredUsers(activeTags, activeEvents, 0, 200, jwt);
+        const foundFilteredUsers = await getFilteredUsers(
+          activeTags,
+          activeEvents,
+          0,
+          200,
+          jwt
+        );
+        console.log("2. API Response:", foundFilteredUsers);
         if (!foundFilteredUsers.success) throw foundFilteredUsers.error;
 
+        console.log("3. Setting fetchedUsers:", foundFilteredUsers.data);
         setFetchedUsers(foundFilteredUsers.data);
+        console.log("4. Current index:", currentUserIndex);
       } catch (error) {
         console.error("Error fetching users:", error);
         setError(true);
@@ -75,19 +102,32 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
     if (!address || !currentUser) return;
 
     try {
-      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
+      const partialMatch = await getPartialMatch(
+        currentUser.evm_address,
+        address,
+        jwt
+      );
 
-      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
-
+      if (!partialMatch.success && partialMatch.error)
+        throw new Error(partialMatch.error);
       // If no partial match is found create one
-      if (partialMatch.data.length === 0) {
-        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
-        if (!newMatch.success) throw Error(newMatch.error);
-      }
-
+      // TO DO: REMEMBER TO PUT THIS BACK IN (I.E. REMOVE THE COMMENT)
+      // if (partialMatch.data.length === 0) {
+      //   const newMatch = await createMatch(
+      //     address,
+      //     currentUser.evm_address,
+      //     jwt
+      //   );
+      //   if (!newMatch.success) throw Error(newMatch.error);
+      // }
       // If a match is found, update it
       else if (partialMatch.data.length > 0) {
-        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
+        const updatedMatch = await updateMatch(
+          currentUser.evm_address,
+          address,
+          true,
+          jwt
+        );
         if (!updatedMatch.success) throw Error(updatedMatch.error);
 
         // Create a chat between the two users
@@ -95,11 +135,14 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
         if (!newChat.success) throw Error(newChat.error);
 
         // Get the chat ID
-        const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
+        const specificChat = await getSpecificChat(
+          address,
+          currentUser.evm_address,
+          jwt
+        );
         if (!specificChat.success) throw new Error(specificChat.error);
 
         // SEND EMAIL NOTIFICATIONS TO MATCHES
-    
 
         // CREATE A sendEmailNotification FUNCTION
 
@@ -107,69 +150,22 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
         setIsProfilesEndedModalOpen(false);
         setMatchedChatId(specificChat.data?.id);
 
-        
-        if(fetchedUsers[currentUserIndex].emailMarketing) {
-          await sendMatchingEmail({
-            matchedWith: loggedInUserData?.name as string,
-            matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
-            matchedWithBio: loggedInUserData?.bio as string,
-            chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
-            receiverEmail: fetchedUsers[currentUserIndex].email || "" as string,
-            jwt: jwt as string
+        if (fetchedUsers[currentUserIndex].emailMarketing) {
+          console.log("Sending email with data:", {
+            loggedInUserData,
+            receiverEmail: fetchedUsers[currentUserIndex]?.email,
+            jwt,
           });
-        }
-      }
-    } catch (error) {
-      console.error("Error in checkMatch:", error);
-    }
-  };
-
-
-  const checkMatchWithIceBreaker = async (message: string) => {
-    if (!address || !currentUser) return;
-
-    try {
-      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
-
-      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
-
-      // If no partial match is found create one
-      if (partialMatch.data.length === 0) {
-        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
-        if (!newMatch.success) throw Error(newMatch.error);
-      }
-
-      // If a match is found, update it
-      else if (partialMatch.data.length > 0) {
-        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
-        if (!updatedMatch.success) throw Error(updatedMatch.error);
-
-        // Create a chat between the two users
-        const newChat = await createChat(address, currentUser.evm_address, jwt);
-        if (!newChat.success) throw Error(newChat.error);
-
-        // Get the chat ID
-        const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
-        if (!specificChat.success) throw new Error(specificChat.error);
-
-        // SEND EMAIL NOTIFICATIONS TO MATCHES
-    
-
-        // CREATE A sendEmailNotification FUNCTION
-
-        setIsMatchModalOpen(true);
-        setIsProfilesEndedModalOpen(false);
-        setMatchedChatId(specificChat.data?.id);
-
-        
-        if(fetchedUsers[currentUserIndex].emailMarketing) {
           await sendMatchingEmail({
             matchedWith: loggedInUserData?.name as string,
             matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
             matchedWithBio: loggedInUserData?.bio as string,
+            matchedWithBuilding: loggedInUserData?.building as string,
+            matchedWithLookingFor: loggedInUserData?.looking_for as string,
             chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
-            receiverEmail: fetchedUsers[currentUserIndex]?.email || "" as string,
-            jwt: jwt as string
+            receiverEmail:
+              fetchedUsers[currentUserIndex].email || ("" as string),
+            jwt: jwt as string,
           });
         }
       }
@@ -197,9 +193,15 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
     setProcessingAction("reject");
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    if (fetchedUsers.length === 0 || currentUserIndex === fetchedUsers.length - 1) {
+    if (fetchedUsers.length === 0) {
+      // Truly no more profiles
       setIsProfilesEndedModalOpen(true);
+    } else if (currentUserIndex >= fetchedUsers.length - 1) {
+      // We've reached the end of current batch
+      setCurrentUserIndex(0); // Start over from beginning
+      setCurrentImageIndex(0);
     } else {
+      // More profiles to show
       setAnimateFrame(true);
       setCurrentUserIndex((prev) => prev + 1);
       setCurrentImageIndex(0);
@@ -208,60 +210,98 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
   };
 
   const handleIcebreaker = async (message: string) => {
-    if (!address || !currentUser) return;
+    console.log("1. Starting handleIcebreaker");
+    if (!address || !currentUser) {
+      console.log("2. Early return - missing address or currentUser");
+      return;
+    }
     setProcessingAction("icebreaker");
     let isPartialMatch;
-    let completeMatch;
 
     try {
-      const partialMatch = await getPartialMatch(currentUser.evm_address, address, jwt);
-      if (!partialMatch.success && partialMatch.error) throw new Error(partialMatch.error);
+      const partialMatch = await getPartialMatch(
+        currentUser.evm_address,
+        address,
+        jwt
+      );
+      if (!partialMatch.success && partialMatch.error)
+        throw new Error(partialMatch.error);
+
+      // If no partial match is found, set flag
+      // TO DO: REMEMBER TO PUT THIS BACK IN (I.E. REMOVE THE COMMENT)
+      // if (partialMatch.data.length === 0) {
+      //   isPartialMatch = true;
+      // }
+
+      // Send email before creating/updating match
+      if (currentUser.emailNotifications && currentUser.email) {
+        const chatLink = isPartialMatch
+          ? `https://cherry.builders/matching-icebreaker?profile=${currentUser.evm_address}&message=${message}`
+          : `https://cherry.builders/chat/${matchedChatId}`;
+
+        console.log("JWT being sent:", jwt);
+        console.log("Full email data:", {
+          matchedWith: loggedInUserData?.name,
+          matchedWithImage: loggedInUserData?.profile_pictures[0],
+          matchedWithBio: loggedInUserData?.bio,
+          matchedWithBuilding: loggedInUserData?.building,
+          matchedWithLookingFor: loggedInUserData?.looking_for,
+          chatLink,
+          receiverEmail: fetchedUsers[currentUserIndex]?.email,
+          jwt,
+          message,
+        });
+        await sendMatchingEmail({
+          matchedWith: loggedInUserData?.name as string,
+          matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
+          matchedWithBio: loggedInUserData?.bio as string,
+          matchedWithBuilding: loggedInUserData?.building as string,
+          matchedWithLookingFor: loggedInUserData?.looking_for as string,
+          chatLink: chatLink,
+          receiverEmail: fetchedUsers[currentUserIndex]?.email || "",
+          jwt: jwt as string,
+          message: message,
+        });
+      }
 
       // If no partial match is found create one
-      if (partialMatch.data.length === 0) {
-        const newMatch = await createMatch(address, currentUser.evm_address, jwt);
-        if (!newMatch.success) throw Error(newMatch.error);
-        isPartialMatch = true;
-      }
-      // If a match is found, update it and create chat
-      else if (partialMatch.data.length > 0) {
-        const updatedMatch = await updateMatch(currentUser.evm_address, address, true, jwt);
-        if (!updatedMatch.success) throw Error(updatedMatch.error);
+      // TO DO: REMEMBER TO PUT THIS BACK IN (I.E. REMOVE THE COMMENT)
+      // if (partialMatch.data.length === 0) {
+      //   const newMatch = await createMatch(
+      //     address,
+      //     currentUser.evm_address,
+      //     jwt
+      //   );
+      //   if (!newMatch.success) throw Error(newMatch.error);
+      // }
+      // // If a match is found, update it and create chat
+      // else if (partialMatch.data.length > 0) {
+      //   const updatedMatch = await updateMatch(
+      //     currentUser.evm_address,
+      //     address,
+      //     true,
+      //     jwt
+      //   );
+      //   if (!updatedMatch.success) throw Error(updatedMatch.error);
 
-        // Create a chat between the two users
-        const newChat = await createChat(address, currentUser.evm_address, jwt);
-        if (!newChat.success) throw Error(newChat.error);
+      //   // Create a chat between the two users
+      //   const newChat = await createChat(address, currentUser.evm_address, jwt);
+      //   if (!newChat.success) throw Error(newChat.error);
 
-        // Get the chat ID
-        const specificChat = await getSpecificChat(address, currentUser.evm_address, jwt);
-        if (!specificChat.success) throw new Error(specificChat.error);
+      //   // Get the chat ID
+      //   const specificChat = await getSpecificChat(
+      //     address,
+      //     currentUser.evm_address,
+      //     jwt
+      //   );
+      //   if (!specificChat.success) throw new Error(specificChat.error);
 
-        // Show match modal and set chat ID
-        isPartialMatch = false;
-        completeMatch = specificChat.data?.id;
-        setIsMatchModalOpen(true);
-        setIsProfilesEndedModalOpen(false);
-        setMatchedChatId(specificChat.data?.id);
-        
-    
-      }
-
-
-          // Send email notification if user has opted in
-
-
-           const chatLink = isPartialMatch ? `https://cherry.builders/matching-icebreaker?profile=${currentUser.evm_address}&message=${message}` : `https://cherry.builders/chat/${matchedChatId}` ;
-          if (currentUser.emailNotifications && currentUser.email) {
-            await sendMatchingEmail({
-              matchedWith: loggedInUserData?.name as string,
-              matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
-              matchedWithBio: loggedInUserData?.bio as string,
-              chatLink: chatLink,
-              receiverEmail: fetchedUsers[currentUserIndex]?.email || "",
-              jwt: jwt as string,
-              message: message // Include the icebreaker message
-            });
-          }
+      //   // Show match modal and set chat ID
+      //   isPartialMatch = false;
+      //   setIsMatchModalOpen(true);
+      //   setIsProfilesEndedModalOpen(false);
+      //   setMatchedChatId(specificChat.data?.id);
+      // }
 
       // Move to next profile
       if (currentUserIndex !== fetchedUsers.length - 1) {
@@ -271,7 +311,6 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
       } else {
         setIsProfilesEndedModalOpen(true);
       }
-
     } catch (error) {
       console.error("Error in handleIcebreaker:", error);
     } finally {
@@ -314,7 +353,11 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
         />
 
         {/* Match Modal */}
-        <MatchModal isOpen={isMatchModalOpen} onClose={() => setIsMatchModalOpen(false)} chatId={matchedChatId} />
+        <MatchModal
+          isOpen={isMatchModalOpen}
+          onClose={() => setIsMatchModalOpen(false)}
+          chatId={matchedChatId}
+        />
 
         {/* Filters Modal */}
         <FiltersModal
@@ -326,9 +369,12 @@ export default function MatchingParent({ jwt, address, userFilters, loggedInUser
         />
 
         {/* Profiles Ended Modal */}
-        <ProfilesEndedModal isOpen={isProfilesEndedModalOpen} onClose={() => setIsProfilesEndedModalOpen(false)} />
+        <ProfilesEndedModal
+          isOpen={isProfilesEndedModalOpen}
+          onClose={() => setIsProfilesEndedModalOpen(false)}
+        />
 
-        <NoEmailModal 
+        <NoEmailModal
           isOpen={isNoEmailModalOpen}
           onClose={() => setIsNoEmailModalOpen(false)}
           onLikeAnyway={handleLikeAnyway}

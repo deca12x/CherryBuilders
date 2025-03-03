@@ -53,6 +53,36 @@ export type AudioVariants = {
   original: Maybe<Scalars['String']['output']>;
 };
 
+export type BaseMoxieEarningLeaderboardData = {
+  allTimeRewards: Scalars['Float']['output'];
+  gasSpent: Scalars['Float']['output'];
+  rewards: Maybe<Scalars['Float']['output']>;
+  rewardsPercentage: Maybe<Scalars['Float']['output']>;
+  rewardsScore: Scalars['Float']['output'];
+  userId: Scalars['String']['output'];
+};
+
+export type BaseMoxieEarningLeaderboardInput = {
+  cursor: InputMaybe<Scalars['String']['input']>;
+  endDate: Scalars['String']['input'];
+  limit: InputMaybe<Scalars['Int']['input']>;
+  order: BaseMoxieEarningLeaderboardOrder;
+  startDate: Scalars['String']['input'];
+};
+
+export enum BaseMoxieEarningLeaderboardOrder {
+  GasSpent = 'GAS_SPENT',
+  MoxieScore = 'MOXIE_SCORE',
+  PercentageRewards = 'PERCENTAGE_REWARDS',
+  RewardsAllTime = 'REWARDS_ALL_TIME',
+  RewardsTimeframe = 'REWARDS_TIMEFRAME'
+}
+
+export type BaseMoxieEarningLeaderboardOutput = {
+  BaseMoxieEarningLeaderboardData: Maybe<Array<BaseMoxieEarningLeaderboardData>>;
+  pageInfo: Maybe<PageInfo>;
+};
+
 export type BaseMoxieEarningStatV2 = {
   allEarningsAmount: Maybe<Scalars['Float']['output']>;
   allEarningsAmountInWei: Maybe<Scalars['String']['output']>;
@@ -790,7 +820,8 @@ export enum FarcasterMoxieEarningStatsTimeframe {
   Hourly = 'HOURLY',
   Lifetime = 'LIFETIME',
   Today = 'TODAY',
-  Weekly = 'WEEKLY'
+  Weekly = 'WEEKLY',
+  Yesterday = 'YESTERDAY'
 }
 
 export enum FarcasterMoxieEarningStatsV2EntityType {
@@ -1208,12 +1239,28 @@ export enum MoxieOrdersCandlestickTimeframe {
   TwelveHour = 'TWELVE_HOUR'
 }
 
+export type MoxieReferralEarningLeaderboardData = {
+  rewards: Maybe<Scalars['Float']['output']>;
+  userId: Scalars['String']['output'];
+};
+
+export type MoxieReferralEarningLeaderboardInput = {
+  cursor: InputMaybe<Scalars['String']['input']>;
+  limit: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type MoxieReferralEarningLeaderboardOutput = {
+  MoxieReferralEarningLeaderboardData: Maybe<Array<MoxieReferralEarningLeaderboardData>>;
+  pageInfo: Maybe<PageInfo>;
+};
+
 export type MoxieUserPortfolio = {
   beneficiaryVestingAddress: Maybe<Array<Maybe<BeneficiaryVestingAddress>>>;
   currentPrice: Maybe<Scalars['Float']['output']>;
   currentPriceInWei: Maybe<Scalars['Float']['output']>;
   fanTokenAddress: Maybe<Scalars['String']['output']>;
   fanTokenChannel: Maybe<FarcasterChannel>;
+  fanTokenMoxieUserId: Maybe<Scalars['String']['output']>;
   fanTokenName: Maybe<Scalars['String']['output']>;
   fanTokenSocial: Maybe<Array<Maybe<Social>>>;
   fanTokenSymbol: Maybe<Scalars['String']['output']>;
@@ -1229,6 +1276,8 @@ export type MoxieUserPortfolio = {
   tokenUnlockedTvlInWei: Maybe<Scalars['String']['output']>;
   totalLockedAmount: Maybe<Scalars['Float']['output']>;
   totalLockedAmountInWei: Maybe<Scalars['String']['output']>;
+  totalTvl: Maybe<Scalars['Float']['output']>;
+  totalTvlInWei: Maybe<Scalars['String']['output']>;
   totalUnlockedAmount: Maybe<Scalars['Float']['output']>;
   totalUnlockedAmountInWei: Maybe<Scalars['String']['output']>;
   unlockedTvl: Maybe<Scalars['Float']['output']>;
@@ -1256,6 +1305,7 @@ export type MoxieUserPortfolioFilter = {
   fanTokenAddress: InputMaybe<String_Eq_In_Comparator_Exp>;
   fanTokenSymbol: InputMaybe<String_Eq_In_Comparator_Exp>;
   fid: InputMaybe<String_Eq_In_Comparator_Exp>;
+  moxieUserId: InputMaybe<String_Eq_In_Comparator_Exp>;
   walletAddress: InputMaybe<String_Eq_In_Comparator_Exp>;
 };
 
@@ -1273,6 +1323,7 @@ export type MoxieUserPortfolioOrderBy = {
   tokenLockedTvl: InputMaybe<OrderBy>;
   tokenUnlockedTvl: InputMaybe<OrderBy>;
   totalLockedAmount: InputMaybe<OrderBy>;
+  totalTvl: InputMaybe<OrderBy>;
   totalUnlockedAmount: InputMaybe<OrderBy>;
   unlockedTvl: InputMaybe<OrderBy>;
 };
@@ -1333,29 +1384,24 @@ export enum PopularDappsCriteria {
 }
 
 export type Query = {
+  BaseMoxieEarningLeaderboard: Maybe<BaseMoxieEarningLeaderboardOutput>;
   BaseMoxieEarningStatsV2: Maybe<BaseMoxieEarningStatsV2Output>;
   Domains: Maybe<DomainsOutput>;
-  FarScores: Maybe<FarScoreOutput>;
-  FarcasterCasts: Maybe<FarcasterCastOutput>;
-  FarcasterChannelParticipants: Maybe<FarcasterChannelParticipantsOutput>;
   FarcasterChannels: Maybe<FarcasterChannelsOutput>;
   FarcasterFanTokenAuctions: Maybe<FarcasterFanTokenAuctionsOutput>;
-  FarcasterMoxieClaimDetails: Maybe<FarcasterMoxieClaimDetailsOutput>;
   FarcasterMoxieEarningStats: Maybe<FarcasterMoxieEarningStatsOutput>;
   FarcasterMoxieEarningStatsV2: Maybe<FarcasterMoxieEarningStatsV2Output>;
-  FarcasterNotaEarningStats: Maybe<FarcasterNotaEarningStatsOutput>;
-  FarcasterQuotedRecasts: Maybe<FarcasterQuotedRecastsOutput>;
-  FarcasterReactions: Maybe<FarcasterReactionsOutput>;
-  FarcasterReplies: Maybe<FarcasterRepliesOutput>;
-  FarcasterValidateFrameMessage: Maybe<FarcasterFrameMessageOutput>;
   MoxieFanTokens: Maybe<MoxieFanTokenOutput>;
   MoxieOrdersCandlesticks: Maybe<MoxieOrdersCandlestickOutput>;
+  MoxieReferralEarningLeaderboard: Maybe<MoxieReferralEarningLeaderboardOutput>;
   MoxieUserPortfolios: Maybe<MoxieUserPortfolioOutput>;
-  SocialFollowers: Maybe<SocialFollowerOutput>;
-  SocialFollowings: Maybe<SocialFollowingOutput>;
   Socials: Maybe<SocialsOutput>;
-  TrendingCasts: Maybe<TrendingCastsOutput>;
   Wallet: Maybe<Wallet>;
+};
+
+
+export type QueryBaseMoxieEarningLeaderboardArgs = {
+  input: BaseMoxieEarningLeaderboardInput;
 };
 
 
@@ -1369,21 +1415,6 @@ export type QueryDomainsArgs = {
 };
 
 
-export type QueryFarScoresArgs = {
-  input: FarScoreInput;
-};
-
-
-export type QueryFarcasterCastsArgs = {
-  input: FarcasterCastInput;
-};
-
-
-export type QueryFarcasterChannelParticipantsArgs = {
-  input: FarcasterChannelParticipantsInput;
-};
-
-
 export type QueryFarcasterChannelsArgs = {
   input: FarcasterChannelsInput;
 };
@@ -1391,11 +1422,6 @@ export type QueryFarcasterChannelsArgs = {
 
 export type QueryFarcasterFanTokenAuctionsArgs = {
   input: FarcasterFanTokenAuctionsInput;
-};
-
-
-export type QueryFarcasterMoxieClaimDetailsArgs = {
-  input: FarcasterMoxieClaimDetailsInput;
 };
 
 
@@ -1409,31 +1435,6 @@ export type QueryFarcasterMoxieEarningStatsV2Args = {
 };
 
 
-export type QueryFarcasterNotaEarningStatsArgs = {
-  input: FarcasterNotaEarningStatsInput;
-};
-
-
-export type QueryFarcasterQuotedRecastsArgs = {
-  input: FarcasterQuotedRecastsInput;
-};
-
-
-export type QueryFarcasterReactionsArgs = {
-  input: FarcasterReactionsInput;
-};
-
-
-export type QueryFarcasterRepliesArgs = {
-  input: FarcasterRepliesInput;
-};
-
-
-export type QueryFarcasterValidateFrameMessageArgs = {
-  input: FarcasterFrameMessageInput;
-};
-
-
 export type QueryMoxieFanTokensArgs = {
   input: MoxieFanTokenInput;
 };
@@ -1444,28 +1445,18 @@ export type QueryMoxieOrdersCandlesticksArgs = {
 };
 
 
+export type QueryMoxieReferralEarningLeaderboardArgs = {
+  input: MoxieReferralEarningLeaderboardInput;
+};
+
+
 export type QueryMoxieUserPortfoliosArgs = {
   input: MoxieUserPortfolioInput;
 };
 
 
-export type QuerySocialFollowersArgs = {
-  input: SocialFollowerInput;
-};
-
-
-export type QuerySocialFollowingsArgs = {
-  input: SocialFollowingInput;
-};
-
-
 export type QuerySocialsArgs = {
   input: SocialsInput;
-};
-
-
-export type QueryTrendingCastsArgs = {
-  input: TrendingCastsInput;
 };
 
 
@@ -1530,13 +1521,10 @@ export type Social = {
   dappSlug: Maybe<SocialDappSlug>;
   /** Airstack unique dapp version number */
   dappVersion: Maybe<Scalars['String']['output']>;
-  farcasterScore: Maybe<FarcasterScore>;
   fnames: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   followerCount: Maybe<Scalars['Int']['output']>;
   followerTokenAddress: Maybe<Scalars['Address']['output']>;
-  followers: Maybe<SocialFollowerOutput>;
   followingCount: Maybe<Scalars['Int']['output']>;
-  followings: Maybe<SocialFollowingOutput>;
   handleTokenAddress: Maybe<Scalars['Address']['output']>;
   handleTokenId: Maybe<Scalars['String']['output']>;
   /** Airstack unique identifier for the data point */
@@ -1562,8 +1550,6 @@ export type Social = {
   profileTokenIdHex: Maybe<Scalars['String']['output']>;
   profileTokenUri: Maybe<Scalars['String']['output']>;
   profileUrl: Maybe<Scalars['String']['output']>;
-  realTimeFarScore: Maybe<RealTimeFarScore>;
-  socialCapital: Maybe<SocialCapital>;
   totalSpendAllowance: Maybe<TotalSpendAllowance>;
   twitterUserName: Maybe<Scalars['String']['output']>;
   updatedAt: Maybe<Scalars['Time']['output']>;
@@ -1580,16 +1566,6 @@ export type Social = {
   userLastUpdatedAtBlockTimestamp: Maybe<Scalars['Time']['output']>;
   userRecoveryAddress: Maybe<Scalars['Address']['output']>;
   website: Maybe<Scalars['String']['output']>;
-};
-
-
-export type SocialFollowersArgs = {
-  input: InputMaybe<SocialFollowerNestedInput>;
-};
-
-
-export type SocialFollowingsArgs = {
-  input: InputMaybe<SocialFollowingNestedInput>;
 };
 
 export type SocialCapital = {
@@ -1634,16 +1610,12 @@ export type SocialDappSlug_Comparator_Exp = {
 export type SocialFilter = {
   dappName: InputMaybe<SocialDappName_Comparator_Exp>;
   dappSlug: InputMaybe<SocialDappSlug_Comparator_Exp>;
-  farRank: InputMaybe<Int_Comparator_Exp>;
-  farScore: InputMaybe<Float_Comparator_Exp>;
   followerCount: InputMaybe<Int_Comparator_Exp>;
   followingCount: InputMaybe<Int_Comparator_Exp>;
   identity: InputMaybe<Identity_Comparator_Exp>;
   isDefault: InputMaybe<Boolean_Comparator_Exp>;
   profileCreatedAtBlockTimestamp: InputMaybe<Time_Comparator_Exp>;
   profileName: InputMaybe<Regex_String_Comparator_Exp>;
-  socialCapitalRank: InputMaybe<Int_Comparator_Exp>;
-  socialCapitalScore: InputMaybe<Float_Comparator_Exp>;
   twitterUserName: InputMaybe<String_Comparator_Exp>;
   updatedAt: InputMaybe<Time_Comparator_Exp>;
   userAssociatedAddresses: InputMaybe<Address_Comparator_Exp>;
@@ -1840,23 +1812,6 @@ export type TotalSpendAllowance = {
   replies: Maybe<Scalars['Int']['output']>;
 };
 
-export type TrendingCast = {
-  cast: Maybe<FarcasterCast>;
-  castValueFormatted: Maybe<Scalars['Float']['output']>;
-  castValueRaw: Maybe<Scalars['String']['output']>;
-  channel: Maybe<FarcasterChannel>;
-  criteria: Maybe<Scalars['String']['output']>;
-  criteriaCount: Maybe<Scalars['Float']['output']>;
-  fid: Maybe<Scalars['Int']['output']>;
-  hash: Maybe<Scalars['String']['output']>;
-  id: Maybe<Scalars['String']['output']>;
-  rootParentUrl: Maybe<Scalars['String']['output']>;
-  socialCapitalValueFormatted: Maybe<Scalars['Float']['output']>;
-  socialCapitalValueRaw: Maybe<Scalars['String']['output']>;
-  timeFrom: Maybe<Scalars['Time']['output']>;
-  timeTo: Maybe<Scalars['Time']['output']>;
-};
-
 export type TrendingCastFilter = {
   fid: InputMaybe<TrendingCast_Int_Comparator_Exp>;
   rootParentUrl: InputMaybe<String_Eq_Comparator_Exp>;
@@ -1875,28 +1830,6 @@ export enum TrendingCastTimeFrame {
 
 export type TrendingCast_Int_Comparator_Exp = {
   _eq: InputMaybe<Scalars['Int']['input']>;
-};
-
-export enum TrendingCastsCriteria {
-  Likes = 'likes',
-  LikesRecastsReplies = 'likes_recasts_replies',
-  Recasts = 'recasts',
-  Replies = 'replies',
-  SocialCapitalValue = 'social_capital_value'
-}
-
-export type TrendingCastsInput = {
-  blockchain: EveryBlockchain;
-  criteria: TrendingCastsCriteria;
-  cursor: InputMaybe<Scalars['String']['input']>;
-  filter: InputMaybe<TrendingCastFilter>;
-  limit: InputMaybe<Scalars['Int']['input']>;
-  timeFrame: TrendingCastTimeFrame;
-};
-
-export type TrendingCastsOutput = {
-  TrendingCast: Maybe<Array<TrendingCast>>;
-  pageInfo: Maybe<PageInfo>;
 };
 
 export type TrendingFilter = {
@@ -1921,9 +1854,6 @@ export type Wallet = {
   identity: Scalars['Identity']['output'];
   /** Nested query - allows returning primary domains, if applicable */
   primaryDomain: Maybe<Domain>;
-  socialFollowers: Maybe<SocialFollowerOutput>;
-  /** Represent On-chain smart-contract accounts */
-  socialFollowings: Maybe<SocialFollowingOutput>;
   /** Returns social profile information related to the address */
   socials: Maybe<Array<Social>>;
 };
@@ -1931,16 +1861,6 @@ export type Wallet = {
 
 export type WalletDomainsArgs = {
   input: InputMaybe<DomainsNestedInput>;
-};
-
-
-export type WalletSocialFollowersArgs = {
-  input: InputMaybe<SocialFollowerNestedInput>;
-};
-
-
-export type WalletSocialFollowingsArgs = {
-  input: InputMaybe<SocialFollowingNestedInput>;
 };
 
 
@@ -1972,4 +1892,4 @@ export type ProfileQueryVariables = Exact<{
 }>;
 
 
-export type ProfileQuery = { Socials: { Social: Array<{ userId: string | null, profileName: string | null, profileDisplayName: string | null, profileImage: string | null, userAddress: any | null, followerCount: number | null, followingCount: number | null, location: string | null, profileBio: string | null, connectedAddresses: Array<{ address: any | null, blockchain: string | null }> | null, socialCapital: { socialCapitalRank: number | null, socialCapitalScore: number | null } | null }> | null } | null };
+export type ProfileQuery = { Socials: { Social: Array<{ userId: string | null, profileName: string | null, profileDisplayName: string | null, profileImage: string | null, userAddress: any | null, followerCount: number | null, followingCount: number | null, location: string | null, profileBio: string | null, connectedAddresses: Array<{ address: any | null, blockchain: string | null }> | null }> | null } | null };

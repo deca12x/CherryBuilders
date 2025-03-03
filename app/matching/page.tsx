@@ -7,12 +7,8 @@ import { getUser, getUserFilters } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
-
-import G22Dialog from "@/components/promo/G22Dialog";
 import { UserType } from "@/lib/supabase/types";
-
 import DevconDialog from "@/components/promo/DevconDialog";
-
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -26,11 +22,10 @@ export default function Matching() {
     events: {},
   });
 
-  const [showG22Dialog, setShowG22Dialog] = useState(true);
-  const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(null);
-
+  const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(
+    null
+  );
   const [showDevconDialog, setShowDevconDialog] = useState(true);
-
 
   const address = user?.wallet?.address;
 
@@ -93,18 +88,16 @@ export default function Matching() {
   } else if (user && address && ready && wasUserChecked && wereFiltersChecked) {
     return (
       <>
-
-        <MatchingParent 
-          jwt={jwt} 
-          address={address} 
-          userFilters={filters} 
+        <MatchingParent
+          jwt={jwt}
+          address={address}
+          userFilters={filters}
           loggedInUserData={loggedInUserData}
         />
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
         {showDevconDialog && (
           <DevconDialog onDontShowAgain={handleDontShowAgain} />
         )}
-
       </>
     );
   } else {

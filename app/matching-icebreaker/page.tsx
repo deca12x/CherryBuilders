@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { getUser, getSpecificUser } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
-import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
 import { UserType } from "@/lib/supabase/types";
 import MatchingParentIcebreaker from "@/components/matching/MatchingParentIcebreaker";
@@ -14,13 +13,15 @@ export default function MatchingIcebreaker() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const profileAddress = searchParams.get('profile');
-  const icebreakerMessage = searchParams.get('message');
-  
+
+  const profileAddress = searchParams.get("profile");
+  const icebreakerMessage = searchParams.get("message");
+
   const [error, setError] = useState(false);
   const [jwt, setJwt] = useState<string | null>(null);
-  const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(null);
+  const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(
+    null
+  );
   const [specificUser, setSpecificUser] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,7 +65,7 @@ export default function MatchingIcebreaker() {
           setError(true);
         }
       }
-      
+
       setIsLoading(false);
     };
 
@@ -80,13 +81,13 @@ export default function MatchingIcebreaker() {
   }
 
   return (
-    <MatchingParentIcebreaker    
-      jwt={jwt} 
-      address={address} 
+    <MatchingParentIcebreaker
+      jwt={jwt}
+      address={address}
       loggedInUserData={loggedInUserData}
       specificUser={specificUser}
       icebreakerMessage={icebreakerMessage}
-      onComplete={() => router.push('/matching')}
+      onComplete={() => router.push("/matching")}
     />
   );
-} 
+}
