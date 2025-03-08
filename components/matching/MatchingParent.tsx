@@ -112,6 +112,10 @@ export default function MatchingParent({
         throw new Error(partialMatch.error);
       // If no partial match is found create one
       if (partialMatch.data.length === 0) {
+        console.log("Creating new match", {
+          address,
+          currentUserAddress: currentUser.evm_address,
+        });
         const newMatch = await createMatch(
           address,
           currentUser.evm_address,
@@ -149,12 +153,12 @@ export default function MatchingParent({
         setIsProfilesEndedModalOpen(false);
         setMatchedChatId(specificChat.data?.id);
 
-        if (fetchedUsers[currentUserIndex].emailMarketing) {
-          console.log("Sending email with data:", {
-            loggedInUserData,
-            receiverEmail: fetchedUsers[currentUserIndex]?.email,
-            jwt,
+        if (fetchedUsers[currentUserIndex].emailNotifications) {
+          console.log("6. Checking email conditions:", {
+            hasNotifications: fetchedUsers[currentUserIndex].emailNotifications,
+            email: fetchedUsers[currentUserIndex]?.email,
           });
+          console.log("7. Sending match completion email");
           await sendMatchingEmail({
             matchedWith: loggedInUserData?.name as string,
             matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
@@ -162,9 +166,9 @@ export default function MatchingParent({
             matchedWithBuilding: loggedInUserData?.building as string,
             matchedWithLookingFor: loggedInUserData?.looking_for as string,
             chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
-            receiverEmail:
-              fetchedUsers[currentUserIndex].email || ("" as string),
+            receiverEmail: fetchedUsers[currentUserIndex].email || "",
             jwt: jwt as string,
+            isMatchComplete: true,
           });
         }
       }
