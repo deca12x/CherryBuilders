@@ -111,15 +111,14 @@ export default function MatchingParent({
       if (!partialMatch.success && partialMatch.error)
         throw new Error(partialMatch.error);
       // If no partial match is found create one
-      // TO DO: REMEMBER TO PUT THIS BACK IN (I.E. REMOVE THE COMMENT)
-      // if (partialMatch.data.length === 0) {
-      //   const newMatch = await createMatch(
-      //     address,
-      //     currentUser.evm_address,
-      //     jwt
-      //   );
-      //   if (!newMatch.success) throw Error(newMatch.error);
-      // }
+      if (partialMatch.data.length === 0) {
+        const newMatch = await createMatch(
+          address,
+          currentUser.evm_address,
+          jwt
+        );
+        if (!newMatch.success) throw Error(newMatch.error);
+      }
       // If a match is found, update it
       else if (partialMatch.data.length > 0) {
         const updatedMatch = await updateMatch(
@@ -228,10 +227,9 @@ export default function MatchingParent({
         throw new Error(partialMatch.error);
 
       // If no partial match is found, set flag
-      // TO DO: REMEMBER TO PUT THIS BACK IN (I.E. REMOVE THE COMMENT)
-      // if (partialMatch.data.length === 0) {
-      //   isPartialMatch = true;
-      // }
+      if (partialMatch.data.length === 0) {
+        isPartialMatch = true;
+      }
 
       // Send email before creating/updating match
       if (currentUser.emailNotifications && currentUser.email) {
@@ -265,43 +263,42 @@ export default function MatchingParent({
       }
 
       // If no partial match is found create one
-      // TO DO: REMEMBER TO PUT THIS BACK IN (I.E. REMOVE THE COMMENT)
-      // if (partialMatch.data.length === 0) {
-      //   const newMatch = await createMatch(
-      //     address,
-      //     currentUser.evm_address,
-      //     jwt
-      //   );
-      //   if (!newMatch.success) throw Error(newMatch.error);
-      // }
-      // // If a match is found, update it and create chat
-      // else if (partialMatch.data.length > 0) {
-      //   const updatedMatch = await updateMatch(
-      //     currentUser.evm_address,
-      //     address,
-      //     true,
-      //     jwt
-      //   );
-      //   if (!updatedMatch.success) throw Error(updatedMatch.error);
+      if (partialMatch.data.length === 0) {
+        const newMatch = await createMatch(
+          address,
+          currentUser.evm_address,
+          jwt
+        );
+        if (!newMatch.success) throw Error(newMatch.error);
+      }
+      // If a match is found, update it and create chat
+      else if (partialMatch.data.length > 0) {
+        const updatedMatch = await updateMatch(
+          currentUser.evm_address,
+          address,
+          true,
+          jwt
+        );
+        if (!updatedMatch.success) throw Error(updatedMatch.error);
 
-      //   // Create a chat between the two users
-      //   const newChat = await createChat(address, currentUser.evm_address, jwt);
-      //   if (!newChat.success) throw Error(newChat.error);
+        // Create a chat between the two users
+        const newChat = await createChat(address, currentUser.evm_address, jwt);
+        if (!newChat.success) throw Error(newChat.error);
 
-      //   // Get the chat ID
-      //   const specificChat = await getSpecificChat(
-      //     address,
-      //     currentUser.evm_address,
-      //     jwt
-      //   );
-      //   if (!specificChat.success) throw new Error(specificChat.error);
+        // Get the chat ID
+        const specificChat = await getSpecificChat(
+          address,
+          currentUser.evm_address,
+          jwt
+        );
+        if (!specificChat.success) throw new Error(specificChat.error);
 
-      //   // Show match modal and set chat ID
-      //   isPartialMatch = false;
-      //   setIsMatchModalOpen(true);
-      //   setIsProfilesEndedModalOpen(false);
-      //   setMatchedChatId(specificChat.data?.id);
-      // }
+        // Show match modal and set chat ID
+        isPartialMatch = false;
+        setIsMatchModalOpen(true);
+        setIsProfilesEndedModalOpen(false);
+        setMatchedChatId(specificChat.data?.id);
+      }
 
       // Move to next profile
       if (currentUserIndex !== fetchedUsers.length - 1) {
