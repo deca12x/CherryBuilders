@@ -48,8 +48,8 @@ export const MatchedEmail = ({
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="bg-white my-auto mx-auto font-sans px-2">
-          <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] max-w-[465px]">
-            <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
+          <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[10px] max-w-[600px]">
+            <Heading className="text-black text-[24px] font-normal text-center p-0 my-[20px] mx-0">
               {message ? (
                 <>
                   <strong>{matchedWith}</strong> sent you an message!
@@ -71,33 +71,24 @@ export const MatchedEmail = ({
 
             {matchedWithBio && (
               <Section>
-                <Text className="text-black text-[14px] font-semibold text-center">
-                  Bio
-                </Text>
-                <Text className="text-gray-600 text-[14px] leading-[24px] text-center italic">
-                  "{matchedWithBio}"
+                <Text className="text-gray-600 text-[14px] leading-[10px] text-center italic">
+                  Bio: "{matchedWithBio}"
                 </Text>
               </Section>
             )}
 
             {matchedWithBuilding && (
               <Section>
-                <Text className="text-black text-[14px] font-semibold text-center">
-                  What I'm building
-                </Text>
-                <Text className="text-gray-600 text-[14px] leading-[24px] text-center italic">
-                  "{matchedWithBuilding}"
+                <Text className="text-gray-600 text-[14px] leading-[10px] text-center italic">
+                  What I'm building: "{matchedWithBuilding}"
                 </Text>
               </Section>
             )}
 
             {matchedWithLookingFor && (
               <Section>
-                <Text className="text-black text-[14px] font-semibold text-center">
-                  Who I'm looking for
-                </Text>
-                <Text className="text-gray-600 text-[14px] leading-[24px] text-center italic">
-                  "{matchedWithLookingFor}"
+                <Text className="text-gray-600 text-[14px] leading-[10px] text-center italic">
+                  Who I'm looking for: "{matchedWithLookingFor}"
                 </Text>
               </Section>
             )}
@@ -107,9 +98,9 @@ export const MatchedEmail = ({
                 <Text>They sent you a message:</Text>
                 <Text
                   style={{
-                    padding: "12px",
+                    padding: "10px",
                     backgroundColor: "#f3f4f6",
-                    borderRadius: "8px",
+                    borderRadius: "5px",
                     fontStyle: "italic",
                   }}
                 >
@@ -118,7 +109,7 @@ export const MatchedEmail = ({
               </Section>
             )}
 
-            <Section className="text-center mt-[32px] mb-[32px]">
+            <Section className="text-center mt-[10px] mb-[10px]">
               <Button
                 className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
                 href={chatLink}
