@@ -28,6 +28,13 @@ export async function sendMatchingEmail({
       return { success: false, error: "No receiver email provided" };
     }
 
+    // Generate appropriate link based on email type:
+    // Type 1 (icebreaker): goes to complete-match route
+    // Type 2 (match completion): goes to chat
+    const finalLink = isMatchComplete
+      ? chatLink
+      : `${process.env.NEXT_PUBLIC_BASE_URL}/complete-match/${matchedWith}`;
+
     const response = await fetch("/api/email/send-matching-email", {
       method: "POST",
       headers: {
@@ -40,7 +47,7 @@ export async function sendMatchingEmail({
         matchedWithBio,
         matchedWithBuilding,
         matchedWithLookingFor,
-        chatLink,
+        chatLink: finalLink,
         receiverEmail,
         message,
         isMatchComplete,
