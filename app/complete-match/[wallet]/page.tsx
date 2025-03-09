@@ -119,6 +119,7 @@ export default function CompleteMatch() {
             matchedWithBio: myUserData.data?.bio || "",
             matchedWithBuilding: myUserData.data?.building || "",
             matchedWithLookingFor: myUserData.data?.looking_for || "",
+            matchedWithAddress: myWallet,
             chatLink: `https://cherry.builders/chat?chatId=${specificChat.data?.id}`,
             receiverEmail: otherUserData.data.email || "",
             jwt,

@@ -165,6 +165,7 @@ export default function MatchingParent({
             matchedWithBio: loggedInUserData?.bio as string,
             matchedWithBuilding: loggedInUserData?.building as string,
             matchedWithLookingFor: loggedInUserData?.looking_for as string,
+            matchedWithAddress: address,
             chatLink: `https://cherry.builders/chat/${specificChat.data?.id}`,
             receiverEmail: fetchedUsers[currentUserIndex].email || "",
             jwt: jwt as string,
@@ -238,7 +239,7 @@ export default function MatchingParent({
       // Send email before creating/updating match
       if (currentUser.emailNotifications && currentUser.email) {
         const chatLink = isPartialMatch
-          ? `https://cherry.builders/matching-icebreaker?profile=${currentUser.evm_address}&message=${message}`
+          ? `https://cherry.builders/complete-match/${currentUser.evm_address}`
           : `https://cherry.builders/chat/${matchedChatId}`;
 
         console.log("JWT being sent:", jwt);
@@ -259,6 +260,7 @@ export default function MatchingParent({
           matchedWithBio: loggedInUserData?.bio as string,
           matchedWithBuilding: loggedInUserData?.building as string,
           matchedWithLookingFor: loggedInUserData?.looking_for as string,
+          matchedWithAddress: address,
           chatLink: chatLink,
           receiverEmail: fetchedUsers[currentUserIndex]?.email || "",
           jwt: jwt as string,

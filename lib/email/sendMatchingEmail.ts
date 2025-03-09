@@ -4,6 +4,7 @@ interface SendMatchingEmailParams {
   matchedWithBio: string;
   matchedWithBuilding: string;
   matchedWithLookingFor: string;
+  matchedWithAddress: string;
   chatLink: string;
   receiverEmail?: string;
   jwt: string;
@@ -17,6 +18,7 @@ export async function sendMatchingEmail({
   matchedWithBio,
   matchedWithBuilding,
   matchedWithLookingFor,
+  matchedWithAddress,
   chatLink,
   receiverEmail,
   jwt,
@@ -32,14 +34,16 @@ export async function sendMatchingEmail({
       isMatchComplete,
       receiverEmail,
       matchedWith,
+      matchedWithAddress,
     });
 
     // Generate appropriate link based on email type:
     // Type 1 (icebreaker): goes to complete-match route
     // Type 2 (match completion): goes to chat
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const finalLink = isMatchComplete
       ? chatLink
-      : `${process.env.NEXT_PUBLIC_BASE_URL}/complete-match/${matchedWith}`;
+      : `${baseUrl}/complete-match/${matchedWithAddress}`;
 
     console.log("Generated link:", finalLink);
 
