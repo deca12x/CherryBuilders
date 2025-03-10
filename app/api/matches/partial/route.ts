@@ -7,15 +7,19 @@ export async function GET(req: NextRequest) {
   const user_2_address = searchParams.get("user_2_address");
 
   if (!user_1_address || !user_2_address) {
-    return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required parameters" },
+      { status: 400 }
+    );
   }
 
   try {
     const { data, error } = await supabase
       .from("matches")
       .select("*")
-      .eq("user_2", user_2_address)
-      .eq("user_1", user_1_address)
+      .or(
+        `and(user_1.eq.${user_1_address},user_2.eq.${user_2_address}),and(user_1.eq.${user_2_address},user_2.eq.${user_1_address})`
+      )
       .or("matched.is.null,matched.eq.false");
 
     if (error) throw error;
@@ -28,6 +32,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
     console.log("Error fetching partial match from database:", error);
-    return NextResponse.json({ error: "Error fetching from database" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error fetching from database" },
+      { status: 500 }
+    );
   }
 }
