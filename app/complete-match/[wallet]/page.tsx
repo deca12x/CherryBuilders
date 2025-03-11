@@ -18,10 +18,10 @@ export default function CompleteMatch() {
   const params = useParams();
   const [isProcessing, setIsProcessing] = useState(true);
 
-  // otherUserWallet is user A's wallet (the one who initiated)
-  const otherUserWallet = params.wallet as string;
-  // myWallet is user B's wallet (the one completing the match)
-  const myWallet = user?.wallet?.address;
+  // initiatorWallet is user A's wallet (the one who initiated)
+  const initiatorWallet = params.wallet as string;
+  // responderWallet is user B's wallet (the one completing the match)
+  const responderWallet = user?.wallet?.address;
 
   useEffect(() => {
     const completeMatch = async () => {
@@ -30,13 +30,13 @@ export default function CompleteMatch() {
         return;
       }
 
-      if (!myWallet) {
+      if (!responderWallet) {
         console.log("No wallet found, redirecting to login");
         router.push("/");
         return;
       }
 
-      if (!otherUserWallet) {
+      if (!initiatorWallet) {
         console.log("No other wallet address found in URL");
         router.push("/matching");
         return;
@@ -44,8 +44,8 @@ export default function CompleteMatch() {
 
       try {
         console.log("Starting match completion process", {
-          myWallet,
-          otherUserWallet,
+          responderWallet,
+          initiatorWallet,
         });
         const jwt = await getAccessToken();
 
@@ -58,8 +58,8 @@ export default function CompleteMatch() {
         // Check if there's a partial match
         console.log("Checking for partial match");
         const partialMatch = await getPartialMatch(
-          otherUserWallet,
-          myWallet,
+          initiatorWallet,
+          responderWallet,
           jwt
         );
 
@@ -72,8 +72,8 @@ export default function CompleteMatch() {
         // Complete the match
         console.log("Completing match");
         const updatedMatch = await updateMatch(
-          otherUserWallet,
-          myWallet,
+          initiatorWallet,
+          responderWallet,
           true,
           jwt
         );
@@ -84,7 +84,7 @@ export default function CompleteMatch() {
 
         // Create a chat
         console.log("Creating chat");
-        const newChat = await createChat(myWallet, otherUserWallet, jwt);
+        const newChat = await createChat(responderWallet, initiatorWallet, jwt);
         if (!newChat.success) {
           console.error("Failed to create chat", newChat.error);
           throw new Error(newChat.error);
@@ -93,8 +93,8 @@ export default function CompleteMatch() {
         // Get the chat ID
         console.log("Getting chat ID");
         const specificChat = await getSpecificChat(
-          myWallet,
-          otherUserWallet,
+          responderWallet,
+          initiatorWallet,
           jwt
         );
         if (!specificChat.success) {
@@ -104,8 +104,8 @@ export default function CompleteMatch() {
 
         // Check if other user has email notifications on and send email if they do
         console.log("Checking other user's email preferences");
-        const otherUserData = await getUser(otherUserWallet, jwt);
-        const myUserData = await getUser(myWallet, jwt);
+        const otherUserData = await getUser(initiatorWallet, jwt);
+        const myUserData = await getUser(responderWallet, jwt);
 
         if (
           otherUserData.success &&
@@ -119,7 +119,7 @@ export default function CompleteMatch() {
             matchedWithBio: myUserData.data?.bio || "",
             matchedWithBuilding: myUserData.data?.building || "",
             matchedWithLookingFor: myUserData.data?.looking_for || "",
-            matchedWithAddress: myWallet,
+            matchedWithAddress: responderWallet,
             chatLink: `https://cherry.builders/chat?chatId=${specificChat.data?.id}`,
             receiverEmail: otherUserData.data.email || "",
             jwt,
@@ -137,7 +137,7 @@ export default function CompleteMatch() {
     };
 
     completeMatch();
-  }, [ready, myWallet, otherUserWallet, router]);
+  }, [ready, responderWallet, initiatorWallet, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary to-secondary">

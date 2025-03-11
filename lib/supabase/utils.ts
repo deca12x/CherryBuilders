@@ -13,11 +13,14 @@ export const getPartialMatch = async (
   user_2_address: string,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/matches/partial?user_1_address=${user_1_address}&user_2_address=${user_2_address}`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `/api/matches/partial?user_1_address=${user_1_address}&user_2_address=${user_2_address}`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   const body = await response.json();
 
@@ -262,11 +265,14 @@ export const getSpecificChat = async (
   user_2_address: string,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/chats/specific?user_1_address=${user_1_address}&user_2_address=${user_2_address}`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `/api/chats/specific?user_1_address=${user_1_address}&user_2_address=${user_2_address}`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   const body = await response.json();
 
@@ -478,11 +484,14 @@ export const getChatMessages = async (
   ascending: boolean,
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/messages/${chatId}?ascending=${ascending}`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `/api/messages/${chatId}?ascending=${ascending}`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   const body = await response.json();
 
@@ -805,7 +814,11 @@ export const getEventBySlug = async (
 export const getEventsByAddress = async (
   address: string,
   jwt: string | null
-): Promise<{ success: boolean; data: EventType[] | null; error: any | undefined }> => {
+): Promise<{
+  success: boolean;
+  data: EventType[] | null;
+  error: any | undefined;
+}> => {
   const response = await fetch(`/api/events/user/${address}`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
@@ -843,7 +856,11 @@ export const getEventsByAddress = async (
  */
 export const getUserFilters = async (
   jwt: string | null
-): Promise<{ success: boolean; data: FiltersProp | null; error: any | undefined }> => {
+): Promise<{
+  success: boolean;
+  data: FiltersProp | null;
+  error: any | undefined;
+}> => {
   const response = await fetch(`/api/filters`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
@@ -929,13 +946,13 @@ export async function getSpecificUser(address: string, jwt: string) {
         Authorization: `Bearer ${jwt}`,
       },
     });
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error);
     }
-    
+
     return { success: true, data: data.data, error: null };
   } catch (error) {
     return { success: false, data: null, error };
