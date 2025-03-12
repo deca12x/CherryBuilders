@@ -34,14 +34,11 @@ export default function Home() {
       const token = await getAccessToken();
       setJwt(token);
 
-      // Check for icebreaker reference
-      const ref = searchParams.get('ref');
-      const profile = searchParams.get('profile');
-      const message = searchParams.get('message');
+      // Check for necessary info to redirect user to complete-match
+      const initiatorAddress = searchParams.get("initiatorAddress");
 
-      if (ref === 'icebreaker' && profile) {
-        const redirectUrl = `/matching-icebreaker?profile=${profile}${message ? `&message=${message}` : ''}`;
-        router.push(redirectUrl);
+      if (initiatorAddress) {
+        router.push("/complete-match/" + initiatorAddress);
         return;
       }
 

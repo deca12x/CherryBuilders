@@ -16,7 +16,6 @@ export default function CompleteMatch() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
   const params = useParams();
-  const [isProcessing, setIsProcessing] = useState(true);
 
   // initiatorWallet is user A's wallet (the one who initiated)
   const initiatorWallet = params.wallet as string;
@@ -32,7 +31,7 @@ export default function CompleteMatch() {
 
       if (!responderWallet) {
         console.log("No wallet found, redirecting to login");
-        router.push("/");
+        router.push("/" + "?initiatorAddress=" + initiatorWallet);
         return;
       }
 
@@ -83,20 +82,23 @@ export default function CompleteMatch() {
         }
 
         // Create a chat
-        console.log("Creating chat");
+        console.log("Creating chat between", responderWallet, initiatorWallet);
         const newChat = await createChat(responderWallet, initiatorWallet, jwt);
+        console.log("Create chat response:", newChat);
+
         if (!newChat.success) {
           console.error("Failed to create chat", newChat.error);
           throw new Error(newChat.error);
         }
 
         // Get the chat ID
-        console.log("Getting chat ID");
+        console.log("Getting chat between", responderWallet, initiatorWallet);
         const specificChat = await getSpecificChat(
           responderWallet,
           initiatorWallet,
           jwt
         );
+        console.log("Get specific chat response:", specificChat);
         if (!specificChat.success) {
           console.error("Failed to get chat", specificChat.error);
           throw new Error(specificChat.error);

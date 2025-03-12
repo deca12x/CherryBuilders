@@ -117,7 +117,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({
   };
 
   return (
-    <motion.main className="flex flex-col min-h-screen bg-background">
+    <motion.main className="flex flex-col min-h-screen bg-background mb-12">
       <Suspense fallback={<Skeleton className="h-8 w-3/4 mx-auto" />}>
         <SearchParamsComponent onParamsChange={handleParamsChange} />
       </Suspense>
