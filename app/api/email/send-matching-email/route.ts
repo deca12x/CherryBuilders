@@ -65,10 +65,9 @@ export async function POST(request: Request) {
     const { data, error } = await resend.emails.send({
       from: "noreply@cherry.builders",
       to: [receiverEmail],
-      subject:
-        message && isMatchComplete
-          ? "🍒 New match on cherry.builders"
-          : `🍒 Someone sent you a message on cherry.builders`,
+      subject: isMatchComplete
+        ? "🍒 New match on cherry.builders"
+        : `🍒 Someone sent you a message on cherry.builders`,
       react: MatchedEmail({
         matchedWith,
         matchedWithImage:
@@ -79,6 +78,7 @@ export async function POST(request: Request) {
         matchedWithLookingFor,
         chatLink,
         message,
+        isMatchComplete,
       }) as React.ReactElement,
     });
 

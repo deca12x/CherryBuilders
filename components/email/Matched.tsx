@@ -25,6 +25,7 @@ interface MatchedEmailProps {
   matchedWithLookingFor: string;
   chatLink: string;
   message?: string;
+  isMatchComplete?: boolean;
 }
 
 const baseUrl = process.env.VERCEL_URL
@@ -39,8 +40,11 @@ export const MatchedEmail = ({
   matchedWithLookingFor,
   chatLink,
   message,
+  isMatchComplete,
 }: MatchedEmailProps) => {
-  const previewText = `${matchedWith} wants to collab!`;
+  const previewText = isMatchComplete
+    ? `Start chatting with ${matchedWith}!`
+    : `${matchedWith} wants to collab!`;
 
   return (
     <Html>
@@ -55,7 +59,9 @@ export const MatchedEmail = ({
                   <strong>{matchedWith}</strong> sent you an message!
                 </>
               ) : (
-                "You have a new match!"
+                <>
+                  You have a new match: <strong>{matchedWith}</strong>
+                </>
               )}
             </Heading>
 
