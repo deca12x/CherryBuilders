@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter, useParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/loading-spinner";
@@ -16,7 +16,6 @@ export default function CompleteMatch() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
   const params = useParams();
-  const hasCompletedRef = useRef(false);
 
   // initiatorWallet is user A's wallet (the one who initiated)
   const initiatorWallet = params.wallet as string;
@@ -32,20 +31,10 @@ export default function CompleteMatch() {
     const completeMatch = async () => {
       if (isExecuting) return;
       isExecuting = true;
-      console.log(
-        "\nBEFORE ALL CHECKS\n$$$$$$$$$$$$$$$$$\n useEffectDepencies",
-        {
-          ready,
-          responderWallet,
-          initiatorWallet,
-        }
-      );
       if (!ready) {
         console.log("Privy not ready");
         return;
       }
-
-      if (hasCompletedRef.current) return;
 
       if (!responderWallet) {
         console.log("No wallet found, redirecting to login");
@@ -59,20 +48,7 @@ export default function CompleteMatch() {
         return;
       }
 
-      console.log(
-        "\nAFTER ALL CHECKS\n$$$$$$$$$$$$$$$$$\n useEffectDepencies",
-        {
-          ready,
-          responderWallet,
-          initiatorWallet,
-        }
-      );
-
       try {
-        console.log("Starting match completion process", {
-          responderWallet,
-          initiatorWallet,
-        });
         const jwt = await getAccessToken();
 
         if (!jwt) {
@@ -90,7 +66,6 @@ export default function CompleteMatch() {
         );
 
         if (!partialMatch.success || !partialMatch.data?.length) {
-          console.log("No partial match found", partialMatch);
           router.push("/matching");
           return;
         }
@@ -109,9 +84,7 @@ export default function CompleteMatch() {
         }
 
         // Create a chat
-        console.log("Creating chat between", responderWallet, initiatorWallet);
         const newChat = await createChat(responderWallet, initiatorWallet, jwt);
-        console.log("Create chat response:", newChat);
 
         if (!newChat.success) {
           console.error("Failed to create chat", newChat.error);
@@ -119,20 +92,17 @@ export default function CompleteMatch() {
         }
 
         // Get the chat ID
-        console.log("Getting chat between", responderWallet, initiatorWallet);
         const specificChat = await getSpecificChat(
           responderWallet,
           initiatorWallet,
           jwt
         );
-        console.log("Get specific chat response:", specificChat);
         if (!specificChat.success) {
           console.error("Failed to get chat", specificChat.error);
           throw new Error(specificChat.error);
         }
 
         // Check if other user has email notifications on and send email if they do
-        console.log("Checking other user's email preferences");
         const otherUserData = await getUser(initiatorWallet, jwt);
         const myUserData = await getUser(responderWallet, jwt);
 
@@ -141,7 +111,6 @@ export default function CompleteMatch() {
           otherUserData.data?.emailNotifications &&
           myUserData.success
         ) {
-          console.log("Sending email notification to other user");
           await sendMatchingEmail({
             matchedWith: myUserData.data?.name || "Someone",
             matchedWithImage: myUserData.data?.profile_pictures[0] || "",
@@ -157,14 +126,11 @@ export default function CompleteMatch() {
         }
 
         // Redirect to chat
-        console.log("Redirecting to chat", specificChat.data?.id);
         router.push(`/chat?chatId=${specificChat.data?.id}`);
       } catch (error) {
         console.error("Error completing match:", error);
         router.push("/matching");
       }
-
-      hasCompletedRef.current = true;
     };
 
     completeMatch();
