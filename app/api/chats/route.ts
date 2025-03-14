@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   try {
     const { error } = await supabase
       .from("chats")
-      .insert([{ user_1: user_1_address, user_2: user_2_address }]);
+      .upsert([{ user_1: user_1_address, user_2: user_2_address }]);
 
     if (error) throw error;
 

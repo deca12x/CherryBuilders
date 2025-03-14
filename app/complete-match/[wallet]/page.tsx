@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter, useParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/loading-spinner";
@@ -16,18 +16,36 @@ export default function CompleteMatch() {
   const { user, ready, getAccessToken } = usePrivy();
   const router = useRouter();
   const params = useParams();
+  const hasCompletedRef = useRef(false);
 
   // initiatorWallet is user A's wallet (the one who initiated)
   const initiatorWallet = params.wallet as string;
   // responderWallet is user B's wallet (the one completing the match)
-  const responderWallet = user?.wallet?.address;
+  const responderWallet = useMemo(
+    () => user?.wallet?.address,
+    [user?.wallet?.address]
+  );
 
   useEffect(() => {
+    let isExecuting = false;
+
     const completeMatch = async () => {
+      if (isExecuting) return;
+      isExecuting = true;
+      console.log(
+        "\nBEFORE ALL CHECKS\n$$$$$$$$$$$$$$$$$\n useEffectDepencies",
+        {
+          ready,
+          responderWallet,
+          initiatorWallet,
+        }
+      );
       if (!ready) {
         console.log("Privy not ready");
         return;
       }
+
+      if (hasCompletedRef.current) return;
 
       if (!responderWallet) {
         console.log("No wallet found, redirecting to login");
@@ -40,6 +58,15 @@ export default function CompleteMatch() {
         router.push("/matching");
         return;
       }
+
+      console.log(
+        "\nAFTER ALL CHECKS\n$$$$$$$$$$$$$$$$$\n useEffectDepencies",
+        {
+          ready,
+          responderWallet,
+          initiatorWallet,
+        }
+      );
 
       try {
         console.log("Starting match completion process", {
@@ -136,10 +163,12 @@ export default function CompleteMatch() {
         console.error("Error completing match:", error);
         router.push("/matching");
       }
+
+      hasCompletedRef.current = true;
     };
 
     completeMatch();
-  }, [ready, responderWallet, initiatorWallet, router]);
+  }, [ready, responderWallet, initiatorWallet]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary to-secondary">
