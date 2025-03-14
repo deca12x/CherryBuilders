@@ -8,7 +8,7 @@ import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
 import { UserType } from "@/lib/supabase/types";
-import DevconDialog from "@/components/promo/DevconDialog";
+import EventDialog from "@/components/promo/EventDialog";
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -25,7 +25,7 @@ export default function Matching() {
   const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(
     null
   );
-  const [showDevconDialog, setShowDevconDialog] = useState(true);
+  const [showEventDialog, setShowEventDialog] = useState(true);
 
   const address = user?.wallet?.address;
 
@@ -72,15 +72,15 @@ export default function Matching() {
 
   useEffect(() => {
     // Check if user has dismissed the dialog before
-    const hasSeenDevconDialog = localStorage.getItem("hasSeenDevconDialog");
-    if (hasSeenDevconDialog) {
-      setShowDevconDialog(false);
+    const hasSeenEventDialog = localStorage.getItem("hasSeenEventDialog");
+    if (hasSeenEventDialog) {
+      setShowEventDialog(false);
     }
   }, []);
 
   const handleDontShowAgain = () => {
-    localStorage.setItem("hasSeenDevconDialog", "true");
-    setShowDevconDialog(false);
+    localStorage.setItem("hasSeenEventDialog", "true");
+    setShowEventDialog(false);
   };
 
   if (error) {
@@ -95,8 +95,8 @@ export default function Matching() {
           loggedInUserData={loggedInUserData}
         />
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
-        {showDevconDialog && (
-          <DevconDialog onDontShowAgain={handleDontShowAgain} />
+        {showEventDialog && (
+          <EventDialog onDontShowAgain={handleDontShowAgain} />
         )}
       </>
     );

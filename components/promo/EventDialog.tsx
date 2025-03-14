@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Heart, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -31,7 +30,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
       <DialogContent
         className="sm:max-w-md overflow-hidden"
         style={{
-          backgroundImage: 'url("/images/devcon.png")',
+          backgroundImage: 'url("/images/eventDialog.png")',
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -39,16 +38,32 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
         <DialogHeader className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-green-400/30 to-emerald-600/30 opacity-10 blur-lg" />
           <DialogTitle className="relative text-center text-3xl font-bold bg-gradient-to-r text-black bg-clip-text">
-            Welcome to Devcon 2024
+            This week on cherry.builders
           </DialogTitle>
         </DialogHeader>
 
         <div className="relative flex flex-col items-center space-y-6 py-6">
-          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-xl">
-            <p className="text-center max-w-xs text-black">
-              Find builders to work with at ETHGlobal Bangkok, on your next
-              startup or project!
-            </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
+            <Link
+              href="https://aleph.crecimiento.build/hackathon"
+              target="_blank"
+              className="w-[90%] sm:w-[45%] transition-all duration-300 transform hover:scale-105"
+              onClick={() => {
+                if (checked) onDontShowAgain();
+                setOpen(false);
+              }}
+            >
+              <img
+                src="/images/eventDialogAleph.png"
+                alt="Event promotion"
+                className="aspect-video rounded-xl object-cover"
+              />
+            </Link>
+            <img
+              src="/images/eventDialogAleph.png"
+              alt="Event promotion"
+              className="w-[90%] sm:w-[45%] aspect-video rounded-xl object-cover"
+            />
           </div>
 
           <Button
