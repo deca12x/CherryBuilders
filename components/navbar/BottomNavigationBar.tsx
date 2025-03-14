@@ -9,7 +9,10 @@ const BottomNavigationBar = () => {
   const Router = useRouter();
   const pathname = usePathname();
 
-  if (hiddenPaths.includes(pathname)) {
+  if (
+    hiddenPaths.includes(pathname) ||
+    pathname.startsWith("/complete-match")
+  ) {
     return null;
   }
 

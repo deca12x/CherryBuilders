@@ -137,7 +137,7 @@ export default function CompleteMatch() {
   }, [ready, responderWallet, initiatorWallet]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary to-secondary">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <LoadingSpinner />
     </div>
   );
