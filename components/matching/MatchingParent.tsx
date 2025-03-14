@@ -51,17 +51,10 @@ export default function MatchingParent({
   >(null);
   const [filters, setFilters] = useState<FiltersProp>(userFilters);
   const [isNoEmailModalOpen, setIsNoEmailModalOpen] = useState(false);
-  const mounted = useRef(false);
-
   const currentUser = fetchedUsers[currentUserIndex];
 
   // A useEffect that fetches users based on the filters (avoiding first render double fetch)
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-
     console.log("£££££££££££££££££££ Dependencies changed:", { filters, jwt });
     const fetchUsers = async () => {
       setIsLoading(true);
