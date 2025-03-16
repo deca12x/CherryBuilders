@@ -33,13 +33,6 @@ const WelcomeCard = forwardRef<HTMLDivElement, WelcomeCardProps>(
         <p className="text-center text-muted-foreground mt-4">
           Find collaborators for your next hackathon or conference
         </p>
-        <div className="mt-2">
-          <SocialLink
-            href="https://x.com/CherryBuilders"
-            imageSrc="/images/x.svg"
-            alt="X (Twitter)"
-          />
-        </div>
         <div className="flex flex-col justify-center items-center mt-4 gap-3">
           {isAuthenticated ? (
             <div className="flex flex-col items-center gap-1">

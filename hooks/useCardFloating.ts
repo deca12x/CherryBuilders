@@ -5,7 +5,7 @@ import { LANDING_PROFILES } from "@/lib/landing/data";
 const MOBILE_BREAKPOINT = 768;
 const DESKTOP_MAX_VISIBLE = 8;
 const MOBILE_MAX_VISIBLE = 4;
-const DISPLAY_INTERVAL = 2000;
+const DISPLAY_INTERVAL = 1300;
 
 const DESKTOP_POSITIONS = [
   { x: 400, y: 0 },

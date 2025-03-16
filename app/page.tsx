@@ -7,6 +7,7 @@ import ErrorCard from "@/components/ui/error-card";
 import MiniProfileCard from "@/components/landing/miniProfileCard";
 import { LANDING_PROFILES } from "@/lib/landing/data";
 import WelcomeCard from "@/components/landing/welcomeCard";
+import SocialLink from "@/components/landing/socialLink";
 import useCardFloating from "@/hooks/useCardFloating";
 import useWindowSize from "@/hooks/useWindowSize";
 
@@ -72,6 +73,13 @@ export default function Home() {
   return (
     <main className="fixed inset-0 flex flex-col items-center justify-center bg-background overflow-hidden">
       <WelcomeCard isAuthenticated={isAuthenticated} />
+      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-10">
+        <SocialLink
+          href="https://x.com/CherryBuilders"
+          imageSrc="/images/x.svg"
+          alt="X (Twitter)"
+        />
+      </div>
       {nodes.map((node) => (
         <div
           key={node.index}
