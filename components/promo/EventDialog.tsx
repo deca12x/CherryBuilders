@@ -59,11 +59,21 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
                 className="aspect-video rounded-xl object-cover"
               />
             </Link>
-            <img
-              src="/images/eventDialogAleph.png"
-              alt="Event promotion"
-              className="w-[90%] sm:w-[45%] aspect-video rounded-xl object-cover"
-            />
+            <Link
+              href="https://ethwarsaw.substack.com/p/ethwarsaw-hosts-ai-x-crypto-spring"
+              target="_blank"
+              className="w-[90%] sm:w-[45%] transition-all duration-300 transform hover:scale-105"
+              onClick={() => {
+                if (checked) onDontShowAgain();
+                setOpen(false);
+              }}
+            >
+              <img
+                src="/images/eventDialogWarsaw.png"
+                alt="Event promotion"
+                className="aspect-video rounded-xl object-cover"
+              />
+            </Link>
           </div>
 
           <Button
