@@ -5,7 +5,11 @@ import ChatWindow from "./ChatWindow";
 import useWindowSize from "./hook";
 import { ChatMessageType, ChatType, UserType } from "@/lib/supabase/types";
 import { createSupabaseClient } from "@/lib/supabase/supabase-client";
-import { getChatsFromUserAddress, getLastChatMessage, getUser } from "@/lib/supabase/utils";
+import {
+  getChatsFromUserAddress,
+  getLastChatMessage,
+  getUser,
+} from "@/lib/supabase/utils";
 import ChatListPanel from "./ChatListPanel";
 import ContactProfilePanel from "./ContactProfilePanel";
 import { useQueryState } from "nuqs";
@@ -27,7 +31,11 @@ interface ChatParentProps {
 // Breakpoint for switching to mobile layout
 const SM_BREAKPOINT = 640;
 
-export default function ChatParent({ authToken, setError, userAddress }: ChatParentProps) {
+export default function ChatParent({
+  authToken,
+  setError,
+  userAddress,
+}: ChatParentProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
@@ -58,7 +66,10 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
   // This will create a supabase client used for subscription when the user logs in or changes
   useEffect(() => {
     const initSupabase = async () => {
-      const client = await createSupabaseClient(userAddress, authToken as string);
+      const client = await createSupabaseClient(
+        userAddress,
+        authToken as string
+      );
       console.log("Supabase client created with address:", userAddress);
       setSupabaseClient(client);
     };
@@ -76,17 +87,24 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
       console.log(`Attempting to subscribe to channel: ${channelName}`);
 
       supabaseRef.current = supabaseClient
-        .channel(channelName, { config: { broadcast: { ack: true }, presence: { key: userAddress } } })
+        .channel(channelName, {
+          config: { broadcast: { ack: true }, presence: { key: userAddress } },
+        })
         .on(
           "postgres_changes",
           {
             event: "INSERT",
             schema: "public",
             table: "messages",
-            // Filter by receiver to only get messages directed to the connected user
-            filter: `receiver=eq.${userAddress}`,
           },
           (payload: any) => {
+            if (payload.new.sender === userAddress) return;
+            console.log("RT Update - Sender:", payload.new.sender);
+            console.log("RT Update - Current user:", userAddress);
+            console.log(
+              "RT Update - Should we process?",
+              payload.new.sender !== userAddress
+            );
             console.log("Received real-time update:", payload);
             const newMessage = payload.new as ChatMessageType;
             console.log("Processed new message:", newMessage);
@@ -101,8 +119,12 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
             };
 
             // Append the new message to the chat messages array if the chat was already fetched
-            const targetChat = chatHistoryRef.current.find((chatItem) => chatItem.id === chatId);
-            const newChatMessages = targetChat?.fetchedMessages ? [...targetChat.chatMessages, newMessage] : [];
+            const targetChat = chatHistoryRef.current.find(
+              (chatItem) => chatItem.id === chatId
+            );
+            const newChatMessages = targetChat?.fetchedMessages
+              ? [...targetChat.chatMessages, newMessage]
+              : [];
 
             // Finally set the chat history with the updated chat item
             setChatHistory((prevHistory) => {
@@ -148,18 +170,21 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
           // Fetch user data for each chat
           const chatItems = await Promise.all(
             chatsData.map(async (chat: ChatType) => {
-              const otherUserAddress = chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
-              const { success: userSuccess, data: userData, error: userError } = await getUser(otherUserAddress, authToken);
+              const otherUserAddress =
+                chat.user_1 === userAddress ? chat.user_2 : chat.user_1;
+              const {
+                success: userSuccess,
+                data: userData,
+                error: userError,
+              } = await getUser(otherUserAddress, authToken);
 
               if (!userSuccess && userError) {
                 setError(true);
                 return null;
               }
 
-              const { data: lastMessageData }: { data: ChatMessageType } = await getLastChatMessage(
-                chat.id.toString(),
-                authToken
-              );
+              const { data: lastMessageData }: { data: ChatMessageType } =
+                await getLastChatMessage(chat.id.toString(), authToken);
 
               const chatItem: ChatItem = {
                 id: chat.id.toString(),
@@ -203,39 +228,51 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
       <motion.div
         initial={{ width: "100%" }}
         animate={{
-          width: selectedChatId && isMobile && wasChatHistoryFetched ? "0%" : "100%",
+          width:
+            selectedChatId && isMobile && wasChatHistoryFetched ? "0%" : "100%",
           x: selectedChatId && isMobile && wasChatHistoryFetched ? -50 : 0,
         }}
         transition={{ duration: 0.2 }}
         className="h-full sm:w-1/3 pb-[58px] sm:max-w-sm border-r border-border"
       >
-        <ChatListPanel setSelectedChatId={setSelectedChatId} selectedChatId={selectedChatId} chatHistory={chatHistory} />
+        <ChatListPanel
+          setSelectedChatId={setSelectedChatId}
+          selectedChatId={selectedChatId}
+          chatHistory={chatHistory}
+        />
       </motion.div>
 
       <AnimatePresence>
-        {selectedChat && selectedChat.otherUserData && selectedChatId && wasChatHistoryFetched && (
-          <motion.div
-            key="chat-window"
-            initial={isMobile ? { x: "100%" } : { opacity: 0 }}
-            animate={isMobile ? { x: isProfileOpen ? -50 : 0 } : { opacity: 1 }}
-            exit={isMobile ? { x: "100%" } : {}}
-            transition={{ duration: 0.2 }}
-            className={`${isMobile ? "fixed inset-0" : "relative flex-grow"}`}
-          >
-            <ChatWindow
-              chat={selectedChat}
-              selectedChatId={selectedChatId}
-              onBack={() => setSelectedChatId(null)}
-              onOpenProfile={() => setIsProfileOpen(true)}
-              authToken={authToken}
-              userAddress={userAddress}
-              chatHistory={chatHistory}
-              setChatHistory={(updateFn: (prevHistory: ChatItem[]) => ChatItem[]) => {
-                setChatHistory((prevHistory) => updateFn(prevHistory));
-              }}
-            />
-          </motion.div>
-        )}
+        {selectedChat &&
+          selectedChat.otherUserData &&
+          selectedChatId &&
+          wasChatHistoryFetched && (
+            <motion.div
+              key="chat-window"
+              initial={isMobile ? { x: "100%" } : { opacity: 0 }}
+              animate={
+                isMobile ? { x: isProfileOpen ? -50 : 0 } : { opacity: 1 }
+              }
+              exit={isMobile ? { x: "100%" } : {}}
+              transition={{ duration: 0.2 }}
+              className={`${isMobile ? "fixed inset-0" : "relative flex-grow"}`}
+            >
+              <ChatWindow
+                chat={selectedChat}
+                selectedChatId={selectedChatId}
+                onBack={() => setSelectedChatId(null)}
+                onOpenProfile={() => setIsProfileOpen(true)}
+                authToken={authToken}
+                userAddress={userAddress}
+                chatHistory={chatHistory}
+                setChatHistory={(
+                  updateFn: (prevHistory: ChatItem[]) => ChatItem[]
+                ) => {
+                  setChatHistory((prevHistory) => updateFn(prevHistory));
+                }}
+              />
+            </motion.div>
+          )}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -248,7 +285,10 @@ export default function ChatParent({ authToken, setError, userAddress }: ChatPar
             transition={{ duration: 0.2 }}
             className="fixed inset-0 w-full sm:w-[450px] sm:relative"
           >
-            <ContactProfilePanel contact={selectedChat.otherUserData} onClose={() => setIsProfileOpen(false)} />
+            <ContactProfilePanel
+              contact={selectedChat.otherUserData}
+              onClose={() => setIsProfileOpen(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

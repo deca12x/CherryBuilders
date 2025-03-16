@@ -546,7 +546,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailNotifications" className="text-sm">
-            I agree to receive emails about matches and messages
+            Main functionality: I agree to receive emails when I get a match
           </label>
         </div>
         <div className="flex items-center space-x-2">
@@ -558,8 +558,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailMarketing" className="text-sm">
-            I would like to receive relevant emails about future Web3
-            builder-focused events
+            Optional: I want to receive emails about hackathons and conferences
           </label>
         </div>
       </motion.div>
