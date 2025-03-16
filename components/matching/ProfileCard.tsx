@@ -156,10 +156,7 @@ export default function ProfileCard({
             onShowNoEmailModal={onShowNoEmailModal}
           />
           <div className="absolute right-4">
-            <FiltersButton
-              onOpenFilters={() => setIsFiltersModalOpen(true)}
-              showText={false}
-            />
+            <FiltersButton onOpenFilters={() => setIsFiltersModalOpen(true)} />
           </div>
         </div>
       )}

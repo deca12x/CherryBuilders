@@ -35,9 +35,6 @@ export default function IcebreakerModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">Send an Icebreaker</DialogTitle>
-        </DialogHeader>
         <div className="flex flex-col items-center space-y-4 py-4">
           <Avatar className="w-20 h-20">
             <AvatarImage src={user?.profile_pictures?.[0]} alt={user?.name} />
@@ -45,10 +42,6 @@ export default function IcebreakerModal({
           </Avatar>
 
           <p className="text-lg font-medium">{user?.name}</p>
-
-          <p className="text-sm text-muted-foreground text-center px-4">
-            {user?.name} will receive an email notification with your message
-          </p>
 
           <Textarea
             value={message}

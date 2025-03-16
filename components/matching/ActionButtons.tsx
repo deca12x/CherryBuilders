@@ -1,5 +1,4 @@
-import { X, Heart, MessageCircle, MessageCircleCode, MessageSquare } from "lucide-react";
-
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 interface ActionButtonsProps {
   onReject: () => void;
   onAccept: () => void;
@@ -10,7 +9,15 @@ interface ActionButtonsProps {
   onShowNoEmailModal: () => void;
 }
 
-export default function ActionButtons({ onReject, onAccept, onIcebreaker, isLoading, userHasEmailNotifsOn, userHasEmail, onShowNoEmailModal }: ActionButtonsProps) {
+export default function ActionButtons({
+  onReject,
+  onAccept,
+  onIcebreaker,
+  isLoading,
+  userHasEmailNotifsOn,
+  userHasEmail,
+  onShowNoEmailModal,
+}: ActionButtonsProps) {
   return (
     <div className="space-x-5">
       <button
@@ -19,15 +26,19 @@ export default function ActionButtons({ onReject, onAccept, onIcebreaker, isLoad
         aria-label="Dislike"
         disabled={isLoading}
       >
-        <X size={24} />
+        <ThumbsDown size={24} />
       </button>
       <button
-        onClick={userHasEmailNotifsOn && userHasEmail ? onIcebreaker : onShowNoEmailModal}
-        className="bg-blue-500 text-primary-foreground rounded-full p-4 shadow-lg hover:bg-blue-500/90 transition-colors disabled:opacity-50"
+        onClick={
+          userHasEmailNotifsOn && userHasEmail
+            ? onIcebreaker
+            : onShowNoEmailModal
+        }
+        className="bg-[#22976A] text-primary-foreground rounded-full p-4 shadow-lg hover:bg-[#22976A]/90 transition-colors disabled:opacity-50"
         aria-label="Send Icebreaker"
         disabled={isLoading}
       >
-        <MessageCircle size={24} />
+        <ThumbsUp size={24} />
       </button>
     </div>
   );
