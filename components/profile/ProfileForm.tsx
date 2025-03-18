@@ -185,16 +185,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       return;
     }
 
-    if (!profileData.emailNotifications) {
-      toast({
-        title: "🙉 We know, emails are annoying",
-        description:
-          "Email notifications for matches and messages are required for core functionality",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       await onSubmit(profileData, selectedEvent);
