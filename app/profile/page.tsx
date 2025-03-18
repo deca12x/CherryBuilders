@@ -46,7 +46,10 @@ const ProfilePage: React.FC = () => {
       const token = await getAccessToken();
       setJwt(token);
 
-      const { success, data, error } = await getUser(user.wallet.address, token);
+      const { success, data, error } = await getUser(
+        user.wallet.address,
+        token
+      );
 
       if (!success && error) {
         setError(true);

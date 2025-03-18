@@ -958,3 +958,57 @@ export async function getSpecificUser(address: string, jwt: string) {
     return { success: false, data: null, error };
   }
 }
+
+export async function createUserEvent(
+  address: string,
+  event: string,
+  jwt: string
+) {
+  if (event === "neither") return;
+  try {
+    const response = await fetch("/api/user-events", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userAddress: address, eventSlug: event }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error);
+    }
+
+    return { success: true, data: data.data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error };
+  }
+}
+
+export async function updateUserEvent(
+  address: string,
+  event: string,
+  jwt: string
+) {
+  // Then update the user's event selection
+
+  console.log("Updating event selection to:", event);
+  const response = await fetch("/api/user-events", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+    body: JSON.stringify({
+      userAddress: address,
+      eventSlug: event,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update event selection");
+  }
+  console.log("Event selection updated successfully");
+}

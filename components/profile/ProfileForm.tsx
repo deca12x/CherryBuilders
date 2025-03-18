@@ -20,16 +20,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ProfileFormProps {
   initialData: UserType;
-  onSubmit: (data: UserType) => Promise<void>;
+  onSubmit: (data: UserType, selectedEvent: string) => Promise<void>;
   submitButtonText: string;
   showTalentScore?: boolean;
   jwt: string | null;
   showPrivacyInfo?: boolean;
   userProfile?: ProfileQuery | null;
   userEvents?: EventType[];
+  initialSelectedEvent: string;
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -40,6 +42,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   jwt,
   userProfile,
   userEvents,
+  initialSelectedEvent,
 }) => {
   const [profileData, setProfileData] = useState<UserType>(initialData);
   const [isUploading, setIsUploading] = useState(false);
@@ -49,6 +52,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
+  const [selectedEvent, setSelectedEvent] =
+    useState<string>(initialSelectedEvent);
 
   const availableTags: UserTag[] = [
     "Frontend dev",
@@ -64,6 +69,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   useEffect(() => {
     setProfileData(initialData);
   }, [initialData]);
+
+  useEffect(() => {
+    setSelectedEvent(initialSelectedEvent);
+  }, [initialSelectedEvent]);
 
   useEffect(() => {
     if (!userProfile) return;
@@ -188,7 +197,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(profileData);
+      await onSubmit(profileData, selectedEvent);
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -454,7 +463,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           </button>
         </motion.div>
       )}
-      {userEvents && userEvents.length > 0 ? (
+      {/* {userEvents && userEvents.length > 0 ? (
         <motion.div
           className="flex flex-col items-start my-6"
           variants={itemVariants}
@@ -474,7 +483,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             ))}
           </div>
         </motion.div>
-      ) : null}
+      ) : null} */}
 
       <motion.div variants={itemVariants}>
         <Label className="text-sm font-medium mb-2 block">Tags</Label>
@@ -491,6 +500,36 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               </label>
             </div>
           ))}
+        </div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Label className="text-sm font-medium mb-2 block">Events</Label>
+        <div className="grid grid-cols-2 gap-2 text-white">
+          <RadioGroup
+            value={selectedEvent}
+            onValueChange={(value) => setSelectedEvent(value)}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="aleph_march_2025" id="aleph_march_2025" />
+              <Label htmlFor="aleph_march_2025">Aleph March 2025</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem
+                value="eth_warsaw_spring_2025"
+                id="eth_warsaw_spring_2025"
+              />
+              <Label htmlFor="eth_warsaw_spring_2025">
+                ETH Warsaw Spring 2025
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="neither" id="neither" />
+              <Label htmlFor="neither">Neither</Label>
+            </div>
+          </RadioGroup>
         </div>
       </motion.div>
 

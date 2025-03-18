@@ -1,30 +1,74 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { EventType, UserType } from "@/lib/supabase/types";
 import ConnectButton from "@/components/ui/connectButton";
-import { updateUser } from "@/lib/supabase/utils";
+import { updateUser, updateUserEvent } from "@/lib/supabase/utils";
 import ProfileForm from "@/components/profile/ProfileForm";
 import OverwriteModal from "./OverwriteModal";
 import { ProfileQuery } from "@/lib/airstack/types";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 
 interface ProfileEditParentProps {
   initialProfileData: UserType;
-  jwt: string | null;
+  jwt: string;
   userAddress: string;
   userEvents: EventType[];
 }
 
-const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileData, jwt, userAddress, userEvents }) => {
+const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
+  initialProfileData,
+  jwt,
+  userAddress,
+  userEvents,
+}) => {
   const [profileData, setProfileData] = useState<UserType>(initialProfileData);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [isFetchingFromAirstack, setIsFetchingFromAirstack] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<string>("neither");
   const { toast } = useToast();
 
-  const handleSubmit = async (updatedData: UserType) => {
+  useEffect(() => {
+    console.log("useEffect triggered with userEvents:", userEvents);
+    if (!userEvents || userEvents.length === 0) {
+      console.log("No events found, setting to neither");
+      setSelectedEvent("neither");
+      return;
+    }
+
+    const alephEvent = userEvents.find(
+      (event) => event.slug === "aleph_march_2025"
+    );
+    const warsawEvent = userEvents.find(
+      (event) => event.slug === "eth_warsaw_spring_2025"
+    );
+
+    console.log("Found events:", { alephEvent, warsawEvent });
+
+    if (alephEvent) {
+      console.log("Setting event to aleph_march_2025");
+      setSelectedEvent("aleph_march_2025");
+    } else if (warsawEvent) {
+      console.log("Setting event to eth_warsaw_spring_2025");
+      setSelectedEvent("eth_warsaw_spring_2025");
+    } else {
+      console.log("No matching events found, setting to neither");
+      setSelectedEvent("neither");
+    }
+  }, [userEvents]);
+
+  const handleSubmit = async (updatedData: UserType, selectedEvent: string) => {
     try {
+      console.log("Handling submit with data:", updatedData);
+      console.log("Selected event:", selectedEvent);
+
+      // First update the user profile
       const updatedUser = await updateUser(userAddress, updatedData, jwt);
       if (!updatedUser.success) throw Error(updatedUser.error);
+      console.log("User profile updated successfully");
+
+      await updateUserEvent(userAddress, selectedEvent, jwt);
+
       setProfileData(updatedData);
       toast({
         title: "Success",
@@ -32,7 +76,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
         variant: "default",
       });
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("Error in handleSubmit:", error);
       toast({
         title: "Error",
         description: "Failed to save profile. Please try again.",
@@ -67,7 +111,9 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
       ...prev,
       name: user.profileName || prev.name,
       bio: user.profileBio || prev.bio,
-      profile_pictures: profilePicture ? [profilePicture] : prev.profile_pictures,
+      profile_pictures: profilePicture
+        ? [profilePicture]
+        : prev.profile_pictures,
     }));
 
     toast({
@@ -104,7 +150,10 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
         animate="visible"
         variants={containerVariants}
       >
-        <motion.h1 className="text-3xl font-bold text-primary mb-8" variants={itemVariants}>
+        <motion.h1
+          className="text-3xl font-bold text-primary mb-8"
+          variants={itemVariants}
+        >
           Edit Your Profile
         </motion.h1>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -125,6 +174,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({ initialProfileDat
           showTalentScore={true}
           jwt={jwt}
           userEvents={userEvents}
+          initialSelectedEvent={selectedEvent}
         />
       </motion.div>
 
