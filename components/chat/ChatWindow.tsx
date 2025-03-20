@@ -1,14 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send } from "lucide-react";
-import { ChatItem } from "./ChatParent";
-import { createMessage, getChatMessages, updateMessagesReadValue } from "@/lib/supabase/utils";
+import type { ChatItem } from "./ChatParent";
+import { createMessage, getChatMessages } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";
-import { ChatMessageType } from "@/lib/supabase/types";
+import type { ChatMessageType } from "@/lib/supabase/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface ChatWindowProps {
   chat: ChatItem;
@@ -47,7 +55,11 @@ export default function ChatWindow({
       setChatMessagesLoading(true);
 
       // Fetch messages from chat.chatMessages
-      const { success, data, error } = await getChatMessages(chat.id, true, authToken);
+      const { success, data, error } = await getChatMessages(
+        chat.id,
+        true,
+        authToken
+      );
       if (!success && error) {
         console.error("Error fetching messages:", error);
         setChatMessagesError(true);
@@ -96,7 +108,11 @@ export default function ChatWindow({
     }
   }, [chat.chatMessages]);
 
-  const handleSend = async (messageText: string, type?: string, requestId?: string) => {
+  const handleSend = async (
+    messageText: string,
+    type?: string,
+    requestId?: string
+  ) => {
     if (!messageText.trim()) return;
 
     const newMessage: ChatMessageType = {
@@ -146,7 +162,9 @@ export default function ChatWindow({
           if (chatItem.id === selectedChatId) {
             return {
               ...chatItem,
-              chatMessages: chatItem.chatMessages.filter((msg) => msg.id !== newMessage.id),
+              chatMessages: chatItem.chatMessages.filter(
+                (msg) => msg.id !== newMessage.id
+              ),
               lastMessage: lastMessage, // Restore previous last message
             };
           }
@@ -159,10 +177,18 @@ export default function ChatWindow({
   return (
     <div className="flex flex-col h-full pb-[58px]">
       <div className="flex flex-shrink-0 items-center h-20 p-4 bg-background border-b border-border">
-        <Button variant="ghost" size="icon" className="sm:hidden mr-2" onClick={onBack}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sm:hidden mr-2"
+          onClick={onBack}
+        >
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={onOpenProfile}>
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={onOpenProfile}
+        >
           <Avatar>
             <AvatarImage
               src={
@@ -193,7 +219,10 @@ export default function ChatWindow({
                   >
                     <div>{message.message}</div>
                     <div className="flex justify-end w-full text-sm text-primary-foreground">
-                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(message.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </div>
                   </motion.div>
                 );
@@ -208,7 +237,10 @@ export default function ChatWindow({
                   >
                     {message.message}
                     <div className="flex justify-end w-full text-sm text-primary-foreground">
-                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(message.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </div>
                   </motion.div>
                 );
@@ -233,19 +265,36 @@ export default function ChatWindow({
       )}
       <div className="p-4 border-t border-border">
         <div className="flex space-x-2">
-          <Input
-            className="flex"
-            placeholder="Type your message..."
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSend(newMessage);
-              }
-            }}
-          />
-          <Button type="submit" size="icon" onClick={() => handleSend(newMessage)}>
+          <TooltipProvider>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Input
+                  className="flex"
+                  placeholder="Type your message..."
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSend(newMessage);
+                    }
+                  }}
+                />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[300px] p-3 text-sm">
+                <p>
+                  🍒 is in beta, we don&apos;t want to spam you, you won&apos;t
+                  receive email notifications after this one, so we suggest
+                  exchanging contact details
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            type="submit"
+            size="icon"
+            onClick={() => handleSend(newMessage)}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>

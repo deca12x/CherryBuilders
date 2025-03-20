@@ -13,7 +13,11 @@ interface ChatListPanelProps {
   chatHistory: ChatItem[];
 }
 
-export default function ChatListPanel({ setSelectedChatId, selectedChatId, chatHistory }: ChatListPanelProps) {
+export default function ChatListPanel({
+  setSelectedChatId,
+  selectedChatId,
+  chatHistory,
+}: ChatListPanelProps) {
   // Sort chatHistory by lastMessage.date in descending order
   // If the lastMessage.date is not available, the chat will be placed at the bottom
   sortChatHistory(chatHistory, false);
@@ -36,7 +40,8 @@ export default function ChatListPanel({ setSelectedChatId, selectedChatId, chatH
                     key={chat.id}
                     className={cn(
                       "flex items-center space-x-4 p-3 rounded-lg cursor-pointer hover:bg-accent",
-                      selectedChatId === chat.id && "bg-primary/25 hover:bg-primary/25"
+                      selectedChatId === chat.id &&
+                        "bg-primary/25 hover:bg-primary/25"
                     )}
                     onClick={() => setSelectedChatId(chat.id)}
                   >
@@ -52,13 +57,19 @@ export default function ChatListPanel({ setSelectedChatId, selectedChatId, chatH
                     </Avatar>
                     <div className="flex flex-col w-full min-w-0">
                       <div className="flex justify-between items-center w-full">
-                        <div className="text-md font-semibold truncate">{chat.otherUserData.name}</div>
+                        <div className="text-md font-semibold truncate">
+                          {chat.otherUserData.name}
+                        </div>
                         <div className="text-sm text-muted-foreground whitespace-nowrap ml-2">
-                          {chat.lastMessage.date ? formatDate(chat.lastMessage.date) : ""}
+                          {chat.lastMessage.date
+                            ? formatDate(chat.lastMessage.date)
+                            : ""}
                         </div>
                       </div>
                       <div className="flex justify-between items-center w-full">
-                        <div className="text-sm text-muted-foreground truncate flex-grow">{chat.lastMessage.text}</div>
+                        <div className="text-sm text-muted-foreground truncate flex-grow">
+                          {chat.lastMessage.text}
+                        </div>
                         {/* {!chat.lastMessage.read && <div className="bg-primary rounded-full h-3 w-3 flex-shrink-0 ml-2" />} */}
                       </div>
                     </div>
