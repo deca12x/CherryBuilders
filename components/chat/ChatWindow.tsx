@@ -44,6 +44,7 @@ export default function ChatWindow({
   const [chatMessagesLoading, setChatMessagesLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Fetch chat messages on component mount and when chat changes
   useEffect(() => {
@@ -266,7 +267,7 @@ export default function ChatWindow({
       <div className="p-4 border-t border-border">
         <div className="flex space-x-2">
           <TooltipProvider>
-            <Tooltip delayDuration={0}>
+            <Tooltip delayDuration={0} open={isInputFocused}>
               <TooltipTrigger asChild>
                 <Input
                   className="flex"
@@ -274,6 +275,8 @@ export default function ChatWindow({
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       handleSend(newMessage);
@@ -283,9 +286,9 @@ export default function ChatWindow({
               </TooltipTrigger>
               <TooltipContent className="max-w-[300px] p-3 text-sm">
                 <p>
-                  🍒 is in beta, we don&apos;t want to spam you, you won&apos;t
-                  receive email notifications after this one, so we suggest
-                  exchanging contact details
+                  We don&apos;t want to spam you, you won&apos;t receive email
+                  notifications after this one, so we suggest exchanging contact
+                  details
                 </p>
               </TooltipContent>
             </Tooltip>
