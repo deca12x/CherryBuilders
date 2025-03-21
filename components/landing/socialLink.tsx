@@ -19,7 +19,7 @@ const SocialLink = ({ href, imageSrc, alt }: SocialLinkProps) => {
       className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black border border-muted-foreground hover:bg-muted/80 transition-colors"
       aria-label={`Visit our ${alt}`}
     >
-      <span className="text-white text-sm">Follow us on</span>
+      <span className="text-white text-sm">Find out more on</span>
       <Image src={imageSrc} alt={alt} width={24} height={24} />
     </motion.a>
   );
