@@ -123,6 +123,19 @@ export const MatchedEmail = ({
                 Start chatting
               </Button>
             </Section>
+
+            <p
+              style={{
+                fontSize: "12px",
+                color: "#666666",
+                fontStyle: "italic",
+                textAlign: "center",
+                margin: "20px 0 0 0",
+              }}
+            >
+              You can unsubscribe from emails at any time from your profile
+              settings in cherry.builders
+            </p>
           </Container>
         </Body>
       </Tailwind>
