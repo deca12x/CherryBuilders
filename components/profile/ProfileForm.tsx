@@ -476,7 +476,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       ) : null} */}
 
       <motion.div variants={itemVariants}>
-        <Label className="text-sm font-medium mb-2 block">Tags</Label>
+        <Label className="text-sm font-medium mb-2 block">What am I</Label>
         <div className="grid grid-cols-2 gap-2">
           {availableTags.map((tag) => (
             <div key={tag} className="flex items-center space-x-2">
@@ -494,7 +494,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <Label className="text-sm font-medium mb-2 block">Events</Label>
+        <Label className="text-sm font-medium mb-2 block">I'm going to</Label>
         <div className="grid grid-cols-2 gap-2 text-white">
           <RadioGroup
             value={selectedEvent}
