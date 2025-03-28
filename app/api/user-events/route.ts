@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    // delete every existing record in db for current user, where event_slug is aleph_march_2025 or eth_warsaw_spring_2025
+    // delete every existing record in db for current user, where event_slug is current eventSlug
     const { error: relTableDeleteError } = await supabase
       .from("users_events_rel")
       .delete()
