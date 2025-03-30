@@ -5,8 +5,6 @@ import { EventType, UserType } from "@/lib/supabase/types";
 import ConnectButton from "@/components/ui/connectButton";
 import { updateUser, updateUserEvent } from "@/lib/supabase/utils";
 import ProfileForm from "@/components/profile/ProfileForm";
-import OverwriteModal from "./OverwriteModal";
-import { ProfileQuery } from "@/lib/airstack/types";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
 
@@ -24,8 +22,6 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
   userEvents,
 }) => {
   const [profileData, setProfileData] = useState<UserType>(initialProfileData);
-  const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
-  const [isFetchingFromAirstack, setIsFetchingFromAirstack] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<string>("neither");
   const { toast } = useToast();
 
@@ -81,45 +77,6 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
     }
   };
 
-  const handleFetchFromAirstack = async () => {
-    setIsFetchingFromAirstack(true);
-    const response = await fetch("/api/airstack/user", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${jwt}` },
-    });
-    if (!response.ok) {
-      toast({
-        title: "Error",
-        description: "No Farcaster profile was found for this address!",
-        variant: "destructive",
-      });
-      setIsFetchingFromAirstack(false);
-      return;
-    }
-    const { data }: { data: ProfileQuery } = await response.json();
-    // I'm sure that userProfile.Socials!.Social![0] exists (check function in /lib/airstack/index.ts)
-    const user = data.Socials!.Social![0];
-    const profilePicture = user.profileImage;
-
-    console.log("Fetched profile data:", user);
-
-    setProfileData((prev) => ({
-      ...prev,
-      name: user.profileName || prev.name,
-      bio: user.profileBio || prev.bio,
-      profile_pictures: profilePicture
-        ? [profilePicture]
-        : prev.profile_pictures,
-    }));
-
-    toast({
-      title: "Success",
-      description: "Profile fetched successfully!",
-      variant: "default",
-    });
-    setIsFetchingFromAirstack(false);
-  };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -154,13 +111,6 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
         </motion.h1>
         <div className="flex flex-col sm:flex-row gap-3">
           <ConnectButton />
-          <button
-            className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-red-700 py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
-            onClick={() => setIsOverwriteModalOpen(true)}
-            disabled={isFetchingFromAirstack}
-          >
-            Fetch From Airstack
-          </button>
         </div>
 
         <ProfileForm
@@ -173,13 +123,6 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
           initialSelectedEvent={selectedEvent}
         />
       </motion.div>
-
-      {/* Overwrite Modal */}
-      <OverwriteModal
-        isOpen={isOverwriteModalOpen}
-        onClose={() => setIsOverwriteModalOpen(false)}
-        parentHandleFetchFromAirstack={handleFetchFromAirstack}
-      />
     </>
   );
 };

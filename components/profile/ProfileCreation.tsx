@@ -11,21 +11,15 @@ import {
   updateUser,
 } from "@/lib/supabase/utils";
 import ProfileForm from "./ProfileForm";
-import { ProfileQuery } from "@/lib/airstack/types";
 import { Skeleton } from "../ui/skeleton";
 import SearchParamsComponent from "../searchparams";
 
 interface ProfileCreationProps {
   jwt: string;
   address: string;
-  userProfile: ProfileQuery | null;
 }
 
-const ProfileCreation: React.FC<ProfileCreationProps> = ({
-  jwt,
-  address,
-  userProfile,
-}) => {
+const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<UserType>({
     name: "",
@@ -136,7 +130,6 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({
           onSubmit={handleSubmit}
           submitButtonText="Save & Continue"
           jwt={jwt}
-          userProfile={userProfile}
           initialSelectedEvent="neither"
         />
       </div>

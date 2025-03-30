@@ -6,7 +6,7 @@ export const CURRENT_EVENTS = [
   },
   {
     slug: "eth_taipei_2025",
-    name: "ETH Warsaw Spring 2025",
+    name: "ETHGlobal Taipei 2025",
   },
 ] as const;
 

@@ -6,14 +6,12 @@ import { getUser } from "@/lib/supabase/utils";
 import ProfileCreation from "@/components/profile/ProfileCreation";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import ErrorCard from "@/components/ui/error-card";
-import { ProfileQuery } from "@/lib/airstack/types";
 
 export default function ProfileCreationPage() {
   const { user, ready, getAccessToken } = usePrivy();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [wasUserChecked, setWasUserChecked] = useState(false);
-  const [userProfile, setUserProfile] = useState<ProfileQuery | null>(null);
   const [jwt, setJwt] = useState<string | null>(null);
   const router = useRouter();
 
@@ -41,24 +39,11 @@ export default function ProfileCreationPage() {
       }
 
       setWasUserChecked(true);
+      setIsLoading(false);
     };
 
     checkUser();
   }, [user, ready, router]);
-
-  useEffect(() => {
-    const fetchAirstackProfile = async () => {
-      const response = await fetch("/api/airstack/user", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      const { data } = await response.json();
-      setUserProfile(response.ok ? data : null);
-      setIsLoading(false);
-    };
-
-    if (wasUserChecked) fetchAirstackProfile();
-  }, [wasUserChecked, jwt]);
 
   if (isLoading || !jwt) {
     return <LoadingSpinner />;
@@ -72,11 +57,5 @@ export default function ProfileCreationPage() {
     return null; // This will be handled by the router.push("/") in the useEffect
   }
 
-  return (
-    <ProfileCreation
-      jwt={jwt}
-      address={user.wallet.address}
-      userProfile={userProfile}
-    />
-  );
+  return <ProfileCreation jwt={jwt} address={user.wallet.address} />;
 }

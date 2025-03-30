@@ -13,7 +13,6 @@ import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
 import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { ProfileQuery } from "@/lib/airstack/types";
 import { checkForBadWords } from "@/utils/language/badWordChecker";
 import {
   Accordion,
@@ -30,7 +29,6 @@ interface ProfileFormProps {
   showTalentScore?: boolean;
   jwt: string | null;
   showPrivacyInfo?: boolean;
-  userProfile?: ProfileQuery | null;
   userEvents?: EventType[];
   initialSelectedEvent: string;
 }
@@ -41,7 +39,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   submitButtonText,
   showTalentScore = false,
   jwt,
-  userProfile,
   userEvents,
   initialSelectedEvent,
 }) => {
@@ -74,28 +71,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   useEffect(() => {
     setSelectedEvent(initialSelectedEvent);
   }, [initialSelectedEvent]);
-
-  useEffect(() => {
-    if (!userProfile) return;
-
-    toast({
-      title: "Success",
-      description: "Found a Farcaster profile for this address!",
-      variant: "default",
-    });
-
-    // I'm sure that userProfile.Socials!.Social![0] exists (check function in /lib/airstack/index.ts)
-    const user = userProfile.Socials!.Social![0];
-
-    console.log("User profile data:", user);
-
-    setProfileData((prev) => ({
-      ...prev,
-      name: user.profileName || "",
-      bio: user.profileBio || "",
-      profile_pictures: user.profileImage ? [user.profileImage] : [],
-    }));
-  }, [userProfile, toast]);
 
   const handleChange = (
     field: keyof UserType,
