@@ -8,6 +8,7 @@ import ProfileForm from "@/components/profile/ProfileForm";
 import OverwriteModal from "./OverwriteModal";
 import { ProfileQuery } from "@/lib/airstack/types";
 import LoadingSpinner from "@/components/ui/loading-spinner";
+import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
 
 interface ProfileEditParentProps {
   initialProfileData: UserType;
@@ -30,29 +31,24 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
 
   useEffect(() => {
     console.log("useEffect triggered with userEvents:", userEvents);
+
+    // If user has no events at all, they're in "neither" state
     if (!userEvents || userEvents.length === 0) {
       console.log("No events found, setting to neither");
       setSelectedEvent("neither");
       return;
     }
 
-    const alephEvent = userEvents.find(
-      (event) => event.slug === "aleph_march_2025"
-    );
-    const warsawEvent = userEvents.find(
-      (event) => event.slug === "eth_warsaw_spring_2025"
+    // From the user's registered events, find one that matches a current event
+    const userCurrentEvent = userEvents.find((event) =>
+      CURRENT_EVENTS.some((currentEvent) => currentEvent.slug === event.slug)
     );
 
-    console.log("Found events:", { alephEvent, warsawEvent });
-
-    if (alephEvent) {
-      console.log("Setting event to aleph_march_2025");
-      setSelectedEvent("aleph_march_2025");
-    } else if (warsawEvent) {
-      console.log("Setting event to eth_warsaw_spring_2025");
-      setSelectedEvent("eth_warsaw_spring_2025");
+    if (userCurrentEvent) {
+      console.log(`Setting event to ${userCurrentEvent.slug}`);
+      setSelectedEvent(userCurrentEvent.slug);
     } else {
-      console.log("No matching events found, setting to neither");
+      console.log("No matching current events found, setting to neither");
       setSelectedEvent("neither");
     }
   }, [userEvents]);
