@@ -8,7 +8,7 @@ import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
 import { UserType } from "@/lib/supabase/types";
-import EventDialog1Event from "@/components/promo/EventDialog1Event";
+import EventDialog2Events from "@/components/promo/EventDialog2Events";
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -96,7 +96,7 @@ export default function Matching() {
         />
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
         {showEventDialog && (
-          <EventDialog1Event onDontShowAgain={handleDontShowAgain} />
+          <EventDialog2Events onDontShowAgain={handleDontShowAgain} />
         )}
       </>
     );
