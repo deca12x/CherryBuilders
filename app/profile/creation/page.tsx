@@ -24,28 +24,38 @@ export default function ProfileCreationPage() {
         return;
       }
 
-      const token = await getAccessToken();
-      setJwt(token);
+      try {
+        const token = await getAccessToken();
+        if (!token) {
+          console.error("Failed to get access token");
+          setError(true);
+          return;
+        }
+        setJwt(token);
 
-      const { success, data, error } = await getUser(
-        user.wallet.address,
-        token
-      );
+        const { success, data, error } = await getUser(
+          user.wallet.address,
+          token
+        );
 
-      if (!success && error) {
+        if (!success && error) {
+          setError(true);
+        } else if (data) {
+          router.push("/matching");
+        }
+
+        setWasUserChecked(true);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error in checkUser:", error);
         setError(true);
-      } else if (data) {
-        router.push("/matching");
       }
-
-      setWasUserChecked(true);
-      setIsLoading(false);
     };
 
     checkUser();
   }, [user, ready, router]);
 
-  if (isLoading || !jwt) {
+  if (!ready || !jwt) {
     return <LoadingSpinner />;
   }
 
