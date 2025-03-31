@@ -11,8 +11,8 @@ import { EventType, UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
 import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
+import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { ProfileQuery } from "@/lib/airstack/types";
 import { checkForBadWords } from "@/utils/language/badWordChecker";
 import {
   Accordion,
@@ -29,7 +29,6 @@ interface ProfileFormProps {
   showTalentScore?: boolean;
   jwt: string | null;
   showPrivacyInfo?: boolean;
-  userProfile?: ProfileQuery | null;
   userEvents?: EventType[];
   initialSelectedEvent: string;
 }
@@ -40,7 +39,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   submitButtonText,
   showTalentScore = false,
   jwt,
-  userProfile,
   userEvents,
   initialSelectedEvent,
 }) => {
@@ -73,28 +71,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   useEffect(() => {
     setSelectedEvent(initialSelectedEvent);
   }, [initialSelectedEvent]);
-
-  useEffect(() => {
-    if (!userProfile) return;
-
-    toast({
-      title: "Success",
-      description: "Found a Farcaster profile for this address!",
-      variant: "default",
-    });
-
-    // I'm sure that userProfile.Socials!.Social![0] exists (check function in /lib/airstack/index.ts)
-    const user = userProfile.Socials!.Social![0];
-
-    console.log("User profile data:", user);
-
-    setProfileData((prev) => ({
-      ...prev,
-      name: user.profileName || "",
-      bio: user.profileBio || "",
-      profile_pictures: user.profileImage ? [user.profileImage] : [],
-    }));
-  }, [userProfile, toast]);
 
   const handleChange = (
     field: keyof UserType,
@@ -500,20 +476,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             value={selectedEvent}
             onValueChange={(value) => setSelectedEvent(value)}
           >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="aleph_march_2025" id="aleph_march_2025" />
-              <Label htmlFor="aleph_march_2025">Aleph March 2025</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem
-                value="eth_warsaw_spring_2025"
-                id="eth_warsaw_spring_2025"
-              />
-              <Label htmlFor="eth_warsaw_spring_2025">
-                ETH Warsaw Spring 2025
-              </Label>
-            </div>
+            {CURRENT_EVENTS.map((event) => (
+              <div key={event.slug} className="flex items-center space-x-2">
+                <RadioGroupItem value={event.slug} id={event.slug} />
+                <Label htmlFor={event.slug}>{event.name}</Label>
+              </div>
+            ))}
 
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="neither" id="neither" />

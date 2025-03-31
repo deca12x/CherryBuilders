@@ -6,14 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "generate": "npx graphql-codegen",
-    "prestart": "yarn generate",
-    "predev": "yarn generate"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@airstack/node": "^0.0.7",
-    "@graphql-codegen/cli": "^5.0.3",
     "@hookform/resolvers": "^3.9.0",
     "@privy-io/react-auth": "^1.90.0",
     "@privy-io/server-auth": "^1.14.4",
