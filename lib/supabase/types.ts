@@ -86,6 +86,8 @@ export interface MatchType {
   user_1: string;
   user_2: string;
   matched: boolean;
+  partial_match_date?: string;
+  full_match_date?: string;
 }
 
 export interface PasscodeType {
