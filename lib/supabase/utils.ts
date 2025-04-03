@@ -82,6 +82,13 @@ export const updateMatch = async (
       error: body.error,
     };
 
+  console.log("Match updated:", {
+    user_1: user_1_address,
+    user_2: user_2_address,
+    matched: value,
+    timestamp: value ? new Date().toISOString() : "not set",
+  });
+
   return {
     success: true,
     data: null,
@@ -121,6 +128,12 @@ export const createMatch = async (
       data: null,
       error: body.error,
     };
+
+  console.log("New match created:", {
+    user_1: user_1_address,
+    user_2: user_2_address,
+    timestamp: new Date().toISOString(),
+  });
 
   return {
     success: true,
