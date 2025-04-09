@@ -379,6 +379,6 @@ export default function MatchingParent({
       </div>
     );
   } else {
-    return <LoadingSpinner />;
+    return <LoadingSpinner message="Finding potential matches..." />;
   }
 }

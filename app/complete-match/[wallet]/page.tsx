@@ -138,7 +138,7 @@ export default function CompleteMatch() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <LoadingSpinner />
+      <LoadingSpinner message="Processing match..." />
     </div>
   );
 }

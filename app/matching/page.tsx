@@ -101,6 +101,6 @@ export default function Matching() {
       </>
     );
   } else {
-    return <LoadingSpinner />;
+    return <LoadingSpinner message="Loading matching system..." />;
   }
 }

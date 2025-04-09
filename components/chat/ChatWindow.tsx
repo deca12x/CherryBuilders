@@ -204,7 +204,10 @@ export default function ChatWindow({
         </div>
       </div>
       {chatMessagesLoading ? (
-        <LoadingSpinner className="justify-start mt-28" />
+        <LoadingSpinner
+          message="Loading messages..."
+          className="justify-start mt-28"
+        />
       ) : chat.chatMessages && !chatMessagesError ? (
         <ScrollArea className="flex-grow p-5" ref={scrollAreaRef}>
           <div className="space-y-4">
