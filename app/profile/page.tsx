@@ -65,7 +65,7 @@ const ProfilePage: React.FC = () => {
   }, [user, ready, router]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner message="Loading your profile..." />;
   }
 
   if (error) {

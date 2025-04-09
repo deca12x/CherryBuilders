@@ -56,7 +56,7 @@ export default function ProfileCreationPage() {
   }, [user, ready, router]);
 
   if (!ready || !jwt) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner message="Setting up your profile..." />;
   }
 
   if (error) {

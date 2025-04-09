@@ -235,11 +235,14 @@ export default function ChatParent({
         transition={{ duration: 0.2 }}
         className="h-full sm:w-1/3 pb-[58px] sm:max-w-sm border-r border-border"
       >
-        <ChatListPanel
-          setSelectedChatId={setSelectedChatId}
-          selectedChatId={selectedChatId}
-          chatHistory={chatHistory}
-        />
+        {(!isMobile || !selectedChatId) && (
+          <ChatListPanel
+            setSelectedChatId={setSelectedChatId}
+            selectedChatId={selectedChatId}
+            chatHistory={chatHistory}
+            isLoading={!wasChatHistoryFetched}
+          />
+        )}
       </motion.div>
 
       <AnimatePresence>

@@ -11,12 +11,14 @@ interface ChatListPanelProps {
   setSelectedChatId: (chatId: string) => void;
   selectedChatId: string | null;
   chatHistory: ChatItem[];
+  isLoading: boolean;
 }
 
 export default function ChatListPanel({
   setSelectedChatId,
   selectedChatId,
   chatHistory,
+  isLoading,
 }: ChatListPanelProps) {
   // Sort chatHistory by lastMessage.date in descending order
   // If the lastMessage.date is not available, the chat will be placed at the bottom
@@ -27,7 +29,14 @@ export default function ChatListPanel({
       <div className="flex h-16 p-4 border-b border-border">
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
-      {chatHistory.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-start justify-center mt-28">
+          <LoadingSpinner
+            message="Loading conversations..."
+            className="min-h-0"
+          />
+        </div>
+      ) : chatHistory.length > 0 ? (
         <ScrollArea className="flex-grow">
           <div className="p-4 space-y-4">
             {chatHistory.map((chat, index) => {
@@ -80,8 +89,10 @@ export default function ChatListPanel({
           </div>
         </ScrollArea>
       ) : (
-        <div className="flex items-start justify-center mt-28">
-          <LoadingSpinner className="min-h-0" />
+        <div className="flex flex-col items-center justify-center mt-28 px-4 text-center">
+          <p className="text-lg text-muted-foreground">
+            Chats will appear here once you've matched with other builders
+          </p>
         </div>
       )}
     </div>
