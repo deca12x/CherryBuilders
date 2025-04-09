@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       from: "noreply@cherry.builders",
       to: [receiverEmail],
       subject: isMatchComplete
-        ? "🍒 New match on cherry.builders"
+        ? `🍒 Start chatting with ${matchedWith}!`
         : `🍒 Someone sent you a message on cherry.builders`,
       react: MatchedEmail({
         matchedWith,

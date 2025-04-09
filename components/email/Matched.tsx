@@ -43,7 +43,7 @@ export const MatchedEmail = ({
   isMatchComplete,
 }: MatchedEmailProps) => {
   const previewText = isMatchComplete
-    ? `Start chatting with ${matchedWith}!`
+    ? "New match on cherry.builders"
     : `${matchedWith} wants to collab!`;
 
   return (
