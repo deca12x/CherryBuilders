@@ -415,11 +415,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               Talent Score:
             </a>
           </Label>
-          <span className="text-md mr-3 text-primary">
+          <span className="text-md mr-3 text-red">
             {profileData.talent_score ?? "N/A"}
           </span>
           <button
-            className="flex items-center hover:text-primary"
+            className="flex items-center hover:text-red"
             onClick={handleUpdateTalentScore}
           >
             <RefreshCcw
@@ -441,7 +441,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             {userEvents.map((event) => (
               <span
                 key={event.slug}
-                className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm flex"
+                className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-red-foreground px-2 py-1 rounded-full text-sm flex"
               >
                 <CheckCircle2 className="mr-2 h-5 w-5" />
                 <p className="font-bold">{event.name}</p>
@@ -564,7 +564,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         <button
           type="button"
           onClick={() => setShowPrivacyInfo(!showPrivacyInfo)}
-          className="text-sm text-muted-foreground flex items-center space-x-1"
+          className="text-sm text-grey-foreground flex items-center space-x-1"
         >
           <Info size={16} />
           <span>Privacy Policy Details</span>
@@ -595,7 +595,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           <AccordionItem value="data-storage">
             <AccordionTrigger>Data Storage Disclaimer</AccordionTrigger>
             <AccordionContent>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="space-y-2 text-sm text-grey-foreground">
                 <p>
                   By using this app, you agree to the storage of certain
                   personal data, including:

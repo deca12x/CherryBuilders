@@ -12,7 +12,7 @@ export default function UserEvents({ user }: UserTagsProps) {
       {user.events.map((event) => (
         <span
           key={event.slug}
-          className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm flex"
+          className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-red-foreground px-2 py-1 rounded-full text-sm flex"
         >
           <CheckCircle2 className="mr-2 h-5 w-5" />
           <p className="font-bold">{event.name}</p>

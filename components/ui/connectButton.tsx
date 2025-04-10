@@ -15,7 +15,7 @@ const ConnectButton: React.FC = () => {
   if (!ready) {
     return (
       <div className="flex justify-center items-center h-max">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-red" />
       </div>
     );
   }
@@ -24,7 +24,7 @@ const ConnectButton: React.FC = () => {
   if (user && !isConnected) {
     return (
       <button
-        className="flex items-center justify-center bg-primary py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
+        className="flex items-center justify-center bg-red py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
         onClick={() => connect({ connector: injected() })}
       >
         Connect Wallet
@@ -35,7 +35,7 @@ const ConnectButton: React.FC = () => {
   return (
     <div>
       <button
-        className="flex items-center justify-center bg-primary py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
+        className="flex items-center justify-center bg-red py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
         onClick={
           !user
             ? login

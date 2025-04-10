@@ -121,7 +121,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
         <SearchParamsComponent onParamsChange={handleParamsChange} />
       </Suspense>
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-        <motion.h1 className="text-3xl font-bold text-primary mb-8">
+        <motion.h1 className="text-3xl font-bold text-red mb-8">
           Create Your Profile
         </motion.h1>
         <ConnectButton />

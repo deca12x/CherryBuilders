@@ -1,11 +1,13 @@
 "use client";
 
+import type React from "react";
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ToggleRight, X } from "lucide-react";
-import { UserTag } from "@/lib/supabase/types";
+import { ToggleRight, Check } from "lucide-react";
+import type { UserTag } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
-import { FiltersProp } from "@/lib/types";
+import type { FiltersProp } from "@/lib/types";
 import { setUserFilters } from "@/lib/supabase/utils";
 
 interface FiltersModalProps {
@@ -16,7 +18,13 @@ interface FiltersModalProps {
   jwt: string | null;
 }
 
-export default function FiltersModal({ isOpen, onClose, parentFilters, setParentFilters, jwt }: FiltersModalProps) {
+export default function FiltersModal({
+  isOpen,
+  onClose,
+  parentFilters,
+  setParentFilters,
+  jwt,
+}: FiltersModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [filters, setFilters] = useState<FiltersProp>(parentFilters);
 
@@ -41,11 +49,19 @@ export default function FiltersModal({ isOpen, onClose, parentFilters, setParent
   const handleModalClose = async () => {
     onClose();
     if (JSON.stringify(filters) !== JSON.stringify(parentFilters)) {
-      const activeTags = Object.keys(filters.tags).filter((key) => filters.tags[key as UserTag]);
-      const activeEvents = Object.keys(filters.events).filter((key) => filters.events[key].selected);
+      const activeTags = Object.keys(filters.tags).filter(
+        (key) => filters.tags[key as UserTag]
+      );
+      const activeEvents = Object.keys(filters.events).filter(
+        (key) => filters.events[key].selected
+      );
 
       // Update user filters in the database
-      const { success, error } = await setUserFilters(activeTags, activeEvents, jwt);
+      const { success, error } = await setUserFilters(
+        activeTags,
+        activeEvents,
+        jwt
+      );
       if (!success && error) {
         console.error("Error setting user filters: ", error);
         return;
@@ -77,18 +93,34 @@ export default function FiltersModal({ isOpen, onClose, parentFilters, setParent
       >
         <div className="absolute inset-0 bg-card rounded-xl" />
         <div className="relative z-10">
-          <div className="flex gap-3 justify-center items-center mb-3">
-            <ToggleRight className="text-primary sm:h-12 sm:w-12 h-8 w-8" />
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary">Filters</h2>
+          <div className="flex gap-3 justify-center items-center mb-3 relative">
+            <ToggleRight className="text-red sm:h-12 sm:w-12 h-8 w-8" />
+            <h2 className="text-2xl sm:text-3xl font-bold text-red">Filters</h2>
+            <Button
+              onClick={handleModalClose}
+              variant="ghost"
+              className="absolute -right-2 bg-green/10 hover:bg-green/10 text-green rounded-xl"
+            >
+              <Check className="h-5 w-5" strokeWidth={3} />
+              <span className="sr-only">Close</span>
+            </Button>
           </div>
-          <p className="text-lg sm:text-xl mb-5 text-primary-foreground">Select and apply the filters you prefer</p>
-          <p className="text-md mb-3 text-primary-foreground text-left">Tags</p>
+          <p className="text-lg sm:text-xl mb-5 text-red-foreground">
+            Select and apply the filters you prefer
+          </p>
+          <p className="text-md mb-3 text-red-foreground text-left">Tags</p>
           <div className="grid grid-cols-2 gap-2.5">
             {Object.keys(filters.tags).map((tag) => (
               <Button
                 key={tag}
                 onClick={() =>
-                  setFilters((prev) => ({ ...prev, tags: { ...prev.tags, [tag as UserTag]: !prev.tags[tag as UserTag] } }))
+                  setFilters((prev) => ({
+                    ...prev,
+                    tags: {
+                      ...prev.tags,
+                      [tag as UserTag]: !prev.tags[tag as UserTag],
+                    },
+                  }))
                 }
                 variant={filters.tags[tag as UserTag] ? "default" : "outline"}
                 className="w-full text-wrap leading-4 p-5"
@@ -97,7 +129,9 @@ export default function FiltersModal({ isOpen, onClose, parentFilters, setParent
               </Button>
             ))}
           </div>
-          <p className="text-md mt-7 mb-3 text-primary-foreground text-left">Events</p>
+          <p className="text-md mt-7 mb-3 text-red-foreground text-left">
+            Events
+          </p>
           <div className="grid grid-cols-2 gap-2.5">
             {Object.keys(filters.events).map((event) => (
               <Button
@@ -107,7 +141,10 @@ export default function FiltersModal({ isOpen, onClose, parentFilters, setParent
                     ...prev,
                     events: {
                       ...prev.events,
-                      [event]: { name: prev.events[event].name, selected: !prev.events[event].selected },
+                      [event]: {
+                        name: prev.events[event].name,
+                        selected: !prev.events[event].selected,
+                      },
                     },
                   }))
                 }
@@ -118,15 +155,6 @@ export default function FiltersModal({ isOpen, onClose, parentFilters, setParent
               </Button>
             ))}
           </div>
-          <Button
-            onClick={handleModalClose}
-            variant="ghost"
-            size="icon"
-            className="absolute top-0 right-0 text-primary-foreground hover:text-primary hover:bg-primary/10"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
         </div>
       </motion.div>
     </motion.div>

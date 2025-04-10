@@ -19,7 +19,7 @@ const WelcomeCard = forwardRef<HTMLDivElement, WelcomeCardProps>(
         className="flex flex-col items-center justify-center w-full max-w-[90vw] sm:max-w-xl p-3 sm:p-6"
       >
         <h1
-          className={`flex items-center text-4xl sm:text-6xl font-bold text-center text-primary ${k2d.className}`}
+          className={`flex items-center text-4xl sm:text-6xl font-bold text-center text-red ${k2d.className}`}
         >
           <Image
             src="/images/logo.svg"
@@ -30,16 +30,16 @@ const WelcomeCard = forwardRef<HTMLDivElement, WelcomeCardProps>(
           />
           cherry.builders
         </h1>
-        <p className="text-center text-sm sm:text-base text-muted-foreground mt-4">
+        <p className="text-center text-sm sm:text-base text-grey-foreground mt-4">
           Find collaborators for your next hackathon or conference
         </p>
         <div className="flex flex-col justify-center items-center mt-4 gap-3">
           {isAuthenticated ? (
             <div className="flex flex-col items-center gap-1">
-              <p className="text-center text-lg text-primary-foreground">
+              <p className="text-center text-lg text-red-foreground">
                 Wallet connected!
               </p>
-              <p className="text-center text-lg text-primary-foreground">
+              <p className="text-center text-lg text-red-foreground">
                 Redirecting...
               </p>
             </div>

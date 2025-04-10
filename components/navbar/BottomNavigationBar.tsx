@@ -23,7 +23,7 @@ const BottomNavigationBar = () => {
           onClick={() => {
             Router.push("/chat");
           }}
-          className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
+          className="flex justify-center items-center p-2 text-grey-foreground hover:text-red transition-colors gap-3"
           aria-label="Messages"
         >
           <MessageCircle size={24} />
@@ -33,7 +33,7 @@ const BottomNavigationBar = () => {
           onClick={() => {
             Router.push("/matching");
           }}
-          className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
+          className="flex justify-center items-center p-2 text-grey-foreground hover:text-red transition-colors gap-3"
           aria-label="Find People"
         >
           <Handshake size={25} />
@@ -43,7 +43,7 @@ const BottomNavigationBar = () => {
           onClick={() => {
             Router.push(`/profile`);
           }}
-          className="flex justify-center items-center p-2 text-muted-foreground hover:text-primary transition-colors gap-3"
+          className="flex justify-center items-center p-2 text-grey-foreground hover:text-red transition-colors gap-3"
           aria-label="Your profile"
         >
           <User size={24} />

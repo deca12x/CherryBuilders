@@ -104,7 +104,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
         variants={containerVariants}
       >
         <motion.h1
-          className="text-3xl font-bold text-primary mb-8"
+          className="text-3xl font-bold text-red mb-8"
           variants={itemVariants}
         >
           Edit Your Profile
