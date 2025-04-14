@@ -87,7 +87,7 @@ export default function FiltersModal({
           <p className="text-lg sm:text-xl mb-5 text-red-foreground">
             Select and apply the filters you prefer
           </p>
-          <p className="text-md mb-3 text-red-foreground text-left">Tags</p>
+          <p className="text-md mb-3 text-red-foreground text-left">Skills</p>
           <div className="grid grid-cols-2 gap-2.5">
             {Object.keys(filters.tags).map((tag) => (
               <Button
