@@ -23,7 +23,8 @@ export default function ProfileCardHeader({
   isLoading,
   setAnimateFrame,
 }: ProfileCardHeaderProps) {
-  const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = React.useState(false);
+  const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] =
+    React.useState(false);
 
   return (
     <AnimatePresence mode="wait">
@@ -38,14 +39,17 @@ export default function ProfileCardHeader({
           onAnimationComplete={() => setAnimateFrame(false)}
         >
           {!user || isLoading ? (
-            <div className="bg-primary-foreground sm:w-[90px] sm:h-[90px] w-[70px] h-[70px] rounded-full flex-shrink-0 animate-pulse"></div>
+            <div className="bg-red-foreground sm:w-[90px] sm:h-[90px] w-[70px] h-[70px] rounded-full flex-shrink-0 animate-pulse"></div>
           ) : (
             <button
-              className="flex justify-center items-center bg-primary-foreground sm:w-[90px] sm:h-[90px] w-[70px] h-[70px] rounded-full overflow-hidden flex-shrink-0"
+              className="flex justify-center items-center bg-red-foreground sm:w-[90px] sm:h-[90px] w-[70px] h-[70px] rounded-full overflow-hidden flex-shrink-0"
               onClick={() => setIsProfilePictureModalOpen(true)}
             >
               <Image
-                src={user.profile_pictures[imageIndex] ?? "/images/default_propic.jpeg"}
+                src={
+                  user.profile_pictures[imageIndex] ??
+                  "/images/default_propic.jpeg"
+                }
                 alt={user.name}
                 className="rounded-full object-cover sm:w-[86px] sm:h-[86px] w-[66px] h-[66px]"
                 width={100}
@@ -61,7 +65,11 @@ export default function ProfileCardHeader({
               </>
             ) : (
               <>
-                <div className={`${k2d.className} sm:text-3xl text-2xl font-bold text-primary-foreground`}>{user.name}</div>
+                <div
+                  className={`${k2d.className} sm:text-3xl text-2xl font-bold text-red-foreground`}
+                >
+                  {user.name}
+                </div>
                 <UserTags user={user} />
               </>
             )}

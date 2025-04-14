@@ -87,7 +87,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
             />
             <label
               htmlFor="dontShow"
-              className="text-sm text-black cursor-pointer hover:text-foreground transition-colors"
+              className="text-sm text-black cursor-pointer hover:text-white transition-colors"
             >
               Don't show again
             </label>

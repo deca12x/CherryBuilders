@@ -6,7 +6,12 @@ import { K2D } from "next/font/google";
 import { Card, CardContent } from "@/components/ui/card";
 import ConnectButton from "@/components/ui/connectButton";
 import { usePrivy } from "@privy-io/react-auth";
-import { getEventBySlug, getPasscodeByCode, getUser, updatePasscodeByCode } from "@/lib/supabase/utils";
+import {
+  getEventBySlug,
+  getPasscodeByCode,
+  getUser,
+  updatePasscodeByCode,
+} from "@/lib/supabase/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorCard from "@/components/ui/error-card";
 import SearchParamsComponent from "@/components/searchparams";
@@ -21,7 +26,8 @@ export default function Component() {
   const [invalidPasscode, setInvalidPasscode] = useState(false);
   const [invalidEvent, setInvalidEvent] = useState(false);
   const [passcodeAlreadyUsed, setPasscodeAlreadyUsed] = useState(false);
-  const [passcodeUsedByAnotherUser, setPasscodeUsedByAnotherUser] = useState(false);
+  const [passcodeUsedByAnotherUser, setPasscodeUsedByAnotherUser] =
+    useState(false);
   const [jwt, setJwt] = useState<string | null>("");
   const [eventName, setEventName] = useState<string>("");
   const [wasUserChecked, setWasUserChecked] = useState<boolean>(false);
@@ -33,7 +39,10 @@ export default function Component() {
   const [passcode, setPasscode] = useState<string | null>(null);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
 
-  const handleParamsChange = (passcode: string | null, eventSlug: string | null) => {
+  const handleParamsChange = (
+    passcode: string | null,
+    eventSlug: string | null
+  ) => {
     setPasscode(passcode);
     setEventSlug(eventSlug);
   };
@@ -52,7 +61,11 @@ export default function Component() {
       }
 
       // check the passcode
-      const { success: passcodeSuccess, data: passcodeData, error: passcodeError } = await getPasscodeByCode(passcode, jwt);
+      const {
+        success: passcodeSuccess,
+        data: passcodeData,
+        error: passcodeError,
+      } = await getPasscodeByCode(passcode, jwt);
       if (passcodeError) {
         setError(true);
         setIsLoading(false);
@@ -75,13 +88,23 @@ export default function Component() {
       }
 
       // check the event
-      const { success: eventSuccess, data: eventData, error: eventError } = await getEventBySlug(eventSlug, jwt);
+      const {
+        success: eventSuccess,
+        data: eventData,
+        error: eventError,
+      } = await getEventBySlug(eventSlug, jwt);
       if (eventError) {
         setError(true);
         setIsLoading(false);
         return;
       }
       if (!eventSuccess || !eventData) {
+        setInvalidEvent(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!eventData.active) {
         setInvalidEvent(true);
         setIsLoading(false);
         return;
@@ -112,7 +135,9 @@ export default function Component() {
         setIsLoading(false);
         return;
       } else if (!data) {
-        router.push(`/profile/creation?passcode=${passcode}&event-slug=${eventSlug}`);
+        router.push(
+          `/profile/creation?passcode=${passcode}&event-slug=${eventSlug}`
+        );
         return;
       } else {
         setWasUserChecked(true);
@@ -127,7 +152,13 @@ export default function Component() {
     if (!passcode || !eventSlug || !address || !jwt) return;
     setIsVerifying(true);
 
-    const { error } = await updatePasscodeByCode(passcode, address, eventSlug, true, jwt);
+    const { error } = await updatePasscodeByCode(
+      passcode,
+      address,
+      eventSlug,
+      true,
+      jwt
+    );
 
     if (error) {
       setError(true);
@@ -143,7 +174,7 @@ export default function Component() {
   const RedirectButton = ({ text }: { text: string }) => {
     return (
       <button
-        className="flex items-center justify-center bg-primary py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
+        className="flex items-center justify-center bg-red py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
         onClick={() => router.push("/matching")}
       >
         {text}
@@ -171,42 +202,62 @@ export default function Component() {
               </div>
             ) : invalidPasscode ? (
               <div className="text-center space-y-4">
-                <h1 className={`text-3xl font-bold text-primary ${k2d.className}`}>Invalid Passcode</h1>
-                <p className="text-muted-foreground">The provided passcode is not valid. Please check and try again.</p>
+                <h1 className={`text-3xl font-bold text-red ${k2d.className}`}>
+                  Invalid Passcode
+                </h1>
+                <p className="text-grey-foreground">
+                  The provided passcode is not valid. Please check and try
+                  again.
+                </p>
               </div>
             ) : invalidEvent ? (
               <div className="text-center space-y-4">
-                <h1 className={`text-3xl font-bold text-primary ${k2d.className}`}>Invalid Event</h1>
-                <p className="text-muted-foreground">
-                  The specified event could not be found. Please check the event details.
+                <h1 className={`text-3xl font-bold text-red ${k2d.className}`}>
+                  Invalid Event
+                </h1>
+                <p className="text-grey-foreground">
+                  The specified event could not be found. Please check the event
+                  details.
                 </p>
               </div>
             ) : passcodeAlreadyUsed ? (
               <div className="text-center space-y-4">
-                <h1 className={`text-3xl font-bold text-primary ${k2d.className}`}>Passcode Already Used</h1>
+                <h1 className={`text-3xl font-bold text-red ${k2d.className}`}>
+                  Passcode Already Used
+                </h1>
                 {passcodeUsedByAnotherUser ? (
                   <div className="flex flex-col justify-center items-center sm:mt-9 mt-7 gap-3">
-                    <p className="text-muted-foreground">{"This passcode has been used already by someone else :("}</p>
+                    <p className="text-grey-foreground">
+                      {"This passcode has been used already by someone else :("}
+                    </p>
                     <RedirectButton text="Start Matching" />
                   </div>
                 ) : (
                   <div className="flex flex-col justify-center items-center sm:mt-9 mt-7 gap-3">
-                    <p className="text-muted-foreground">{"You have already used this passcode, you're in! :)"}</p>
+                    <p className="text-grey-foreground">
+                      {"You have already used this passcode, you're in! :)"}
+                    </p>
                     <RedirectButton text="Start Matching" />
                   </div>
                 )}
               </div>
             ) : (
               <>
-                <h1 className={`text-2xl sm:text-3xl font-bold text-center text-primary ${k2d.className}`}>
+                <h1
+                  className={`text-2xl sm:text-3xl font-bold text-center text-red ${k2d.className}`}
+                >
                   Verify your attendance to
                 </h1>
-                <h1 className={`text-4xl sm:text-5xl font-bold text-center text-primary-foreground mt-2 ${k2d.className}`}>
+                <h1
+                  className={`text-4xl sm:text-5xl font-bold text-center text-red-foreground mt-2 ${k2d.className}`}
+                >
                   {eventName}
                 </h1>
                 {successfulVerification ? (
                   <div className="flex flex-col justify-center items-center mt-7 gap-3">
-                    <h1 className={`text-2xl font-bold text-center text-green-500 ${k2d.className}`}>
+                    <h1
+                      className={`text-2xl font-bold text-center text-green-500 ${k2d.className}`}
+                    >
                       Congrats you have verified your attendance!
                     </h1>
                     <RedirectButton text="Start Matching" />
@@ -227,7 +278,9 @@ export default function Component() {
           ) : (
             <>
               {ready ? (
-                <h1 className={`text-3xl font-bold text-center text-primary ${k2d.className}`}>
+                <h1
+                  className={`text-3xl font-bold text-center text-red ${k2d.className}`}
+                >
                   Please log in to verify your attendance
                 </h1>
               ) : (

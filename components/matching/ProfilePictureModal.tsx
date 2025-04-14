@@ -10,12 +10,17 @@ interface ProfilePictureModalProps {
   images: string[];
 }
 
-export default function ProfilePictureModal({ images, isOpen, onClose }: ProfilePictureModalProps) {
+export default function ProfilePictureModal({
+  images,
+  isOpen,
+  onClose,
+}: ProfilePictureModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  const safeImages = images.length === 0 ? ["/images/default_propic.jpeg"] : images;
+  const safeImages =
+    images.length === 0 ? ["/images/default_propic.jpeg"] : images;
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +43,10 @@ export default function ProfilePictureModal({ images, isOpen, onClose }: Profile
   const navigate = (newDirection: number) => {
     setDirection(newDirection);
     setImageIndex((prev) => {
-      if ((prev === 0 && newDirection < 0) || (prev === safeImages.length - 1 && newDirection > 0)) {
+      if (
+        (prev === 0 && newDirection < 0) ||
+        (prev === safeImages.length - 1 && newDirection > 0)
+      ) {
         return prev;
       }
       return prev + newDirection;
@@ -113,14 +121,14 @@ export default function ProfilePictureModal({ images, isOpen, onClose }: Profile
         </div>
         <button
           onClick={() => navigate(-1)}
-          className="absolute z-40 left-0 top-0 bottom-0 w-1/2 flex items-center justify-start p-4 text-primary-foreground opacity-0 hover:opacity-100 transition-opacity"
+          className="absolute z-40 left-0 top-0 bottom-0 w-1/2 flex items-center justify-start p-4 text-red-foreground opacity-0 hover:opacity-100 transition-opacity"
           aria-label="Previous image"
         >
           <ChevronLeft size={40} />
         </button>
         <button
           onClick={() => navigate(1)}
-          className="absolute z-40 right-0 top-0 bottom-0 w-1/2 flex items-center justify-end p-4 text-primary-foreground opacity-0 hover:opacity-100 transition-opacity"
+          className="absolute z-40 right-0 top-0 bottom-0 w-1/2 flex items-center justify-end p-4 text-red-foreground opacity-0 hover:opacity-100 transition-opacity"
           aria-label="Next image"
         >
           <ChevronRight size={40} />
@@ -131,7 +139,7 @@ export default function ProfilePictureModal({ images, isOpen, onClose }: Profile
           onClick={onClose}
           variant="ghost"
           size="icon"
-          className="absolute z-50 top-3.5 right-3.5 text-primary-foreground bg-secondary/40 hover:bg-secondary/80 rounded-xl"
+          className="absolute z-50 top-3.5 right-3.5 text-red-foreground bg-dark-grey/40 hover:bg-dark-grey/80 rounded-xl"
         >
           <X className="h-4 w-4" />
         </Button>

@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
+import { getUser } from "@/lib/supabase/utils"; // Add this import
 import LoadingSpinner from "@/components/ui/loading-spinner";
-import { getUser, getUserFilters } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
-import { UserType } from "@/lib/supabase/types";
+import { UserType, EventType } from "@/lib/supabase/types";
 import EventDialog2Events from "@/components/promo/EventDialog2Events";
+import { ALL_EVENTS } from "@/lib/supabase/eventData";
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -16,10 +17,26 @@ export default function Matching() {
   const [error, setError] = useState(false);
   const [jwt, setJwt] = useState<string | null>(null);
   const [wasUserChecked, setWasUserChecked] = useState(false);
-  const [wereFiltersChecked, setWereFiltersChecked] = useState(false);
   const [filters, setFilters] = useState<FiltersProp>({
-    tags: {},
-    events: {},
+    tags: {
+      "Frontend dev": false,
+      "Backend dev": false,
+      "Smart contract dev": false,
+      Designer: false,
+      "Talent scout": false,
+      "Biz dev": false,
+      Artist: false,
+      "Here for the lolz": false,
+    },
+    events: Object.fromEntries(
+      ALL_EVENTS.map((event) => [
+        event.slug,
+        {
+          name: event.name,
+          selected: false,
+        },
+      ])
+    ),
   });
 
   const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(
@@ -28,20 +45,6 @@ export default function Matching() {
   const [showEventDialog, setShowEventDialog] = useState(true);
 
   const address = user?.wallet?.address;
-
-  useEffect(() => {
-    const fetchUserFilters = async () => {
-      const { success, data, error } = await getUserFilters(jwt);
-      if (!success && error) {
-        setError(true);
-        return;
-      }
-      setFilters(data!);
-      setWereFiltersChecked(true);
-    };
-
-    if (wasUserChecked) fetchUserFilters();
-  }, [wasUserChecked, jwt]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -85,7 +88,7 @@ export default function Matching() {
 
   if (error) {
     return <ErrorCard />;
-  } else if (user && address && ready && wasUserChecked && wereFiltersChecked) {
+  } else if (user && address && ready && wasUserChecked) {
     return (
       <>
         <MatchingParent

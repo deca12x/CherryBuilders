@@ -22,7 +22,7 @@ export default function ActionButtons({
     <div className="space-x-5">
       <button
         onClick={onReject}
-        className="bg-primary text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+        className="bg-red text-destructive-foreground rounded-full p-4 shadow-lg hover:bg-red/90 transition-colors disabled:opacity-50"
         aria-label="Dislike"
         disabled={isLoading}
       >
@@ -34,7 +34,7 @@ export default function ActionButtons({
             ? onIcebreaker
             : onShowNoEmailModal
         }
-        className="bg-[#22976A] text-primary-foreground rounded-full p-4 shadow-lg hover:bg-[#22976A]/90 transition-colors disabled:opacity-50"
+        className="bg-green text-green-foreground rounded-full p-4 shadow-lg hover:bg-green/90 transition-colors disabled:opacity-50"
         aria-label="Send Icebreaker"
         disabled={isLoading}
       >

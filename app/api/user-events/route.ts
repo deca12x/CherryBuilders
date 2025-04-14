@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/supabase-server";
-import { getCurrentEventSlugs, isCurrentEvent } from "@/lib/supabase/eventData";
 
 /**
  * POST: Creates a new event relationship when a user first creates their profile
@@ -16,10 +15,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Validate that the selected event is either "neither" or one of the current events
-  if (eventSlug !== "neither" && !isCurrentEvent(eventSlug)) {
+  // If "neither" selected, we're done (no relationship needed)
+  if (eventSlug === "neither") {
+    return NextResponse.json({ success: true }, { status: 200 });
+  }
+
+  // Validate that the selected event is active
+  const { data: event } = await supabase
+    .from("events")
+    .select("active")
+    .eq("slug", eventSlug)
+    .single();
+
+  if (!event?.active) {
     return NextResponse.json(
-      { error: "Invalid event selection" },
+      { error: "Selected event is not active" },
       { status: 400 }
     );
   }
@@ -44,11 +54,6 @@ export async function POST(req: NextRequest) {
 /**
  * PUT: Updates event selection when a user edits their profile
  * Called by updateUserEvent() in ProfileEditParent.tsx during profile editing
- *
- * Process:
- * 1. Deletes all current event relationships for the user
- * 2. If "neither" is selected, just returns (no new relationship created)
- * 3. Otherwise, creates a new relationship with the selected event
  */
 export async function PUT(req: NextRequest) {
   const { userAddress, eventSlug } = await req.json();
@@ -60,35 +65,53 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  // Validate that the selected event is either "neither" or one of the current events
-  if (eventSlug !== "neither" && !isCurrentEvent(eventSlug)) {
+  // If "neither" selected, just delete existing relationships
+  if (eventSlug === "neither") {
+    try {
+      const { error: deleteError } = await supabase
+        .from("users_events_rel")
+        .delete()
+        .eq("user_address", userAddress);
+
+      if (deleteError) throw deleteError;
+      return NextResponse.json({ success: true }, { status: 200 });
+    } catch (error) {
+      console.error("Error deleting relationships:", error);
+      return NextResponse.json(
+        { error: "Error updating record in database" },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Validate that the selected event is active
+  const { data: event } = await supabase
+    .from("events")
+    .select("active")
+    .eq("slug", eventSlug)
+    .single();
+
+  if (!event?.active) {
     return NextResponse.json(
-      { error: "Invalid event selection" },
+      { error: "Selected event is not active" },
       { status: 400 }
     );
   }
 
   try {
-    // First delete any existing relationships for current events
-    const { error: relTableDeleteError } = await supabase
+    // Delete existing relationships and create new one
+    const { error: deleteError } = await supabase
       .from("users_events_rel")
       .delete()
-      .eq("user_address", userAddress)
-      .in("event_slug", getCurrentEventSlugs());
+      .eq("user_address", userAddress);
 
-    if (relTableDeleteError) throw relTableDeleteError;
+    if (deleteError) throw deleteError;
 
-    // If "neither" selected, we're done (no new relationship needed)
-    if (eventSlug === "neither") {
-      return NextResponse.json({ success: true }, { status: 200 });
-    }
-
-    // Create new relationship with selected event
-    const { error: relTableCreateError } = await supabase
+    const { error: createError } = await supabase
       .from("users_events_rel")
       .insert([{ event_slug: eventSlug, user_address: userAddress }]);
 
-    if (relTableCreateError) throw relTableCreateError;
+    if (createError) throw createError;
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

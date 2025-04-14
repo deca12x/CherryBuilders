@@ -19,8 +19,8 @@ export default function LoadingSpinner({
         className
       )}
     >
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <div className="text-primary-foreground text-xl">{message}</div>
+      <Loader2 className="h-8 w-8 animate-spin text-red" />
+      <div className="text-red-foreground text-xl">{message}</div>
     </div>
   );
 }

@@ -5,11 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserType } from "@/lib/supabase/types";
 import ConnectButton from "@/components/ui/connectButton";
 import { useRouter } from "next/navigation";
-import {
-  createUserEvent,
-  setUserFilters,
-  updateUser,
-} from "@/lib/supabase/utils";
+import { createUserEvent, updateUser } from "@/lib/supabase/utils";
 import ProfileForm from "./ProfileForm";
 import { Skeleton } from "../ui/skeleton";
 import SearchParamsComponent from "../searchparams";
@@ -60,7 +56,6 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
         description: "Profile saved successfully.",
         variant: "default",
       });
-      await setUserFilters([], [], jwt);
       if (passcode && eventSlug) {
         router.push(
           `/verify/event?passcode=${passcode}&event-slug=${eventSlug}`
@@ -121,7 +116,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
         <SearchParamsComponent onParamsChange={handleParamsChange} />
       </Suspense>
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
-        <motion.h1 className="text-3xl font-bold text-primary mb-8">
+        <motion.h1 className="text-3xl font-bold text-red mb-8">
           Create Your Profile
         </motion.h1>
         <ConnectButton />

@@ -49,8 +49,7 @@ export default function ChatListPanel({
                     key={chat.id}
                     className={cn(
                       "flex items-center space-x-4 p-3 rounded-lg cursor-pointer hover:bg-accent",
-                      selectedChatId === chat.id &&
-                        "bg-primary/25 hover:bg-primary/25"
+                      selectedChatId === chat.id && "bg-red/25 hover:bg-red/25"
                     )}
                     onClick={() => setSelectedChatId(chat.id)}
                   >
@@ -69,17 +68,17 @@ export default function ChatListPanel({
                         <div className="text-md font-semibold truncate">
                           {chat.otherUserData.name}
                         </div>
-                        <div className="text-sm text-muted-foreground whitespace-nowrap ml-2">
+                        <div className="text-sm text-grey-foreground whitespace-nowrap ml-2">
                           {chat.lastMessage.date
                             ? formatDate(chat.lastMessage.date)
                             : ""}
                         </div>
                       </div>
                       <div className="flex justify-between items-center w-full">
-                        <div className="text-sm text-muted-foreground truncate flex-grow">
+                        <div className="text-sm text-grey-foreground truncate flex-grow">
                           {chat.lastMessage.text}
                         </div>
-                        {/* {!chat.lastMessage.read && <div className="bg-primary rounded-full h-3 w-3 flex-shrink-0 ml-2" />} */}
+                        {/* {!chat.lastMessage.read && <div className="bg-red rounded-full h-3 w-3 flex-shrink-0 ml-2" />} */}
                       </div>
                     </div>
                   </motion.div>
@@ -90,7 +89,7 @@ export default function ChatListPanel({
         </ScrollArea>
       ) : (
         <div className="flex flex-col items-center justify-center mt-28 px-4 text-center">
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-grey-foreground">
             Chats will appear here once you've matched with other builders
           </p>
         </div>

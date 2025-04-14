@@ -219,10 +219,10 @@ export default function ChatWindow({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0.07 * index }}
                     key={message.id}
-                    className="flex flex-col bg-primary text-primary-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
+                    className="flex flex-col bg-red text-red-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
                   >
                     <div>{message.message}</div>
-                    <div className="flex justify-end w-full text-sm text-primary-foreground">
+                    <div className="flex justify-end w-full text-sm text-red-foreground">
                       {new Date(message.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -237,10 +237,10 @@ export default function ChatWindow({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0.07 * index }}
                     key={message.id}
-                    className="flex flex-col bg-muted px-3 py-2 rounded-lg max-w-[70%]"
+                    className="flex flex-col bg-grey px-3 py-2 rounded-lg max-w-[70%]"
                   >
                     {message.message}
-                    <div className="flex justify-end w-full text-sm text-primary-foreground">
+                    <div className="flex justify-end w-full text-sm text-red-foreground">
                       {new Date(message.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -255,7 +255,7 @@ export default function ChatWindow({
           </div>
         </ScrollArea>
       ) : chatMessagesError ? (
-        <div className="flex justify-center text-lg text-primary items-center text-center h-full">
+        <div className="flex justify-center text-lg text-red items-center text-center h-full">
           {"An unexpected error occurred while fetching you messages :("}
           <br />
           {"Please try again!"}

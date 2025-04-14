@@ -107,11 +107,11 @@ export default function ProfileCard({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", bounce: 0.4 }}
               >
-                <div className="flex items-center gap-2 text-primary font-semibold mb-2">
+                <div className="flex items-center gap-2 text-red font-semibold mb-2">
                   <MessageCircle size={20} />
                   <span className="text-lg">Icebreaker Message</span>
                 </div>
-                <div className="text-foreground text-lg font-medium leading-relaxed">
+                <div className="text-white text-lg font-medium leading-relaxed">
                   "{decodeURIComponent(icebreakerMessage)}"
                 </div>
               </motion.div>

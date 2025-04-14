@@ -11,7 +11,7 @@ import { EventType, UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
 import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
-import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
+import { getActiveEvents } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { checkForBadWords } from "@/utils/language/badWordChecker";
 import {
@@ -52,6 +52,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
   const [selectedEvent, setSelectedEvent] =
     useState<string>(initialSelectedEvent);
+  const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
 
   const availableTags: UserTag[] = [
     "Frontend dev",
@@ -71,6 +72,26 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   useEffect(() => {
     setSelectedEvent(initialSelectedEvent);
   }, [initialSelectedEvent]);
+
+  useEffect(() => {
+    const fetchActiveEvents = async () => {
+      if (!jwt) return;
+
+      const { success, data, error } = await getActiveEvents(jwt);
+      if (success && data) {
+        setActiveEvents(data);
+      } else if (error) {
+        console.error("Error fetching active events:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load available events. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchActiveEvents();
+  }, [jwt, toast]);
 
   const handleChange = (
     field: keyof UserType,
@@ -415,11 +436,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               Talent Score:
             </a>
           </Label>
-          <span className="text-md mr-3 text-primary">
+          <span className="text-md mr-3 text-red">
             {profileData.talent_score ?? "N/A"}
           </span>
           <button
-            className="flex items-center hover:text-primary"
+            className="flex items-center hover:text-red"
             onClick={handleUpdateTalentScore}
           >
             <RefreshCcw
@@ -441,7 +462,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             {userEvents.map((event) => (
               <span
                 key={event.slug}
-                className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-primary-foreground px-2 py-1 rounded-full text-sm flex"
+                className="bg-gradient-to-r from-[#f5acac] to-[#8ec5d4] text-red-foreground px-2 py-1 rounded-full text-sm flex"
               >
                 <CheckCircle2 className="mr-2 h-5 w-5" />
                 <p className="font-bold">{event.name}</p>
@@ -476,7 +497,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             value={selectedEvent}
             onValueChange={(value) => setSelectedEvent(value)}
           >
-            {CURRENT_EVENTS.map((event) => (
+            {activeEvents.map((event) => (
               <div key={event.slug} className="flex items-center space-x-2">
                 <RadioGroupItem value={event.slug} id={event.slug} />
                 <Label htmlFor={event.slug}>{event.name}</Label>
@@ -564,7 +585,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         <button
           type="button"
           onClick={() => setShowPrivacyInfo(!showPrivacyInfo)}
-          className="text-sm text-muted-foreground flex items-center space-x-1"
+          className="text-sm text-grey-foreground flex items-center space-x-1"
         >
           <Info size={16} />
           <span>Privacy Policy Details</span>
@@ -595,7 +616,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           <AccordionItem value="data-storage">
             <AccordionTrigger>Data Storage Disclaimer</AccordionTrigger>
             <AccordionContent>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="space-y-2 text-sm text-grey-foreground">
                 <p>
                   By using this app, you agree to the storage of certain
                   personal data, including:

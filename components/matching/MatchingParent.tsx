@@ -361,7 +361,6 @@ export default function MatchingParent({
           onClose={() => setIsFiltersModalOpen(false)}
           parentFilters={filters}
           setParentFilters={setFilters}
-          jwt={jwt}
         />
 
         {/* Profiles Ended Modal */}

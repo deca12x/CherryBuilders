@@ -74,8 +74,7 @@ export interface EventType {
   slug: string;
   name: string;
   description: string;
-  start_date: string;
-  end_date: string;
+  active: boolean;
   verification_type: string;
   created_at: string;
   updated_at: string;
@@ -105,11 +104,4 @@ export interface UsersEventsRelType {
   id: number;
   user_address: string;
   event_slug: string;
-}
-
-export interface FiltersType {
-  id: number;
-  user_address: string;
-  tags: UserTag[];
-  events: string[];
 }

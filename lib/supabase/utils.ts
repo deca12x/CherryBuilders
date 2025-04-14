@@ -862,96 +862,6 @@ export const getEventsByAddress = async (
   };
 };
 
-/**
- * A utility function that gets the connected user's memorized filters from the database
- * @param jwt - The jwt needed to authorize the call
- * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
- */
-export const getUserFilters = async (
-  jwt: string | null
-): Promise<{
-  success: boolean;
-  data: FiltersProp | null;
-  error: any | undefined;
-}> => {
-  const response = await fetch(`/api/filters`, {
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
-
-  const body = await response.json();
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      return {
-        success: true,
-        data: null,
-        error: undefined,
-      };
-    }
-    return {
-      success: false,
-      data: null,
-      error: body.error,
-    };
-  }
-
-  return {
-    success: true,
-    data: body.data,
-    error: undefined,
-  };
-};
-
-/**
- * A utility function that sets the connected user's newly selected filters in the database
- * @param tags - The tag filters
- * @param events - The event filters
- * @param jwt - The jwt needed to authorize the call
- * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
- */
-export const setUserFilters = async (
-  tags: string[],
-  events: string[],
-  jwt: string | null
-): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
-  const response = await fetch(`/api/filters`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${jwt}`,
-    },
-    body: JSON.stringify({
-      tags,
-      events,
-    }),
-  });
-
-  const body = await response.json();
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      return {
-        success: true,
-        data: null,
-        error: undefined,
-      };
-    }
-    return {
-      success: false,
-      data: null,
-      error: body.error,
-    };
-  }
-
-  return {
-    success: true,
-    data: body.data,
-    error: undefined,
-  };
-};
-
 export async function getSpecificUser(address: string, jwt: string) {
   try {
     const response = await fetch(`/api/users/${address}`, {
@@ -1025,3 +935,88 @@ export async function updateUserEvent(
   }
   console.log("Event selection updated successfully");
 }
+
+// New function to add to lib/supabase/utils.ts
+/**
+ * A utility function that retrieves all events from the database, regardless of active status
+ * @param jwt - The jwt needed to authorize the call
+ * @returns An object representing the response { success: boolean; data: EventType[] | null; error: any | undefined }
+ */
+export const getAllEvents = async (
+  jwt: string | null
+): Promise<{
+  success: boolean;
+  data: EventType[] | null;
+  error: any | undefined;
+}> => {
+  const response = await fetch(`/api/events/all`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};
+
+/**
+ * A utility function that retrieves all active events from the database
+ * @param jwt - The jwt needed to authorize the call
+ * @returns An object representing the response { success: boolean; data: EventType[] | null; error: any | undefined }
+ */
+export const getActiveEvents = async (
+  jwt: string | null
+): Promise<{
+  success: boolean;
+  data: EventType[] | null;
+  error: any | undefined;
+}> => {
+  const response = await fetch(`/api/events/active`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        success: true,
+        data: null,
+        error: undefined,
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: body.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: body.data,
+    error: undefined,
+  };
+};

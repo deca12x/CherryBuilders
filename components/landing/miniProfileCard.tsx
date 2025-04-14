@@ -45,7 +45,7 @@ export default function MiniProfileCard({ profile }: MiniProfileCardProps) {
               </div>
               <div className="flex flex-col min-w-0">
                 <h3
-                  className={`${k2d.className} text-base font-bold text-primary-foreground truncate`}
+                  className={`${k2d.className} text-base font-bold text-red-foreground truncate`}
                 >
                   {profile.name}
                 </h3>
