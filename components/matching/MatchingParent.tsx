@@ -361,6 +361,7 @@ export default function MatchingParent({
           onClose={() => setIsFiltersModalOpen(false)}
           parentFilters={filters}
           setParentFilters={setFilters}
+          jwt={jwt}
         />
 
         {/* Profiles Ended Modal */}
@@ -378,6 +379,6 @@ export default function MatchingParent({
       </div>
     );
   } else {
-    return <LoadingSpinner message="Finding potential matches..." />;
+    return <LoadingSpinner />;
   }
 }

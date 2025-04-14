@@ -14,6 +14,7 @@ interface FiltersModalProps {
   onClose: () => void;
   parentFilters: FiltersProp;
   setParentFilters: (filters: FiltersProp) => void;
+  jwt: string | null;
 }
 
 export default function FiltersModal({
@@ -21,6 +22,7 @@ export default function FiltersModal({
   onClose,
   parentFilters,
   setParentFilters,
+  jwt,
 }: FiltersModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [filters, setFilters] = useState<FiltersProp>(parentFilters);
