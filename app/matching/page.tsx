@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
+import { getUser, getAllEvents } from "@/lib/supabase/utils"; // Add this import
 import LoadingSpinner from "@/components/ui/loading-spinner";
-import { getUser, getUserFilters } from "@/lib/supabase/utils";
 import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
-import { UserType } from "@/lib/supabase/types";
+import { UserType, EventType } from "@/lib/supabase/types";
 import EventDialog2Events from "@/components/promo/EventDialog2Events";
+import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -16,9 +17,18 @@ export default function Matching() {
   const [error, setError] = useState(false);
   const [jwt, setJwt] = useState<string | null>(null);
   const [wasUserChecked, setWasUserChecked] = useState(false);
-  const [wereFiltersChecked, setWereFiltersChecked] = useState(false);
+  const [allEvents, setAllEvents] = useState<EventType[]>([]);
   const [filters, setFilters] = useState<FiltersProp>({
-    tags: {},
+    tags: {
+      "Frontend dev": false,
+      "Backend dev": false,
+      "Smart contract dev": false,
+      Designer: false,
+      "Talent scout": false,
+      "Biz dev": false,
+      Artist: false,
+      "Here for the lolz": false,
+    },
     events: {},
   });
 
@@ -30,18 +40,33 @@ export default function Matching() {
   const address = user?.wallet?.address;
 
   useEffect(() => {
-    const fetchUserFilters = async () => {
-      const { success, data, error } = await getUserFilters(jwt);
-      if (!success && error) {
-        setError(true);
-        return;
+    const fetchEvents = async () => {
+      if (!jwt) return;
+
+      const { success, data } = await getAllEvents(jwt);
+      if (success && data) {
+        setAllEvents(data);
+
+        // Initialize filters with all events (not just active ones)
+        setFilters((prev) => ({
+          ...prev,
+          events: Object.fromEntries(
+            data.map((event) => [
+              event.slug,
+              {
+                name: event.name,
+                selected: false,
+              },
+            ])
+          ),
+        }));
       }
-      setFilters(data!);
-      setWereFiltersChecked(true);
     };
 
-    if (wasUserChecked) fetchUserFilters();
-  }, [wasUserChecked, jwt]);
+    if (jwt) {
+      fetchEvents();
+    }
+  }, [jwt]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -85,7 +110,7 @@ export default function Matching() {
 
   if (error) {
     return <ErrorCard />;
-  } else if (user && address && ready && wasUserChecked && wereFiltersChecked) {
+  } else if (user && address && ready && wasUserChecked) {
     return (
       <>
         <MatchingParent

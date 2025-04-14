@@ -104,6 +104,12 @@ export default function Component() {
         return;
       }
 
+      if (!eventData.active) {
+        setInvalidEvent(true);
+        setIsLoading(false);
+        return;
+      }
+
       // set the event name
       setEventName(eventData.name);
       setIsLoading(false);

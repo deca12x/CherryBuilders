@@ -8,14 +8,12 @@ import { ToggleRight, Check } from "lucide-react";
 import type { UserTag } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import type { FiltersProp } from "@/lib/types";
-import { setUserFilters } from "@/lib/supabase/utils";
 
 interface FiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
   parentFilters: FiltersProp;
   setParentFilters: (filters: FiltersProp) => void;
-  jwt: string | null;
 }
 
 export default function FiltersModal({
@@ -23,7 +21,6 @@ export default function FiltersModal({
   onClose,
   parentFilters,
   setParentFilters,
-  jwt,
 }: FiltersModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [filters, setFilters] = useState<FiltersProp>(parentFilters);
@@ -46,27 +43,9 @@ export default function FiltersModal({
     }
   };
 
-  const handleModalClose = async () => {
+  const handleModalClose = () => {
     onClose();
     if (JSON.stringify(filters) !== JSON.stringify(parentFilters)) {
-      const activeTags = Object.keys(filters.tags).filter(
-        (key) => filters.tags[key as UserTag]
-      );
-      const activeEvents = Object.keys(filters.events).filter(
-        (key) => filters.events[key].selected
-      );
-
-      // Update user filters in the database
-      const { success, error } = await setUserFilters(
-        activeTags,
-        activeEvents,
-        jwt
-      );
-      if (!success && error) {
-        console.error("Error setting user filters: ", error);
-        return;
-      }
-
       setParentFilters(filters);
     }
   };

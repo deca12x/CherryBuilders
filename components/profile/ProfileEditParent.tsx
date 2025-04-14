@@ -6,7 +6,7 @@ import ConnectButton from "@/components/ui/connectButton";
 import { updateUser, updateUserEvent } from "@/lib/supabase/utils";
 import ProfileForm from "@/components/profile/ProfileForm";
 import LoadingSpinner from "@/components/ui/loading-spinner";
-import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
+import { getActiveEvents } from "@/lib/supabase/utils";
 
 interface ProfileEditParentProps {
   initialProfileData: UserType;
@@ -24,6 +24,24 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
   const [profileData, setProfileData] = useState<UserType>(initialProfileData);
   const [selectedEvent, setSelectedEvent] = useState<string>("neither");
   const { toast } = useToast();
+  const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
+
+  useEffect(() => {
+    const fetchActiveEvents = async () => {
+      const { success, data, error } = await getActiveEvents(jwt);
+      if (success && data) {
+        setActiveEvents(data);
+      } else if (error) {
+        console.error("Error fetching active events:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load available events. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchActiveEvents();
+  }, [jwt, toast]);
 
   useEffect(() => {
     console.log("useEffect triggered with userEvents:", userEvents);
@@ -34,12 +52,10 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
       setSelectedEvent("neither");
       return;
     }
-
     // From the user's registered events, find one that matches a current event
     const userCurrentEvent = userEvents.find((event) =>
-      CURRENT_EVENTS.some((currentEvent) => currentEvent.slug === event.slug)
+      activeEvents.some((currentEvent) => currentEvent.slug === event.slug)
     );
-
     if (userCurrentEvent) {
       console.log(`Setting event to ${userCurrentEvent.slug}`);
       setSelectedEvent(userCurrentEvent.slug);

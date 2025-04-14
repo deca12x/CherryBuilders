@@ -11,7 +11,7 @@ import { EventType, UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
 import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
 import { uploadProfilePicture } from "@/lib/supabase/utils";
-import { CURRENT_EVENTS } from "@/lib/supabase/eventData";
+import { getActiveEvents } from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { checkForBadWords } from "@/utils/language/badWordChecker";
 import {
@@ -52,6 +52,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
   const [selectedEvent, setSelectedEvent] =
     useState<string>(initialSelectedEvent);
+  const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
 
   const availableTags: UserTag[] = [
     "Frontend dev",
@@ -71,6 +72,26 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   useEffect(() => {
     setSelectedEvent(initialSelectedEvent);
   }, [initialSelectedEvent]);
+
+  useEffect(() => {
+    const fetchActiveEvents = async () => {
+      if (!jwt) return;
+
+      const { success, data, error } = await getActiveEvents(jwt);
+      if (success && data) {
+        setActiveEvents(data);
+      } else if (error) {
+        console.error("Error fetching active events:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load available events. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchActiveEvents();
+  }, [jwt, toast]);
 
   const handleChange = (
     field: keyof UserType,
@@ -476,7 +497,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             value={selectedEvent}
             onValueChange={(value) => setSelectedEvent(value)}
           >
-            {CURRENT_EVENTS.map((event) => (
+            {activeEvents.map((event) => (
               <div key={event.slug} className="flex items-center space-x-2">
                 <RadioGroupItem value={event.slug} id={event.slug} />
                 <Label htmlFor={event.slug}>{event.name}</Label>
