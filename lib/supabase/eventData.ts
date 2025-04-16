@@ -20,6 +20,14 @@ export const ALL_EVENTS = [
     slug: "eth_taipei_2025",
     name: "ETHGlobal Taipei 2025",
   },
+  {
+    slug: "eth_dam_2025",
+    name: "ETHDam 2025",
+  },
+  {
+    slug: "eth_lisbon_2025",
+    name: "ETHLisbon 2025",
+  },
 ] as const;
 
 // Get the type of current event slugs from the constant
