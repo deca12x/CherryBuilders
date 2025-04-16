@@ -37,8 +37,14 @@ export default function IcebreakerModal({
       <DialogContent className="sm:max-w-md">
         <div className="flex flex-col items-center space-y-4 py-4">
           <Avatar className="w-20 h-20">
-            <AvatarImage src={user?.profile_pictures?.[0]} alt={user?.name} />
-            <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
+            <AvatarImage
+              src={
+                user?.profile_pictures?.length > 0
+                  ? user?.profile_pictures[0]
+                  : "/images/default_propic.jpeg"
+              }
+              alt={user?.name}
+            />
           </Avatar>
 
           <p className="text-lg font-medium">{user?.name}</p>

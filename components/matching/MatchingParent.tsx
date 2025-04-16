@@ -17,7 +17,6 @@ import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
 import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
-
 import { sendMatchingEmail } from "@/lib/email/sendMatchingEmail";
 import NoEmailModal from "@/components/matching/NoEmailModal";
 
@@ -25,6 +24,7 @@ interface MatchingContentProps {
   jwt: string | null;
   address: string;
   userFilters: FiltersProp;
+  updateFilters: (newFilters: FiltersProp) => void;
   loggedInUserData: UserType | null;
 }
 
@@ -32,6 +32,7 @@ export default function MatchingParent({
   jwt,
   address,
   userFilters,
+  updateFilters,
   loggedInUserData,
 }: MatchingContentProps) {
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
@@ -90,6 +91,11 @@ export default function MatchingParent({
 
     fetchUsers();
   }, [filters, jwt]);
+
+  useEffect(() => {
+    // When local filters change, update the parent component
+    updateFilters(filters);
+  }, [filters, updateFilters]);
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;

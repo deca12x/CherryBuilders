@@ -3,50 +3,91 @@ import { Link } from "lucide-react";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
 import UserEvents from "./UserEvents";
-
+import { motion } from "framer-motion";
 interface ProfileCardContentProps {
   user: UserType;
 }
 
 const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
+
   return (
-    <div className="flex flex-col gap-3">
+    <motion.div
+      className="flex flex-col gap-3"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Bio */}
-      <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
+      <motion.div
+        className="flex flex-col gap-2 bg-card rounded-xl p-3"
+        variants={itemVariants}
+      >
         <p className="font-bold text-white">Bio</p>
         <p className="text-grey-foreground">{user.bio}</p>
-      </div>
+      </motion.div>
 
       {/* Building */}
       {user.building && (
-        <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
+        <motion.div
+          className="flex flex-col gap-2 bg-card rounded-xl p-3"
+          variants={itemVariants}
+        >
           <p className="font-bold text-white">What I'm building</p>
           <p className="text-grey-foreground">{user.building}</p>
-        </div>
+        </motion.div>
       )}
 
       {/* Looking For */}
       {user.looking_for && (
-        <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
+        <motion.div
+          className="flex flex-col gap-2 bg-card rounded-xl p-3"
+          variants={itemVariants}
+        >
           <p className="font-bold text-white">Who I'm looking for</p>
           <p className="text-grey-foreground">{user.looking_for}</p>
-        </div>
+        </motion.div>
       )}
 
       {/* Events */}
       {user.events && user.events.length > 0 && (
-        <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
+        <motion.div
+          className="flex flex-col gap-2 bg-card rounded-xl p-3"
+          variants={itemVariants}
+        >
           <p className="font-bold text-white">You can find me at</p>
           <UserEvents user={user} />
-        </div>
+        </motion.div>
       )}
 
       {/* Talent score */}
       {user.talent_score && user.talent_score > 0 ? (
-        <div className="flex flex-col items-center bg-card rounded-xl p-3">
+        <motion.div
+          className="flex flex-col items-center bg-card rounded-xl p-3"
+          variants={itemVariants}
+        >
           <p className="font-bold text-white">Talent Score</p>
           <p className="text-grey-foreground">{user.talent_score}</p>
-        </div>
+        </motion.div>
       ) : null}
 
       {/* Links */}
@@ -54,7 +95,10 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
         user.github_link ||
         user.farcaster_link ||
         user.other_link) && (
-        <div className="flex flex-col gap-3 bg-card rounded-xl p-3">
+        <motion.div
+          className="flex flex-col gap-3 bg-card rounded-xl p-3"
+          variants={itemVariants}
+        >
           <p className="font-bold text-white">Links</p>
           <div className="grid grid-cols-2 gap-4 sm:px-14">
             {user.github_link && (
@@ -121,9 +165,9 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
               </p>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

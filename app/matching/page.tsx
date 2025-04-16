@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { getUser } from "@/lib/supabase/utils"; // Add this import
+import { getUser } from "@/lib/supabase/utils";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
@@ -10,6 +10,7 @@ import { FiltersProp } from "@/lib/types";
 import { UserType, EventType } from "@/lib/supabase/types";
 import EventDialog2Events from "@/components/promo/EventDialog2Events";
 import { ALL_EVENTS } from "@/lib/supabase/eventData";
+import { getFiltersFromSession, saveFiltersToSession } from "@/lib/filters";
 
 export default function Matching() {
   const { user, ready, getAccessToken } = usePrivy();
@@ -17,7 +18,11 @@ export default function Matching() {
   const [error, setError] = useState(false);
   const [jwt, setJwt] = useState<string | null>(null);
   const [wasUserChecked, setWasUserChecked] = useState(false);
-  const [filters, setFilters] = useState<FiltersProp>({
+  const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(
+    null
+  );
+  const [showEventDialog, setShowEventDialog] = useState(true);
+  const defaultFilters: FiltersProp = {
     tags: {
       "Frontend dev": false,
       "Backend dev": false,
@@ -37,14 +42,22 @@ export default function Matching() {
         },
       ])
     ),
+  };
+  const [filters, setFilters] = useState<FiltersProp>(() => {
+    // This only runs once during client-side initial render
+    const sessionFilters = getFiltersFromSession();
+    return sessionFilters || defaultFilters;
   });
 
-  const [loggedInUserData, setLoggedInUserData] = useState<UserType | null>(
-    null
-  );
-  const [showEventDialog, setShowEventDialog] = useState(true);
-
   const address = user?.wallet?.address;
+
+  const updateFilters = (newFilters: FiltersProp) => {
+    setFilters(newFilters);
+  };
+
+  useEffect(() => {
+    saveFiltersToSession(filters);
+  }, [filters]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -95,6 +108,7 @@ export default function Matching() {
           jwt={jwt}
           address={address}
           userFilters={filters}
+          updateFilters={updateFilters}
           loggedInUserData={loggedInUserData}
         />
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
