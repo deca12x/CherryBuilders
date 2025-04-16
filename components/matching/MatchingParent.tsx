@@ -25,6 +25,7 @@ interface MatchingContentProps {
   jwt: string | null;
   address: string;
   userFilters: FiltersProp;
+  updateFilters: (newFilters: FiltersProp) => void;
   loggedInUserData: UserType | null;
 }
 
@@ -32,6 +33,7 @@ export default function MatchingParent({
   jwt,
   address,
   userFilters,
+  updateFilters,
   loggedInUserData,
 }: MatchingContentProps) {
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
@@ -90,6 +92,11 @@ export default function MatchingParent({
 
     fetchUsers();
   }, [filters, jwt]);
+
+  useEffect(() => {
+    // When local filters change, update the parent component
+    updateFilters(filters);
+  }, [filters, updateFilters]);
 
   const checkMatch = async () => {
     if (!address || !currentUser) return;
