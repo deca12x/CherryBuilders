@@ -17,7 +17,6 @@ import { UserTag, UserType } from "@/lib/supabase/types";
 import FiltersModal from "@/components/matching/FiltersModal";
 import { FiltersProp } from "@/lib/types";
 import ProfileCard from "./ProfileCard";
-
 import { sendMatchingEmail } from "@/lib/email/sendMatchingEmail";
 import NoEmailModal from "@/components/matching/NoEmailModal";
 
