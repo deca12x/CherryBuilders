@@ -3,7 +3,9 @@ import { Link } from "lucide-react";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
 import UserEvents from "./UserEvents";
+import UserPoaps from "./UserPoaps";
 import { motion } from "framer-motion";
+
 interface ProfileCardContentProps {
   user: UserType;
 }
@@ -45,6 +47,13 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
         <p className="font-bold text-white">Bio</p>
         <p className="text-grey-foreground">{user.bio}</p>
       </motion.div>
+
+      {/* POAPs */}
+      <UserPoaps
+        user={user}
+        itemVariants={itemVariants}
+        maxDisplayedPoaps={5}
+      />
 
       {/* Building */}
       {user.building && (
