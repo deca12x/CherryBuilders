@@ -95,9 +95,6 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
     >
       <div className="flex flex-row justify-between items-center">
         <p className="font-bold text-white">GitHub Contributions</p>
-        <p className="text-sm text-gray-400">
-          Total: {contributionData.totalContributions}
-        </p>
       </div>
       <a
         href={user.github_link}
