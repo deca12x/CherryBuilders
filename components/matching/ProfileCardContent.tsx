@@ -5,6 +5,7 @@ import Image from "next/image";
 import UserEvents from "./UserEvents";
 import UserPoaps from "./UserPoaps";
 import { motion } from "framer-motion";
+import UserGithubContributions from "./UserGithubContributions";
 
 interface ProfileCardContentProps {
   user: UserType;
@@ -49,11 +50,11 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
       </motion.div>
 
       {/* POAPs */}
-      <UserPoaps
+      {/* <UserPoaps
         user={user}
         itemVariants={itemVariants}
         maxDisplayedPoaps={5}
-      />
+      /> */}
 
       {/* Building */}
       {user.building && (
@@ -75,6 +76,11 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
           <p className="font-bold text-white">Who I'm looking for</p>
           <p className="text-grey-foreground">{user.looking_for}</p>
         </motion.div>
+      )}
+
+      {/* GitHub Contributions */}
+      {user.github_link && (
+        <UserGithubContributions user={user} itemVariants={itemVariants} />
       )}
 
       {/* Events */}
