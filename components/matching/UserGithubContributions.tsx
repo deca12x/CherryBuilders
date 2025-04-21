@@ -85,14 +85,8 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
   // Don't render anything if loading or no GitHub data
   if (loading || !contributionData) return null;
 
-  // Helper function to format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
+  // Get the most recent 37 weeks (approximately 6 months)
+  const recentWeeks = [...contributionData.weeks].slice(-37);
 
   return (
     <motion.div
@@ -111,37 +105,32 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
         rel="noopener noreferrer"
         className="hover:opacity-90 transition-opacity"
       >
-        <div className="w-full overflow-x-auto py-2">
+        <div className="w-full py-2">
           <div className="flex flex-col w-full">
-            <div className="flex gap-1">
-              {contributionData.weeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="flex flex-col gap-1">
-                  {week.contributionDays.map((day, dayIndex) => (
-                    <div
-                      key={`${weekIndex}-${dayIndex}`}
-                      className="w-3 h-3 rounded-sm"
-                      style={{ backgroundColor: day.color }}
-                      title={`${formatDate(day.date)}: ${day.contributionCount} contributions`}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-400">
-              <span>
-                {formatDate(
-                  contributionData.weeks[0]?.contributionDays[0]?.date || ""
-                )}
-              </span>
-              <span>
-                {formatDate(
-                  contributionData.weeks[contributionData.weeks.length - 1]
-                    ?.contributionDays[
-                    contributionData.weeks[contributionData.weeks.length - 1]
-                      ?.contributionDays.length - 1
-                  ]?.date || ""
-                )}
-              </span>
+            <div className="relative w-full">
+              <div className="flex gap-[2px]">
+                {recentWeeks.map((week, weekIndex) => (
+                  <div key={weekIndex} className="flex flex-col gap-[2px]">
+                    {week.contributionDays.map((day, dayIndex) => (
+                      <div
+                        key={`${weekIndex}-${dayIndex}`}
+                        className={`w-3 h-3 ${day.contributionCount === 0 ? "bg-dark-grey" : ""}`}
+                        style={{
+                          backgroundColor:
+                            day.contributionCount > 0 ? day.color : undefined,
+                          borderRadius: "3px",
+                        }}
+                        title={`${day.date}: ${day.contributionCount} contributions`}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative w-full mt-2 text-xs text-gray-400">
+                <span className="absolute left-0">9 months ago</span>
+                <span className="absolute right-0">today</span>
+              </div>
             </div>
           </div>
         </div>

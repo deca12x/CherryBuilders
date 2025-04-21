@@ -71,7 +71,7 @@ export async function GET(
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(now.getFullYear() - 1);
 
-    // Format dates for GraphQL query - use full ISO format
+    // Format dates for GraphQL query
     const fromDate = oneYearAgo.toISOString();
     const toDate = now.toISOString();
 
