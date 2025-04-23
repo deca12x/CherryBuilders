@@ -37,6 +37,11 @@ export async function GET(
       },
     });
 
+    console.log(
+      "25.5poap: Auth token value:",
+      authToken ? authToken.substring(0, 20) + "..." : "null"
+    );
+
     console.log("26poap: POAP API response status:", response.status);
 
     if (response.ok) {

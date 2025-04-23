@@ -3,22 +3,21 @@ import type { NextRequest } from "next/server";
 import { verifyAuthToken } from "./lib/privy";
 
 export const config = {
-  matcher: [
-    "/api/:function*",
-    "/api/auth/supabase-token"
-  ],
+  matcher: ["/api/:function*", "/api/auth/supabase-token"],
 };
 
 export async function middleware(req: NextRequest) {
-  if (req.url.includes("/api/public") || req.url.includes("/api/external")) {
+  if (
+    req.url.includes("/api/public") ||
+    req.url.includes("/api/external") ||
+    req.url.includes("/api/poap/")
+  ) {
     // If the request is for a public or external endpoint, continue processing the request
     return NextResponse.next();
   }
 
   // Get the Privy token from the headers
   const authToken = req.headers.get("Authorization");
-
-  //console.log("Authorization: ", authToken);
 
   if (!authToken) {
     console.error("\nMissing auth token\n");
