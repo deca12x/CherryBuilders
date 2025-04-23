@@ -15,34 +15,78 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
   itemVariants,
   maxDisplayedPoaps = 5,
 }) => {
+  console.log("1poap: UserPoaps component mounted", { username: user.name });
+
   const [poaps, setPoaps] = useState<PoapItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("2poap: UserPoaps effect triggered", {
+      has_address: !!user.evm_address,
+      address: user.evm_address,
+    });
+
     if (!user.evm_address) {
+      console.log("3poap: No address found, skipping fetch");
       setLoading(false);
       return;
     }
 
     const fetchPoaps = async () => {
       try {
+        console.log("4poap: Starting fetch for address:", user.evm_address);
+        console.log("5poap: API endpoint:", `/api/poap/${user.evm_address}`);
+
         const response = await fetch(`/api/poap/${user.evm_address}`);
+        console.log("6poap: Response status:", response.status);
+
         if (response.ok) {
           const data = await response.json();
+          console.log(
+            "7poap: POAPs count:",
+            Array.isArray(data) ? data.length : "not an array"
+          );
+          console.log("8poap: Response data type:", typeof data);
+          console.log(
+            "9poap: First POAP (if any):",
+            data[0] ? JSON.stringify(data[0]).substring(0, 100) : "no data"
+          );
           setPoaps(data);
+        } else {
+          console.log("7poap: Error response:", response.statusText);
+          try {
+            const errorText = await response.text();
+            console.log("8poap: Error details:", errorText);
+          } catch (e) {
+            console.log("8poap: Could not get error details");
+          }
         }
       } catch (error) {
-        console.error("Error fetching POAPs:", error);
+        console.log("7poap: Fetch error:", error);
       } finally {
+        console.log("9poap: Fetch completed, setting loading to false");
         setLoading(false);
       }
     };
 
     fetchPoaps();
-  }, [user.evm_address]);
+  }, [user.evm_address, user.name]);
+
+  console.log("10poap: Render state:", {
+    loading,
+    poapsCount: poaps.length,
+  });
 
   // Don't render anything if loading or no POAPs
-  if (loading || poaps.length === 0) return null;
+  if (loading) {
+    console.log("11poap: Still loading, not rendering");
+    return null;
+  }
+
+  if (poaps.length === 0) {
+    console.log("12poap: No POAPs found, not rendering");
+    return null;
+  }
 
   // Sort by created date (most recent first)
   const sortedPoaps = [...poaps].sort(
@@ -51,6 +95,7 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
 
   // Limit to maxDisplayedPoaps
   const displayedPoaps = sortedPoaps.slice(0, maxDisplayedPoaps);
+  console.log("13poap: Displaying POAPs:", displayedPoaps.length);
 
   return (
     <motion.div

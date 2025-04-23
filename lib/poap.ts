@@ -28,37 +28,46 @@ export interface PoapItem {
  * @returns Array of POAP items or empty array if none found or error occurs
  */
 export const getUserPoaps = async (address: string): Promise<PoapItem[]> => {
+  console.log("40poap: getUserPoaps called with address:", address);
+
   try {
     const apiKey = process.env.POAP_API_KEY;
-    const authToken = process.env.POAP_AUTH_TOKEN;
+    console.log("41poap: POAP API key exists:", !!apiKey);
+    console.log("42poap: POAP API key length:", apiKey?.length || 0);
 
-    if (!apiKey || !authToken) {
-      console.error("POAP API credentials not configured");
+    if (!apiKey) {
+      console.error("43poap: POAP API credentials not configured");
       return [];
     }
 
+    console.log("44poap: Making request to POAP API for address:", address);
     const response = await fetch(
       `https://api.poap.tech/actions/scan/${address}`,
       {
         headers: {
           "x-api-key": apiKey,
-          Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
       }
     );
 
+    console.log("45poap: POAP API response status:", response.status);
+
     if (!response.ok) {
       console.error(
-        `POAP API returned ${response.status}: ${response.statusText}`
+        `46poap: POAP API returned ${response.status}: ${response.statusText}`
       );
       return [];
     }
 
     const data = await response.json();
+    console.log(
+      "47poap: POAP API returned data count:",
+      Array.isArray(data) ? data.length : "not an array"
+    );
     return data;
   } catch (error) {
-    console.error("Error fetching POAPs:", error);
+    console.error("48poap: Error fetching POAPs:", error);
     return [];
   }
 };
