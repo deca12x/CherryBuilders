@@ -3,12 +3,20 @@ import { Link } from "lucide-react";
 import { UserType } from "@/lib/supabase/types";
 import Image from "next/image";
 import UserEvents from "./UserEvents";
+import UserPoaps from "./UserPoaps";
 import { motion } from "framer-motion";
+import UserGithubContributions from "./UserGithubContributions";
+
 interface ProfileCardContentProps {
   user: UserType;
 }
 
 const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
+  console.log("0poap: ProfileCardContent rendering for user:", {
+    username: user.name,
+    hasAddress: !!user.evm_address,
+  });
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -46,6 +54,13 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
         <p className="text-grey-foreground">{user.bio}</p>
       </motion.div>
 
+      {/* POAPs */}
+      <UserPoaps
+        user={user}
+        itemVariants={itemVariants}
+        maxDisplayedPoaps={5}
+      />
+
       {/* Building */}
       {user.building && (
         <motion.div
@@ -66,6 +81,11 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
           <p className="font-bold text-white">Who I'm looking for</p>
           <p className="text-grey-foreground">{user.looking_for}</p>
         </motion.div>
+      )}
+
+      {/* GitHub Contributions */}
+      {user.github_link && (
+        <UserGithubContributions user={user} itemVariants={itemVariants} />
       )}
 
       {/* Events */}

@@ -20,32 +20,43 @@ const ConnectButton: React.FC = () => {
     );
   }
 
-  // If user is logged in with Privy but not connected with Wagmi
-  if (user && !isConnected) {
-    return (
-      <button
-        className="flex items-center justify-center bg-red py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
-        onClick={() => connect({ connector: injected() })}
-      >
-        Connect Wallet
-      </button>
-    );
+  // Determine the button text and action based on user state
+  let buttonText = "Log in";
+  let buttonAction = login;
+
+  if (user) {
+    // User is logged in with Privy
+    if (!isConnected) {
+      // But wallet is not connected
+      buttonText = "Connect Wallet";
+      buttonAction = () => connect({ connector: injected() });
+
+      // Check if we're on the profile page and need to allow logout
+      const isProfilePage =
+        typeof window !== "undefined" &&
+        window.location.pathname.includes("/profile");
+
+      if (isProfilePage) {
+        buttonText = "Log out";
+        buttonAction = logout;
+      }
+    } else {
+      // User is logged in and wallet is connected
+      buttonText = "Log out";
+      buttonAction = () => {
+        disconnect();
+        logout();
+      };
+    }
   }
 
   return (
     <div>
       <button
         className="flex items-center justify-center bg-red py-3 px-10 text-white rounded-lg text-lg font-semibold shadow-md"
-        onClick={
-          !user
-            ? login
-            : () => {
-                disconnect();
-                logout();
-              }
-        }
+        onClick={buttonAction}
       >
-        {!user ? "Log in" : "Log out"}
+        {buttonText}
       </button>
     </div>
   );

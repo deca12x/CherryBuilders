@@ -69,3 +69,36 @@
     @apply bg-background text-white;
   }
 }
+
+@keyframes subtleGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient-bg {
+  background: linear-gradient(45deg,
+    hsl(var(--grey-foreground)),
+    hsl(var(--card)),
+    hsl(var(--dark-grey)));
+  background-size: 300% 300%;
+  animation: subtleGradient 8s ease infinite;
+}
+
+@keyframes subtleGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
