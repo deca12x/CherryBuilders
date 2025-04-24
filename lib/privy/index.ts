@@ -8,7 +8,10 @@ if (!process.env.PRIVY_APP_SECRET) {
   throw new Error("Please provide your Privy App Secret");
 }
 
-const privy = new PrivyClient(process.env.NEXT_PUBLIC_PRIVY_APP_ID, process.env.PRIVY_APP_SECRET!);
+const privy = new PrivyClient(
+  process.env.NEXT_PUBLIC_PRIVY_APP_ID,
+  process.env.PRIVY_APP_SECRET!
+);
 
 export const verifyAuthToken = async (
   authToken: string
@@ -27,7 +30,9 @@ export const verifyAuthToken = async (
         user,
       };
     } catch (error: any) {
-      console.log(`\nError verifying token at try #${retries + 1}: ${error.message}\n`);
+      console.log(
+        `\nError verifying token at try #${retries + 1}: ${error.message}\n`
+      );
       // wait for 1.5 seconds before retrying
       await new Promise((resolve) => setTimeout(resolve, 1500));
       retries++;

@@ -97,6 +97,11 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
   const displayedPoaps = sortedPoaps.slice(0, maxDisplayedPoaps);
   console.log("13poap: Displaying POAPs:", displayedPoaps.length);
 
+  // Helper function to get collector URL for a specific token
+  const getTokenCollectorUrl = (tokenId: string) => {
+    return `https://collectors.poap.xyz/token/${tokenId}`;
+  };
+
   return (
     <motion.div
       className="flex flex-col gap-2 bg-card rounded-xl p-3"
@@ -107,7 +112,7 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
         {displayedPoaps.map((poap: PoapItem) => (
           <a
             key={poap.tokenId}
-            href={poap.event.event_url}
+            href={getTokenCollectorUrl(poap.tokenId)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-shrink-0"
@@ -127,12 +132,14 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
           href={getPoapCollectorUrl(user.evm_address)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-shrink-0 bg-card w-12 h-12 rounded-full flex items-center justify-center border-2 border-card hover:opacity-80 transition-opacity"
+          className="flex-shrink-0"
         >
-          <div className="flex gap-1">
-            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+          <div className="w-12 h-12 rounded-full border-2 border-card animated-gradient-bg hover:opacity-80 transition-opacity flex items-center justify-center">
+            <div className="flex gap-1">
+              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+            </div>
           </div>
         </a>
       </div>

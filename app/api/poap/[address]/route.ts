@@ -19,28 +19,20 @@ export async function GET(
       );
     }
 
-    // Get API key and auth token from environment
+    // Get API key from environment
     const apiKey = process.env.POAP_API_KEY;
-    const authToken = process.env.POAP_AUTH_TOKEN;
     console.log("23poap: POAP API Key exists:", !!apiKey);
-    console.log("24poap: POAP Auth Token exists:", !!authToken);
 
     const apiUrl = `https://api.poap.tech/actions/scan/${address}`;
     console.log("25poap: Calling POAP API:", apiUrl);
 
-    // Use both API key and auth token in headers
+    // Use only API key in headers
     const response = await fetch(apiUrl, {
       headers: {
         "X-API-Key": apiKey || "",
-        Authorization: `Bearer ${authToken}`,
         Accept: "application/json",
       },
     });
-
-    console.log(
-      "25.5poap: Auth token value:",
-      authToken ? authToken.substring(0, 20) + "..." : "null"
-    );
 
     console.log("26poap: POAP API response status:", response.status);
 
