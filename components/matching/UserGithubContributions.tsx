@@ -107,7 +107,7 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
         <div className="w-full py-2">
           <div className="flex flex-col w-full">
             <div className="relative w-full">
-              <div className="flex gap-[2px]">
+              <div className="flex gap-[2px] overflow-x-auto md:overflow-x-hidden scrollbar-thin scrollbar-thumb-dark-grey scrollbar-track-transparent md:justify-end">
                 {recentWeeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-[2px]">
                     {week.contributionDays.map((day, dayIndex) => (
