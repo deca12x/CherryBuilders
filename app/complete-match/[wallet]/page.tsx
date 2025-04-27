@@ -32,18 +32,15 @@ export default function CompleteMatch() {
       if (isExecuting) return;
       isExecuting = true;
       if (!ready) {
-        console.log("Privy not ready");
         return;
       }
 
       if (!responderWallet) {
-        console.log("No wallet found, redirecting to login");
         router.push("/" + "?initiatorAddress=" + initiatorWallet);
         return;
       }
 
       if (!initiatorWallet) {
-        console.log("No other wallet address found in URL");
         router.push("/matching");
         return;
       }
@@ -58,7 +55,6 @@ export default function CompleteMatch() {
         }
 
         // Check if there's a partial match
-        console.log("Checking for partial match");
         const partialMatch = await getPartialMatch(
           initiatorWallet,
           responderWallet,
@@ -71,7 +67,6 @@ export default function CompleteMatch() {
         }
 
         // Complete the match
-        console.log("Completing match");
         const updatedMatch = await updateMatch(
           initiatorWallet,
           responderWallet,

@@ -56,11 +56,9 @@ export default function MatchingParent({
 
   // A useEffect that fetches users based on the filters (avoiding first render double fetch)
   useEffect(() => {
-    console.log("£££££££££££££££££££ Dependencies changed:", { filters, jwt });
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        console.log("1. Starting fetch");
         const activeTags = Object.keys(filters.tags).filter(
           (key) => filters.tags[key as UserTag]
         );
@@ -75,12 +73,8 @@ export default function MatchingParent({
           200,
           jwt
         );
-        console.log("2. API Response:", foundFilteredUsers);
         if (!foundFilteredUsers.success) throw foundFilteredUsers.error;
-
-        console.log("3. Setting fetchedUsers:", foundFilteredUsers.data);
         setFetchedUsers(foundFilteredUsers.data);
-        console.log("4. Current index:", currentUserIndex);
       } catch (error) {
         console.error("Error fetching users:", error);
         setError(true);
@@ -111,10 +105,6 @@ export default function MatchingParent({
         throw new Error(partialMatch.error);
       // If no partial match is found create one
       if (partialMatch.data.length === 0) {
-        console.log("Creating new match", {
-          address,
-          currentUserAddress: currentUser.evm_address,
-        });
         const newMatch = await createMatch(
           address,
           currentUser.evm_address,
@@ -153,11 +143,6 @@ export default function MatchingParent({
         setMatchedChatId(specificChat.data?.id);
 
         if (fetchedUsers[currentUserIndex].emailNotifications) {
-          console.log("6. Checking email conditions:", {
-            hasNotifications: fetchedUsers[currentUserIndex].emailNotifications,
-            email: fetchedUsers[currentUserIndex]?.email,
-          });
-          console.log("7. Sending match completion email");
           await sendMatchingEmail({
             matchedWith: loggedInUserData?.name as string,
             matchedWithImage: loggedInUserData?.profile_pictures[0] || "",
@@ -213,9 +198,7 @@ export default function MatchingParent({
   };
 
   const handleIcebreaker = async (message: string) => {
-    console.log("1. Starting handleIcebreaker");
     if (!address || !currentUser) {
-      console.log("2. Early return - missing address or currentUser");
       return;
     }
     setProcessingAction("icebreaker");
@@ -241,18 +224,6 @@ export default function MatchingParent({
           ? `https://cherry.builders/complete-match/${currentUser.evm_address}`
           : `https://cherry.builders/chat/${matchedChatId}`;
 
-        console.log("JWT being sent:", jwt);
-        console.log("Full email data:", {
-          matchedWith: loggedInUserData?.name,
-          matchedWithImage: loggedInUserData?.profile_pictures[0],
-          matchedWithBio: loggedInUserData?.bio,
-          matchedWithBuilding: loggedInUserData?.building,
-          matchedWithLookingFor: loggedInUserData?.looking_for,
-          chatLink,
-          receiverEmail: fetchedUsers[currentUserIndex]?.email,
-          jwt,
-          message,
-        });
         await sendMatchingEmail({
           matchedWith: loggedInUserData?.name as string,
           matchedWithImage: loggedInUserData?.profile_pictures[0] || "",

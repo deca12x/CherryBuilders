@@ -45,8 +45,6 @@ export default function ProfileCard({
 
   // Prevent scrolling when processing an action
   useEffect(() => {
-    console.log(user);
-
     if (processingAction) {
       document.body.classList.add("overflow-hidden");
     } else {
@@ -162,16 +160,14 @@ export default function ProfileCard({
       )}
 
       {/* Icebreaker Modal */}
-      {user &&
-        (console.log("ProfileCard handleIcebreaker:", handleIcebreaker),
-        (
-          <IcebreakerModal
-            isOpen={isIcebreakerModalOpen}
-            onClose={() => setIsIcebreakerModalOpen(false)}
-            onSend={handleIcebreaker}
-            user={user}
-          />
-        ))}
+      {user && (
+        <IcebreakerModal
+          isOpen={isIcebreakerModalOpen}
+          onClose={() => setIsIcebreakerModalOpen(false)}
+          onSend={handleIcebreaker}
+          user={user}
+        />
+      )}
     </>
   ) : (
     <NoUsersFound onOpenFilters={() => setIsFiltersModalOpen(true)} />
