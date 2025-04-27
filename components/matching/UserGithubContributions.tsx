@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { UserType } from "@/lib/supabase/types";
+import type { UserType } from "@/lib/supabase/types";
 import { usePrivy } from "@privy-io/react-auth";
 
 interface UserGithubContributionsProps {
@@ -33,6 +34,22 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
   const [contributionData, setContributionData] =
     useState<ContributionCalendar | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Check if screen is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user.github_link) {
@@ -84,11 +101,27 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
     fetchContributions();
   }, [user.github_link, getAccessToken]);
 
+  // Scroll to right side when contribution data loads
+  useEffect(() => {
+    if (contributionData && scrollContainerRef.current) {
+      // Small delay to ensure rendering is complete
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft =
+            scrollContainerRef.current.scrollWidth;
+        }
+      }, 100);
+    }
+  }, [contributionData]);
+
   // Don't render anything if loading or no GitHub data
   if (loading || !contributionData) return null;
 
-  // Get the most recent 37 weeks (approximately 6 months)
-  const recentWeeks = [...contributionData.weeks].slice(-37);
+  // Calculate how many weeks to display based on screen size
+  const weeksToShow = isMobile ? 25 : 37;
+
+  // Get the most recent weeks
+  const recentWeeks = [...contributionData.weeks].slice(-weeksToShow);
 
   return (
     <motion.div
@@ -107,12 +140,17 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
         <div className="w-full py-2">
           <div className="flex flex-col w-full">
             <div className="relative w-full">
-              <div className="flex gap-[2px] overflow-x-auto md:overflow-x-hidden scrollbar-thin scrollbar-thumb-dark-grey scrollbar-track-transparent md:justify-end">
+              <div
+                ref={scrollContainerRef}
+                className="flex gap-[2px] overflow-x-auto sm:overflow-x-hidden scrollbar-thin scrollbar-thumb-dark-grey scrollbar-track-transparent sm:justify-end"
+              >
+                {/* Column-based layout (each column is a week) */}
                 {recentWeeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-[2px]">
+                    {/* Render each day in the week (already ordered Sunday to Saturday) */}
                     {week.contributionDays.map((day, dayIndex) => (
                       <div
-                        key={`${weekIndex}-${dayIndex}`}
+                        key={dayIndex}
                         className={`w-3 h-3 ${day.contributionCount === 0 ? "bg-dark-grey" : ""}`}
                         style={{
                           backgroundColor:
@@ -127,7 +165,9 @@ const UserGithubContributions: React.FC<UserGithubContributionsProps> = ({
               </div>
 
               <div className="relative w-full mt-2 text-xs text-gray-400">
-                <span className="absolute left-0">9 months ago</span>
+                <span className="absolute left-0">
+                  {isMobile ? "6 months ago" : "9 months ago"}
+                </span>
                 <span className="absolute right-0">today</span>
               </div>
             </div>
