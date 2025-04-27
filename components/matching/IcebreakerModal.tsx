@@ -26,7 +26,6 @@ export default function IcebreakerModal({
   const [message, setMessage] = useState("");
 
   const handleSend = () => {
-    console.log("1 March Test 1: IcebreakerModal sending message:", message);
     onSend(message);
     setMessage("");
     onClose();

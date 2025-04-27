@@ -70,7 +70,6 @@ export default function ChatParent({
         userAddress,
         authToken as string
       );
-      console.log("Supabase client created with address:", userAddress);
       setSupabaseClient(client);
     };
 
@@ -84,7 +83,6 @@ export default function ChatParent({
       if (!supabaseClient) return;
 
       const channelName = `chat:messages:${userAddress}`;
-      console.log(`Attempting to subscribe to channel: ${channelName}`);
 
       supabaseRef.current = supabaseClient
         .channel(channelName, {
@@ -99,15 +97,7 @@ export default function ChatParent({
           },
           (payload: any) => {
             if (payload.new.sender === userAddress) return;
-            console.log("RT Update - Sender:", payload.new.sender);
-            console.log("RT Update - Current user:", userAddress);
-            console.log(
-              "RT Update - Should we process?",
-              payload.new.sender !== userAddress
-            );
-            console.log("Received real-time update:", payload);
             const newMessage = payload.new as ChatMessageType;
-            console.log("Processed new message:", newMessage);
             const chatId = newMessage.chat_id.toString();
 
             // Create a new last message for the chat history
@@ -146,12 +136,8 @@ export default function ChatParent({
         .subscribe(async (status: string, err?: Error) => {
           if (err) {
             console.error("Subscription error:", err);
-          } else {
-            console.log("Subscription status:", status);
           }
         });
-
-      console.log("Channel subscription set up");
     };
 
     const fetchChats = async () => {
@@ -165,8 +151,6 @@ export default function ChatParent({
         if (!chatsSuccess && chatsError) {
           setError(true);
         } else if (chatsData) {
-          console.log("Chat data:", chatsData);
-
           // Fetch user data for each chat
           const chatItems = await Promise.all(
             chatsData.map(async (chat: ChatType) => {

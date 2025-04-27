@@ -44,11 +44,8 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
   }, [jwt, toast]);
 
   useEffect(() => {
-    console.log("useEffect triggered with userEvents:", userEvents);
-
     // If user has no events at all, they're in "neither" state
     if (!userEvents || userEvents.length === 0) {
-      console.log("No events found, setting to neither");
       setSelectedEvent("neither");
       return;
     }
@@ -57,23 +54,17 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
       activeEvents.some((currentEvent) => currentEvent.slug === event.slug)
     );
     if (userCurrentEvent) {
-      console.log(`Setting event to ${userCurrentEvent.slug}`);
       setSelectedEvent(userCurrentEvent.slug);
     } else {
-      console.log("No matching current events found, setting to neither");
       setSelectedEvent("neither");
     }
   }, [userEvents]);
 
   const handleSubmit = async (updatedData: UserType, selectedEvent: string) => {
     try {
-      console.log("Handling submit with data:", updatedData);
-      console.log("Selected event:", selectedEvent);
-
       // First update the user profile
       const updatedUser = await updateUser(userAddress, updatedData, jwt);
       if (!updatedUser.success) throw Error(updatedUser.error);
-      console.log("User profile updated successfully");
 
       await updateUserEvent(userAddress, selectedEvent, jwt);
 

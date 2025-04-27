@@ -12,11 +12,6 @@ interface ProfileCardContentProps {
 }
 
 const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
-  console.log("0poap: ProfileCardContent rendering for user:", {
-    username: user.name,
-    hasAddress: !!user.evm_address,
-  });
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

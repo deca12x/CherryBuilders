@@ -65,8 +65,6 @@ export default function ChatWindow({
         console.error("Error fetching messages:", error);
         setChatMessagesError(true);
       } else if (data) {
-        console.log("Fetched messages:", data);
-
         // Set the messages read value to true before adding them to the chat history
         // const updatedMessages = data.map((msg: ChatMessageType) => {
         //   return { ...msg, read: true };
@@ -88,7 +86,6 @@ export default function ChatWindow({
         setChatHistory(() => updatedChatHistory);
 
         // Update the messages read value in the database
-        // console.log("Setting chat messages as read for chat: ", selectedChatId);
         // const { success, error } = await updateMessagesReadValue(selectedChatId, true, authToken);
         // if (!success && error) {
         //   console.error("Error updating messages read value:", error);
