@@ -87,17 +87,22 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
       },
       body: JSON.stringify({ address }),
     });
-    const passportScore: number = response.ok ? await response.json() : 0;
 
-    const updatedUser = await updateUser(
-      address,
-      {
-        ...profileData,
-        evm_address: address,
-        talent_score: passportScore || 0,
-      },
-      jwt
-    );
+    // Parse the response
+    const talentScore = response.ok ? await response.json() : null;
+
+    // Only include talent_score in the profile data if it's not null
+    const profileDataToUpdate = {
+      ...profileData,
+      evm_address: address,
+    };
+
+    // Add talent_score only if it exists
+    if (talentScore !== null) {
+      profileDataToUpdate.talent_score = talentScore.toString();
+    }
+
+    const updatedUser = await updateUser(address, profileDataToUpdate, jwt);
 
     if (!updatedUser.success) throw updatedUser.error;
   }

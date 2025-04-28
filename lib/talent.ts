@@ -38,15 +38,20 @@ interface TalentPassportUserResponse {
  * @param walletOrId - A wallet address connected to the Talent Passport or the user's ID.
  * @returns The Talent Passport User or null if not found.
  **/
-export const getTalentPassportByWalletOrId = async (walletOrId: string): Promise<TalentPassportUserResponse | null> => {
+export const getTalentPassportByWalletOrId = async (
+  walletOrId: string
+): Promise<TalentPassportUserResponse | null> => {
   // Try to fetch the Talent Passport User
-  const response = await fetch(`https://api.talentprotocol.com/api/v2/passports/${walletOrId}`, {
-    method: "GET",
-    headers: {
-      "X-Api-Key": process.env.TALENT_API_KEY!,
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await fetch(
+    `https://api.talentprotocol.com/api/v2/passports/${walletOrId}`,
+    {
+      method: "GET",
+      headers: {
+        "X-Api-Key": process.env.TALENT_API_KEY!,
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   // Get the JSON response
   const responseJson = await response.json();
@@ -58,4 +63,39 @@ export const getTalentPassportByWalletOrId = async (walletOrId: string): Promise
 
   // Return the Talent Passport User
   return responseJson;
+};
+
+/**
+ * Gets a Talent Score using the wallet address or user ID.
+ * @param walletOrId - A wallet address or the user's ID.
+ * @returns The numeric Talent Score or null if not found.
+ **/
+export const getTalentScoreByWalletOrId = async (
+  walletOrId: string
+): Promise<number | null> => {
+  const response = await fetch(
+    `https://api.talentprotocol.com/score?id=${walletOrId}`,
+    {
+      method: "GET",
+      headers: {
+        "X-Api-Key": process.env.TALENT_API_KEY!,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) return null;
+
+  const responseJson = await response.json();
+
+  // Defensive: check for the expected structure
+  if (
+    responseJson &&
+    responseJson.score &&
+    typeof responseJson.score.points === "number"
+  ) {
+    return responseJson.score.points;
+  }
+
+  return null;
 };

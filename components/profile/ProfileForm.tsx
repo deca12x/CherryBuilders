@@ -221,16 +221,20 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           });
           return;
         }
-        throw new Error("Failed to fetch Talent Passport");
+        throw new Error("Failed to fetch Talent Score");
       }
 
-      const passportScore: number = await response.json();
-      handleChange("talent_score", passportScore.toString());
-      toast({
-        title: "Success",
-        description: "Talent Score updated successfully.",
-        variant: "default",
-      });
+      const data = await response.json();
+      if (typeof data.score === "number") {
+        handleChange("talent_score", data.score);
+        toast({
+          title: "Success",
+          description: "Talent Score updated successfully.",
+          variant: "default",
+        });
+      } else {
+        throw new Error("Invalid score response");
+      }
     } catch (error) {
       console.error("Error updating Talent Score:", error);
       toast({
