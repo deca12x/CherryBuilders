@@ -114,27 +114,31 @@ export default function FiltersModal({
             Events
           </p>
           <div className="grid grid-cols-2 gap-2.5">
-            {Object.keys(filters.events).map((event) => (
-              <Button
-                key={event}
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    events: {
-                      ...prev.events,
-                      [event]: {
-                        name: prev.events[event].name,
-                        selected: !prev.events[event].selected,
+            {Object.entries(filters.events)
+              .reverse()
+              .map(([event, eventData]) => (
+                <Button
+                  key={event}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      events: {
+                        ...prev.events,
+                        [event]: {
+                          name: prev.events[event].name,
+                          selected: !prev.events[event].selected,
+                        },
                       },
-                    },
-                  }))
-                }
-                variant={filters.events[event].selected ? "default" : "outline"}
-                className="w-full text-wrap leading-4 p-5"
-              >
-                {filters.events[event].name}
-              </Button>
-            ))}
+                    }))
+                  }
+                  variant={
+                    filters.events[event].selected ? "default" : "outline"
+                  }
+                  className="w-full text-wrap leading-4 p-5"
+                >
+                  {filters.events[event].name}
+                </Button>
+              ))}
           </div>
         </div>
       </motion.div>
