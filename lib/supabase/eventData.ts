@@ -17,16 +17,12 @@ export const ALL_EVENTS = [
     name: "ETHBucharest 2025",
   },
   {
-    slug: "eth_taipei_2025",
-    name: "ETHGlobal Taipei 2025",
+    slug: "eth_dublin_2025",
+    name: "ETHDublin 2025",
   },
   {
-    slug: "eth_dam_2025",
-    name: "ETHDam 2025",
-  },
-  {
-    slug: "eth_lisbon_2025",
-    name: "ETHLisbon 2025",
+    slug: "eth_belgrade_2025",
+    name: "ETHBelgrade 2025",
   },
 ] as const;
 
