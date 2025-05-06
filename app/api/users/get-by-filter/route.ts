@@ -12,10 +12,8 @@ function shuffleArray(array: UserType[]): UserType[] {
 }
 
 export async function GET(req: NextRequest) {
-  console.log("1 start");
   // Get user's address from request headers (set by middleware)
   const address = req.headers.get("x-address")!;
-  console.log("2 address");
 
   // Get pagination and filter params from URL
   const searchParams = req.nextUrl.searchParams;
@@ -51,14 +49,6 @@ export async function GET(req: NextRequest) {
       .from("matches")
       .select("user_1, user_2, matched")
       .or(`user_1.eq.${address},user_2.eq.${address}`);
-    console.log(
-      "3 matches:",
-      matchesData?.map((m) => ({
-        user_1: m.user_1,
-        user_2: m.user_2,
-        matched: m.matched,
-      }))
-    );
 
     if (matchesError) throw matchesError;
 
@@ -74,7 +64,6 @@ export async function GET(req: NextRequest) {
             .filter((user) => user !== address)
         : []
     );
-    console.log("4 matchedUsers:", Array.from(matchedUsersSet));
     const matchedUsers = Array.from(matchedUsersSet);
 
     // Step 3: Get users that have the required tags
@@ -91,7 +80,6 @@ export async function GET(req: NextRequest) {
       .neq("evm_address", address) // Exclude current user
       .contains("tags", tagsArray) // Filter by tags
       .range(offset, offset + limit - 1); // Pagination
-    console.log("5 userData:", userData?.length);
     if (userError) throw userError;
 
     if (!userData) {
@@ -123,10 +111,6 @@ export async function GET(req: NextRequest) {
 
     // Step 6: Randomize results order
     const shuffledData = shuffleArray(filteredUserData);
-    console.log("6. Final data being sent:", {
-      length: shuffledData.length,
-      users: shuffledData.map((u) => u.evm_address),
-    });
     return NextResponse.json({ data: shuffledData }, { status: 200 });
   } catch (error) {
     console.error("Internal Server Error: ", error);

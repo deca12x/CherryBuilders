@@ -64,6 +64,9 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
     return `https://collectors.poap.xyz/token/${tokenId}`;
   };
 
+  // Helper function to check if URL is a GIF
+  const isGif = (url: string) => url.toLowerCase().endsWith(".gif");
+
   return (
     <motion.div
       className="flex flex-col gap-2 bg-card rounded-xl p-3"
@@ -85,6 +88,7 @@ const UserPoaps: React.FC<UserPoapsProps> = ({
               width={48}
               height={48}
               className="rounded-full border-2 border-card hover:opacity-80 transition-opacity"
+              unoptimized={isGif(poap.event.image_url)}
             />
           </a>
         ))}

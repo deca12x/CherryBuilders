@@ -75,7 +75,7 @@ export default function ContactProfileCard({ user }: ContactProfileCardProps) {
 
         {/* Talent score */}
         {user.talent_score && user.talent_score > 0 ? (
-          <div className="flex flex-col items-center bg-card rounded-xl p-3">
+          <div className="flex flex-col gap-2 bg-card rounded-xl p-3">
             <p className="font-bold text-white">Talent Score</p>
             <p className="text-grey-foreground">{user.talent_score}</p>
           </div>

@@ -111,6 +111,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0 || !profileData.evm_address) return;
 
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const invalidFiles = Array.from(files).filter(
+      (file) => !allowedTypes.includes(file.type)
+    );
+    if (invalidFiles.length > 0) {
+      toast({
+        title: "Invalid file type",
+        description: "Only JPG, JPEG, PNG, or WEBP images are allowed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
@@ -221,16 +234,20 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           });
           return;
         }
-        throw new Error("Failed to fetch Talent Passport");
+        throw new Error("Failed to fetch Talent Score");
       }
 
-      const passportScore: number = await response.json();
-      handleChange("talent_score", passportScore.toString());
-      toast({
-        title: "Success",
-        description: "Talent Score updated successfully.",
-        variant: "default",
-      });
+      const data = await response.json();
+      if (typeof data.score === "number") {
+        handleChange("talent_score", data.score);
+        toast({
+          title: "Success",
+          description: "Talent Score updated successfully.",
+          variant: "default",
+        });
+      } else {
+        throw new Error("Invalid score response");
+      }
     } catch (error) {
       console.error("Error updating Talent Score:", error);
       toast({

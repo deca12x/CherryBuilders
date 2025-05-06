@@ -25,6 +25,7 @@ export default function ProfileCardHeader({
 }: ProfileCardHeaderProps) {
   const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] =
     React.useState(false);
+  const [imgError, setImgError] = React.useState(false);
 
   return (
     <AnimatePresence mode="wait">
@@ -47,13 +48,16 @@ export default function ProfileCardHeader({
             >
               <Image
                 src={
-                  user.profile_pictures[imageIndex] ??
-                  "/images/default_propic.jpeg"
+                  imgError
+                    ? "/images/default_propic.jpeg"
+                    : (user.profile_pictures[imageIndex] ??
+                      "/images/default_propic.jpeg")
                 }
                 alt={user.name}
                 className="rounded-full object-cover sm:w-[86px] sm:h-[86px] w-[66px] h-[66px]"
                 width={100}
                 height={100}
+                onError={() => setImgError(true)}
               />
             </button>
           )}

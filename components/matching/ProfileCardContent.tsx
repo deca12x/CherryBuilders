@@ -97,7 +97,7 @@ const ProfileCardContent: React.FC<ProfileCardContentProps> = ({ user }) => {
       {/* Talent score */}
       {user.talent_score && user.talent_score > 0 ? (
         <motion.div
-          className="flex flex-col items-center bg-card rounded-xl p-3"
+          className="flex flex-col gap-2 bg-card rounded-xl p-3"
           variants={itemVariants}
         >
           <p className="font-bold text-white">Talent Score</p>

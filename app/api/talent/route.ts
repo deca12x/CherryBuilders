@@ -1,13 +1,16 @@
-import { getTalentPassportByWalletOrId } from "@/lib/talent";
+import { getTalentScoreByWalletOrId } from "@/lib/talent";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { address } = await request.json();
-  const passport = await getTalentPassportByWalletOrId(address!);
+  const score = await getTalentScoreByWalletOrId(address!);
 
-  if (passport) {
-    return NextResponse.json(passport.passport.score, { status: 200 });
+  if (typeof score === "number") {
+    return NextResponse.json(score, { status: 200 });
   } else {
-    return NextResponse.json({ error: "Talent passport not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Talent score not found" },
+      { status: 404 }
+    );
   }
 }
