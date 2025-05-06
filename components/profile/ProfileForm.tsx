@@ -111,6 +111,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0 || !profileData.evm_address) return;
 
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const invalidFiles = Array.from(files).filter(
+      (file) => !allowedTypes.includes(file.type)
+    );
+    if (invalidFiles.length > 0) {
+      toast({
+        title: "Invalid file type",
+        description: "Only JPG, JPEG, PNG, or WEBP images are allowed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
