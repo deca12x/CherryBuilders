@@ -89,7 +89,7 @@ export default function Matching() {
   useEffect(() => {
     // Check if user has dismissed the dialog before
     const hasSeenEventDialog = localStorage.getItem(
-      "hasSeenEventDialogApr2025"
+      "hasSeenEventDialogMay2025"
     );
     if (hasSeenEventDialog) {
       setShowEventDialog(false);
