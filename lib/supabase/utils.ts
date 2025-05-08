@@ -822,7 +822,7 @@ export const getEventBySlug = async (
  * A utility function that, given a user address, retrieves all the events the user is attending from the database
  * @param address - The address of the user
  * @param jwt - The jwt needed to authorize the call
- * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
+ * @returns An object representing the response { success: boolean; data: EventType[] | null; error: any | undefined }
  */
 export const getEventsByAddress = async (
   address: string,
@@ -887,7 +887,7 @@ export async function createUserEvent(
   event: string,
   jwt: string
 ) {
-  if (event === "neither") return;
+  if (event === "none") return;
   try {
     const response = await fetch("/api/user-events", {
       method: "POST",
@@ -912,12 +912,9 @@ export async function createUserEvent(
 
 export async function updateUserEvent(
   address: string,
-  event: string,
+  selectedEvents: string[],
   jwt: string
 ) {
-  // Then update the user's event selection
-
-  console.log("Updating event selection to:", event);
   const response = await fetch("/api/user-events", {
     method: "PUT",
     headers: {
@@ -926,14 +923,13 @@ export async function updateUserEvent(
     },
     body: JSON.stringify({
       userAddress: address,
-      eventSlug: event,
+      selectedEvents: selectedEvents,
     }),
   });
 
   if (!response.ok) {
     throw new Error("Failed to update event selection");
   }
-  console.log("Event selection updated successfully");
 }
 
 // New function to add to lib/supabase/utils.ts

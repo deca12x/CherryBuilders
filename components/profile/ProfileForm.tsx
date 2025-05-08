@@ -24,7 +24,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ProfileFormProps {
   initialData: UserType;
-  onSubmit: (data: UserType, selectedEvent: string) => Promise<void>;
+  onSubmit: (data: UserType, selectedEvents: string[]) => Promise<void>;
   submitButtonText: string;
   showTalentScore?: boolean;
   jwt: string | null;
@@ -50,8 +50,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
-  const [selectedEvent, setSelectedEvent] =
-    useState<string>(initialSelectedEvent);
+  const [selectedEvents, setSelectedEvents] = useState<string[]>(
+    initialSelectedEvent === "none" ? [] : [initialSelectedEvent]
+  );
   const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
 
   const availableTags: UserTag[] = [
@@ -70,7 +71,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   }, [initialData]);
 
   useEffect(() => {
-    setSelectedEvent(initialSelectedEvent);
+    setSelectedEvents(
+      initialSelectedEvent === "none" ? [] : [initialSelectedEvent]
+    );
   }, [initialSelectedEvent]);
 
   useEffect(() => {
@@ -178,6 +181,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }));
   };
 
+  const handleEventToggle = (eventSlug: string) => {
+    setSelectedEvents((prev) => {
+      if (prev.includes(eventSlug)) {
+        return prev.filter((slug) => slug !== eventSlug);
+      } else {
+        return [...prev, eventSlug];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -197,7 +210,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(profileData, selectedEvent);
+      await onSubmit(profileData, selectedEvents);
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -510,22 +523,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       <motion.div variants={itemVariants}>
         <Label className="text-sm font-medium mb-2 block">I'm going to</Label>
         <div className="grid grid-cols-2 gap-2 text-white">
-          <RadioGroup
-            value={selectedEvent}
-            onValueChange={(value) => setSelectedEvent(value)}
-          >
-            {activeEvents.map((event) => (
-              <div key={event.slug} className="flex items-center space-x-2">
-                <RadioGroupItem value={event.slug} id={event.slug} />
-                <Label htmlFor={event.slug}>{event.name}</Label>
-              </div>
-            ))}
-
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="neither" id="neither" />
-              <Label htmlFor="neither">Neither</Label>
+          {activeEvents.map((event) => (
+            <div key={event.slug} className="flex items-center space-x-2">
+              <Checkbox
+                id={event.slug}
+                checked={selectedEvents.includes(event.slug)}
+                onCheckedChange={() => handleEventToggle(event.slug)}
+              />
+              <Label htmlFor={event.slug}>{event.name}</Label>
             </div>
-          </RadioGroup>
+          ))}
         </div>
       </motion.div>
 

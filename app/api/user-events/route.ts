@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // If "neither" selected, we're done (no relationship needed)
-  if (eventSlug === "neither") {
+  // If "none" selected, we're done (no relationship needed)
+  if (eventSlug === "none") {
     return NextResponse.json({ success: true }, { status: 200 });
   }
 
@@ -56,17 +56,17 @@ export async function POST(req: NextRequest) {
  * Called by updateUserEvent() in ProfileEditParent.tsx during profile editing
  */
 export async function PUT(req: NextRequest) {
-  const { userAddress, eventSlug } = await req.json();
+  const { userAddress, selectedEvents } = await req.json();
 
-  if (!userAddress || !eventSlug) {
+  if (!userAddress || !Array.isArray(selectedEvents)) {
     return NextResponse.json(
       { error: "Incorrect payload format" },
       { status: 400 }
     );
   }
 
-  // If "neither" selected, just delete existing relationships
-  if (eventSlug === "neither") {
+  // If no events selected, delete all relationships
+  if (selectedEvents.length === 0) {
     try {
       const { error: deleteError } = await supabase
         .from("users_events_rel")
@@ -84,38 +84,74 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  // Validate that the selected event is active
-  const { data: event } = await supabase
-    .from("events")
-    .select("active")
-    .eq("slug", eventSlug)
-    .single();
-
-  if (!event?.active) {
-    return NextResponse.json(
-      { error: "Selected event is not active" },
-      { status: 400 }
-    );
-  }
-
   try {
-    // Delete existing relationships and create new one
-    const { error: deleteError } = await supabase
+    // Get current events for the user
+    const { data: currentEvents, error: fetchError } = await supabase
       .from("users_events_rel")
-      .delete()
+      .select("event_slug")
       .eq("user_address", userAddress);
 
-    if (deleteError) throw deleteError;
+    if (fetchError) throw fetchError;
 
-    const { error: createError } = await supabase
-      .from("users_events_rel")
-      .insert([{ event_slug: eventSlug, user_address: userAddress }]);
+    const currentEventSlugs = currentEvents?.map((e) => e.event_slug) || [];
 
-    if (createError) throw createError;
+    // Validate that all selected events are active
+    const { data: activeEvents, error: activeError } = await supabase
+      .from("events")
+      .select("slug")
+      .in("slug", selectedEvents)
+      .eq("active", true);
+
+    if (activeError) throw activeError;
+
+    const activeEventSlugs = activeEvents?.map((e) => e.slug) || [];
+    const invalidEvents = selectedEvents.filter(
+      (slug) => !activeEventSlugs.includes(slug)
+    );
+
+    if (invalidEvents.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Selected events are not active: ${invalidEvents.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Remove events that are no longer selected
+    const eventsToRemove = currentEventSlugs.filter(
+      (slug) => !selectedEvents.includes(slug)
+    );
+    if (eventsToRemove.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("users_events_rel")
+        .delete()
+        .eq("user_address", userAddress)
+        .in("event_slug", eventsToRemove);
+
+      if (deleteError) throw deleteError;
+    }
+
+    // Add new events that weren't previously selected
+    const eventsToAdd = selectedEvents.filter(
+      (slug) => !currentEventSlugs.includes(slug)
+    );
+    if (eventsToAdd.length > 0) {
+      const { error: insertError } = await supabase
+        .from("users_events_rel")
+        .insert(
+          eventsToAdd.map((slug) => ({
+            event_slug: slug,
+            user_address: userAddress,
+          }))
+        );
+
+      if (insertError) throw insertError;
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error("Error updating match in database:", error);
+    console.error("Error updating events in database:", error);
     return NextResponse.json(
       { error: "Error updating record in database" },
       { status: 500 }

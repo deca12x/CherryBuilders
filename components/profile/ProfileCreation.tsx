@@ -37,7 +37,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
   const [passcode, setPasscode] = useState<string | null>(null);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
 
-  const handleSubmit = async (data: UserType, selectedEvent: string) => {
+  const handleSubmit = async (data: UserType, selectedEvents: string[]) => {
     if (!data.emailNotifications) {
       toast({
         title: "🙉 We know, emails are annoying",
@@ -50,7 +50,12 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
 
     try {
       await updateProfileData(address, data);
-      await createUserEvent(address, selectedEvent, jwt);
+
+      // Create events for all selected events
+      for (const eventSlug of selectedEvents) {
+        await createUserEvent(address, eventSlug, jwt);
+      }
+
       toast({
         title: "Success",
         description: "Profile saved successfully.",
@@ -130,7 +135,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
           onSubmit={handleSubmit}
           submitButtonText="Save & Continue"
           jwt={jwt}
-          initialSelectedEvent="neither"
+          initialSelectedEvent="none"
         />
       </div>
     </motion.main>

@@ -7,6 +7,7 @@ import { updateUser, updateUserEvent } from "@/lib/supabase/utils";
 import ProfileForm from "@/components/profile/ProfileForm";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { getActiveEvents } from "@/lib/supabase/utils";
+import { supabase } from "@/lib/supabase/supabase-client";
 
 interface ProfileEditParentProps {
   initialProfileData: UserType;
@@ -22,7 +23,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
   userEvents,
 }) => {
   const [profileData, setProfileData] = useState<UserType>(initialProfileData);
-  const [selectedEvent, setSelectedEvent] = useState<string>("neither");
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const { toast } = useToast();
   const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
 
@@ -44,29 +45,32 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
   }, [jwt, toast]);
 
   useEffect(() => {
-    // If user has no events at all, they're in "neither" state
+    // If user has no events at all, they're in "none" state
     if (!userEvents || userEvents.length === 0) {
-      setSelectedEvent("neither");
+      setSelectedEvents([]);
       return;
     }
-    // From the user's registered events, find one that matches a current event
-    const userCurrentEvent = userEvents.find((event) =>
-      activeEvents.some((currentEvent) => currentEvent.slug === event.slug)
-    );
-    if (userCurrentEvent) {
-      setSelectedEvent(userCurrentEvent.slug);
-    } else {
-      setSelectedEvent("neither");
-    }
-  }, [userEvents]);
+    // Get all current active events the user is registered for
+    const userCurrentEvents = userEvents
+      .filter((event) =>
+        activeEvents.some((currentEvent) => currentEvent.slug === event.slug)
+      )
+      .map((event) => event.slug);
 
-  const handleSubmit = async (updatedData: UserType, selectedEvent: string) => {
+    setSelectedEvents(userCurrentEvents);
+  }, [userEvents, activeEvents]);
+
+  const handleSubmit = async (
+    updatedData: UserType,
+    selectedEvents: string[]
+  ) => {
     try {
       // First update the user profile
       const updatedUser = await updateUser(userAddress, updatedData, jwt);
       if (!updatedUser.success) throw Error(updatedUser.error);
 
-      await updateUserEvent(userAddress, selectedEvent, jwt);
+      // Update events - the new updateUserEvent function handles both adding and removing events
+      await updateUserEvent(userAddress, selectedEvents, jwt);
 
       setProfileData(updatedData);
       toast({
@@ -127,7 +131,9 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
           showTalentScore={true}
           jwt={jwt}
           userEvents={userEvents}
-          initialSelectedEvent={selectedEvent}
+          initialSelectedEvent={
+            selectedEvents.length > 0 ? selectedEvents[0] : "none"
+          }
         />
       </motion.div>
     </>
