@@ -10,11 +10,14 @@ interface ContactProfilePanelProps {
   onClose: () => void;
 }
 
-export default function ContactProfilePanel({ contact, onClose }: ContactProfilePanelProps) {
+export default function ContactProfilePanel({
+  contact,
+  onClose,
+}: ContactProfilePanelProps) {
   if (!contact) return null;
 
   return (
-    <div className="flex flex-col h-full bg-background border-l border-border pb-[58px]">
+    <div className="flex flex-col h-full bg-background border-l border-border pb-[58px] w-[100%] sm:w-[450px]">
       <div className="flex items-center justify-between p-4">
         <h2 className="text-xl font-semibold">Contact Info</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>

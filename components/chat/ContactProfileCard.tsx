@@ -1,4 +1,4 @@
-import { Link, Copy, CheckCircle } from "lucide-react";
+import { Link } from "lucide-react";
 import UserEvents from "../matching/UserEvents";
 import { UserTag, UserType } from "@/lib/supabase/types";
 import Image from "next/image";
@@ -11,20 +11,6 @@ interface ContactProfileCardProps {
 }
 
 export default function ContactProfileCard({ user }: ContactProfileCardProps) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy: () => void = () => {
-    navigator.clipboard.writeText(user.evm_address);
-    setCopied(true);
-  };
-
-  useEffect(() => {
-    if (copied) {
-      const timer = setTimeout(() => setCopied(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [copied]);
-
   return (
     <div className="flex flex-col items-center min-w-full w-full space-y-4 pb-10">
       <Avatar className="h-28 w-28">
@@ -39,12 +25,6 @@ export default function ContactProfileCard({ user }: ContactProfileCardProps) {
       </Avatar>
       <div className="flex flex-col justify-center items-center gap-1 mb-5">
         <h3 className="text-2xl font-semibold">{user.name}</h3>
-        <div className="flex justify-center items-center gap-2 text-sm text-grey-foreground">
-          <label>{shortenAddress(user.evm_address)}</label>
-          <button onClick={handleCopy} className="focus:outline-none">
-            {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
-          </button>
-        </div>
         <div className="flex flex-wrap justify-center gap-1.5">
           {user.tags.map((tag: UserTag, index: number) => (
             <div
@@ -94,7 +74,7 @@ export default function ContactProfileCard({ user }: ContactProfileCardProps) {
                   <Image
                     height={26}
                     width={26}
-                    src="/images/github.png"
+                    src="/images/github.svg"
                     alt="github logo"
                   />
                   <a
@@ -111,7 +91,7 @@ export default function ContactProfileCard({ user }: ContactProfileCardProps) {
                   <Image
                     height={20}
                     width={20}
-                    src="/images/x_logo.svg"
+                    src="/images/x.svg"
                     alt="x logo"
                   />
                   <a
