@@ -184,10 +184,10 @@ export default function ChatWindow({
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div
-          className="flex items-center space-x-3 cursor-pointer"
+          className="flex items-center space-x-3 cursor-pointer group"
           onClick={onOpenProfile}
         >
-          <Avatar>
+          <Avatar className="transition-transform group-hover:scale-105">
             <AvatarImage
               src={
                 chat.otherUserData.profile_pictures.length > 0
@@ -197,7 +197,9 @@ export default function ChatWindow({
               alt="Other Users Propic"
             />
           </Avatar>
-          <h2 className="text-lg font-semibold">{chat.otherUserData.name}</h2>
+          <h2 className="text-lg font-semibold group-hover:text-red transition-colors">
+            {chat.otherUserData.name}
+          </h2>
         </div>
       </div>
       {chatMessagesLoading ? (
