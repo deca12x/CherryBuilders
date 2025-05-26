@@ -25,8 +25,8 @@ export const ALL_EVENTS = [
     name: "ETHBelgrade 2025",
   },
   {
-    slug: "mantle_cookathon_1_2025",
-    name: "Mantle Cookathon #1",
+    slug: "mantle_cookathon_2025",
+    name: "Mantle Cookathon 2025",
   },
 ] as const;
 
