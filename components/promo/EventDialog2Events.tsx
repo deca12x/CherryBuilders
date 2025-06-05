@@ -90,7 +90,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
                 setOpen(false);
               }}
             >
-              <span className="text-lg">Follow us on X</span>
+              <span className="text-lg">Find out more on X</span>
             </Link>
           </Button>
 
