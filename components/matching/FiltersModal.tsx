@@ -8,6 +8,7 @@ import { ToggleRight, Check } from "lucide-react";
 import type { UserTag } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import type { FiltersProp } from "@/lib/types";
+import { Button2 } from "@/components/ui/button2";
 
 interface FiltersModalProps {
   isOpen: boolean;
@@ -113,32 +114,37 @@ export default function FiltersModal({
           <p className="text-md mt-7 mb-3 text-red-foreground text-left">
             Events
           </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            {Object.entries(filters.events)
-              .reverse()
-              .map(([event, eventData]) => (
-                <Button
-                  key={event}
-                  onClick={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      events: {
-                        ...prev.events,
-                        [event]: {
-                          name: prev.events[event].name,
-                          selected: !prev.events[event].selected,
+          <div
+            className="overflow-y-auto h-[calc(4.5 * 2rem + 4 * 0.5rem)]"
+            style={{ maxHeight: "calc(4.5 * 2rem + 4 * 0.5rem)" }}
+          >
+            <div className="flex flex-col gap-2.5 items-start">
+              {Object.entries(filters.events)
+                .reverse()
+                .map(([event, eventData]) => (
+                  <Button2
+                    key={event}
+                    onClick={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        events: {
+                          ...prev.events,
+                          [event]: {
+                            name: prev.events[event].name,
+                            selected: !prev.events[event].selected,
+                          },
                         },
-                      },
-                    }))
-                  }
-                  variant={
-                    filters.events[event].selected ? "default" : "outline"
-                  }
-                  className="w-full text-wrap leading-4 p-5"
-                >
-                  {filters.events[event].name}
-                </Button>
-              ))}
+                      }))
+                    }
+                    variant={
+                      filters.events[event].selected ? "default" : "outline"
+                    }
+                    className="w-full text-wrap leading-4 p-5 h-3"
+                  >
+                    {filters.events[event].name}
+                  </Button2>
+                ))}
+            </div>
           </div>
         </div>
       </motion.div>

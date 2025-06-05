@@ -45,7 +45,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
         <div className="relative flex flex-col items-center space-y-6 py-6">
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
             <Link
-              href="https://www.ethdublin.io/"
+              href="https://www.cookathon.dev/"
               target="_blank"
               className="w-[90%] sm:w-[45%] transition-all duration-300 transform hover:scale-105"
               onClick={() => {
@@ -54,13 +54,13 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
               }}
             >
               <img
-                src="/images/eventDialogDublin.png"
+                src="/images/eventDialogCookathon.png"
                 alt="Event promotion"
                 className="aspect-video rounded-xl object-cover"
               />
             </Link>
             <Link
-              href="https://ethbelgrade.rs/"
+              href="https://www.ethwarsaw.dev/"
               target="_blank"
               className="w-[90%] sm:w-[45%] transition-all duration-300 transform hover:scale-105"
               onClick={() => {
@@ -69,7 +69,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
               }}
             >
               <img
-                src="/images/eventDialogBelgrade.png"
+                src="/images/eventDialogWarsaw.png"
                 alt="Event promotion"
                 className="aspect-video rounded-xl object-cover"
               />

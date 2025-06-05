@@ -28,6 +28,10 @@ export const ALL_EVENTS = [
     slug: "mantle_cookathon_2025",
     name: "Mantle Cookathon 2025",
   },
+  {
+    slug: "eth_warsaw_2025",
+    name: "ETHWarsaw 2025",
+  },
 ] as const;
 
 // Get the type of current event slugs from the constant
