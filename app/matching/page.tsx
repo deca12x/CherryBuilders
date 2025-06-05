@@ -8,7 +8,7 @@ import ErrorCard from "@/components/ui/error-card";
 import MatchingParent from "@/components/matching/MatchingParent";
 import { FiltersProp } from "@/lib/types";
 import { UserType, EventType } from "@/lib/supabase/types";
-import EventDialog3Events from "@/components/promo/EventDialog3Events";
+import EventDialog2Events from "@/components/promo/EventDialog2Events";
 import { ALL_EVENTS } from "@/lib/supabase/eventData";
 import { getFiltersFromSession, saveFiltersToSession } from "@/lib/filters";
 
@@ -89,7 +89,7 @@ export default function Matching() {
   useEffect(() => {
     // Check if user has dismissed the dialog before
     const hasSeenEventDialog = localStorage.getItem(
-      "hasSeenEventDialogMay2025"
+      "hasSeenEventDialogJune2025"
     );
     if (hasSeenEventDialog) {
       setShowEventDialog(false);
@@ -97,7 +97,7 @@ export default function Matching() {
   }, []);
 
   const handleDontShowAgain = () => {
-    localStorage.setItem("hasSeenEventDialogMay2025", "true");
+    localStorage.setItem("hasSeenEventDialogJune2025", "true");
     setShowEventDialog(false);
   };
 
@@ -115,7 +115,7 @@ export default function Matching() {
         />
         {/* {showG22Dialog && <G22Dialog onDontShowAgain={handleDontShowAgain} />} */}
         {showEventDialog && (
-          <EventDialog3Events onDontShowAgain={handleDontShowAgain} />
+          <EventDialog2Events onDontShowAgain={handleDontShowAgain} />
         )}
       </>
     );
