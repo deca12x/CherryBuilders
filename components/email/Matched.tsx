@@ -77,7 +77,7 @@ export const MatchedEmail = ({
 
             {matchedWithBio && (
               <Section>
-                <Text className="text-gray-600 text-[14px] leading-[10px] text-center italic">
+                <Text className="text-gray-600 text-[14px] leading-[20px] text-center italic">
                   Bio: "{matchedWithBio}"
                 </Text>
               </Section>
@@ -85,7 +85,7 @@ export const MatchedEmail = ({
 
             {matchedWithBuilding && (
               <Section>
-                <Text className="text-gray-600 text-[14px] leading-[10px] text-center italic">
+                <Text className="text-gray-600 text-[14px] leading-[20px] text-center italic">
                   What I'm building: "{matchedWithBuilding}"
                 </Text>
               </Section>
@@ -93,7 +93,7 @@ export const MatchedEmail = ({
 
             {matchedWithLookingFor && (
               <Section>
-                <Text className="text-gray-600 text-[14px] leading-[10px] text-center italic">
+                <Text className="text-gray-600 text-[14px] leading-[20px] text-center italic">
                   Who I'm looking for: "{matchedWithLookingFor}"
                 </Text>
               </Section>

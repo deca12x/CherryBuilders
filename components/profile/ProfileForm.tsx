@@ -350,7 +350,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               <img
                 src={url}
                 alt={`Profile ${index + 1}`}
-                className="user-image w-24 h-24 rounded-lg shadow-md"
+                className="user-image-set w-24 h-24 rounded-lg shadow-md"
               />
               <button
                 type="button"
