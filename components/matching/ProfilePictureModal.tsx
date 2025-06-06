@@ -91,7 +91,7 @@ export default function ProfilePictureModal({
               key={imageIndex}
               src={safeImages[imageIndex]}
               alt={imageIndex.toString()}
-              className="absolute top-0 left-0 w-full h-full object-cover rounded-xl"
+              className="user-image absolute top-0 left-0 w-full h-full object-cover rounded-xl"
               custom={direction}
               variants={{
                 enter: (direction: number) => ({

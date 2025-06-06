@@ -195,6 +195,7 @@ export default function ChatWindow({
                   : "/images/default_propic.jpeg"
               }
               alt="Other Users Propic"
+              className="user-image"
             />
           </Avatar>
           <h2 className="text-lg font-semibold group-hover:text-red transition-colors">

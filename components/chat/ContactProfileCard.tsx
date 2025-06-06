@@ -21,6 +21,7 @@ export default function ContactProfileCard({ user }: ContactProfileCardProps) {
               : "/images/default_propic.jpeg"
           }
           alt="Other Users Propic"
+          className="user-image"
         />
       </Avatar>
       <div className="flex flex-col justify-center items-center gap-1 mb-5">

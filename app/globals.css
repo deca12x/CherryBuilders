@@ -102,3 +102,9 @@
     background-position: 0% 50%;
   }
 }
+
+.user-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}

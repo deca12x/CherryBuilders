@@ -67,7 +67,7 @@ export const MatchedEmail = ({
 
             <Section>
               <Img
-                className="rounded-full my-0 mx-auto"
+                className="user-image rounded-full my-0 mx-auto"
                 src={matchedWithImage || "/images/default_propic.jpeg"}
                 width="128"
                 height="128"
