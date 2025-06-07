@@ -67,10 +67,8 @@ export const MatchedEmail = ({
 
             <Section>
               <Img
-                className="user-image rounded-full my-0 mx-auto"
+                className="user-image rounded-full object-cover my-0 mx-auto w-[128px] h-[128px]"
                 src={matchedWithImage || "/images/default_propic.jpeg"}
-                width="128"
-                height="128"
                 alt={`${matchedWith}'s profile picture`}
               />
             </Section>

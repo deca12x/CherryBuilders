@@ -43,7 +43,7 @@ export default function IcebreakerModal({
                   : "/images/default_propic.jpeg"
               }
               alt={user?.name}
-              className="user-image"
+              className=""
             />
           </Avatar>
 
