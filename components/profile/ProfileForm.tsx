@@ -350,7 +350,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               <img
                 src={url}
                 alt={`Profile ${index + 1}`}
-                className="w-24 h-24 object-cover rounded-lg shadow-md"
+                className="user-image-set w-24 h-24 rounded-lg shadow-md"
               />
               <button
                 type="button"
@@ -600,7 +600,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             }
           />
           <label htmlFor="emailMarketing" className="text-sm">
-            Optional: I want to receive emails about hackathons and conferences
+            Optional: I want to receive emails about hackathons
           </label>
         </div>
       </motion.div>

@@ -10,7 +10,10 @@ interface EndOfProfilesModalProps {
   onClose: () => void;
 }
 
-export default function ProfilesEndedModal({ isOpen, onClose }: EndOfProfilesModalProps) {
+export default function ProfilesEndedModal({
+  isOpen,
+  onClose,
+}: EndOfProfilesModalProps) {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
 
@@ -55,9 +58,12 @@ export default function ProfilesEndedModal({ isOpen, onClose }: EndOfProfilesMod
         <div className="absolute inset-0 bg-gray-200 opacity-50" />
         <div className="relative z-10">
           <AlertCircle className="text-gray-600 mx-auto mb-4" size={48} />
-          <h2 className="text-3xl font-bold mb-4 text-gray-800">No More Profiles</h2>
+          <h2 className="text-3xl font-bold mb-4 text-gray-800">
+            No More Profiles
+          </h2>
           <p className="text-xl mb-6 text-gray-600">
-            You've viewed all available profiles. Check back later for new matches!
+            You've viewed all available profiles. Remove a few filters to see
+            more!
           </p>
           <button
             onClick={onClose}

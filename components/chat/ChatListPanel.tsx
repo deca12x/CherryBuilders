@@ -61,6 +61,7 @@ export default function ChatListPanel({
                             : "/images/default_propic.jpeg"
                         }
                         alt="Other User's Profile Picture"
+                        className="user-image"
                       />
                     </Avatar>
                     <div className="flex flex-col w-full min-w-0">

@@ -54,7 +54,7 @@ export default function ProfileCardHeader({
                       "/images/default_propic.jpeg")
                 }
                 alt={user.name}
-                className="rounded-full object-cover sm:w-[86px] sm:h-[86px] w-[66px] h-[66px]"
+                className="user-image rounded-full object-cover sm:w-[86px] sm:h-[86px] w-[66px] h-[66px]"
                 width={100}
                 height={100}
                 onError={() => setImgError(true)}
