@@ -47,7 +47,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full px-2">
             {/* First row - 2 events on desktop */}
             <Link
-              href="https://www.ethdublin.io/"
+              href="https://www.cookathon.dev/"
               target="_blank"
               className="w-full transition-all duration-300 transform hover:scale-105"
               onClick={() => {
@@ -56,13 +56,13 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
               }}
             >
               <img
-                src="/images/eventDialogDublin.png"
+                src="/images/eventDialogCookathon.png"
                 alt="Event promotion"
                 className="aspect-video rounded-xl object-cover w-full"
               />
             </Link>
             <Link
-              href="https://ethbelgrade.rs/"
+              href="https://www.ethwarsaw.dev/"
               target="_blank"
               className="w-full transition-all duration-300 transform hover:scale-105"
               onClick={() => {
@@ -71,7 +71,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
               }}
             >
               <img
-                src="/images/eventDialogBelgrade.png"
+                src="/images/eventDialogWarsaw.png"
                 alt="Event promotion"
                 className="aspect-video rounded-xl object-cover w-full"
               />
@@ -79,7 +79,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
 
             {/* Second row - 1 centered event on desktop */}
             <Link
-              href="https://lu.ma/cookathon"
+              href="https://celoplatform.notion.site/Proof-of-Ship-17cd5cb803de8060ba10d22a72b549f8"
               target="_blank"
               className="w-full sm:col-span-2 sm:w-1/2 sm:mx-auto transition-all duration-300 transform hover:scale-105 mb-0"
               onClick={() => {
@@ -88,7 +88,7 @@ export default function DevconDialog({ onDontShowAgain }: DevconDialogProps) {
               }}
             >
               <img
-                src="/images/eventDialogCookathon.png"
+                src="/images/eventDialogProofOfShip.png"
                 alt="Event promotion"
                 className="aspect-video rounded-xl object-cover w-full"
               />
