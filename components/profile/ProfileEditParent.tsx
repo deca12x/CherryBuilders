@@ -131,9 +131,7 @@ const ProfileEditParent: React.FC<ProfileEditParentProps> = ({
           showTalentScore={true}
           jwt={jwt}
           userEvents={userEvents}
-          initialSelectedEvent={
-            selectedEvents.length > 0 ? selectedEvents[0] : "none"
-          }
+          initialSelectedEvents={selectedEvents}
         />
       </motion.div>
     </>
