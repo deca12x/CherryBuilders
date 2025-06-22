@@ -30,7 +30,7 @@ interface ProfileFormProps {
   jwt: string | null;
   showPrivacyInfo?: boolean;
   userEvents?: EventType[];
-  initialSelectedEvent: string;
+  initialSelectedEvents: string[];
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({
@@ -40,7 +40,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   showTalentScore = false,
   jwt,
   userEvents,
-  initialSelectedEvent,
+  initialSelectedEvents = [],
 }) => {
   const [profileData, setProfileData] = useState<UserType>(initialData);
   const [isUploading, setIsUploading] = useState(false);
@@ -51,7 +51,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const { toast } = useToast();
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<string[]>(
-    initialSelectedEvent === "none" ? [] : [initialSelectedEvent]
+    initialSelectedEvents
   );
   const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
 
@@ -71,10 +71,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   }, [initialData]);
 
   useEffect(() => {
-    setSelectedEvents(
-      initialSelectedEvent === "none" ? [] : [initialSelectedEvent]
-    );
-  }, [initialSelectedEvent]);
+    setSelectedEvents(initialSelectedEvents);
+  }, [initialSelectedEvents]);
 
   useEffect(() => {
     const fetchActiveEvents = async () => {

@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     const matchedUsers = Array.from(matchedUsersSet);
 
     // Step 3: Get users that have the required tags
-    const { data: userData, error: userError } = await supabase
+    let query = supabase
       .from("users")
       .select(
         `
@@ -77,9 +77,17 @@ export async function GET(req: NextRequest) {
         )
       `
       )
-      .neq("evm_address", address) // Exclude current user
-      .contains("tags", tagsArray) // Filter by tags
-      .range(offset, offset + limit - 1); // Pagination
+      .neq("evm_address", address); // Exclude current user
+
+    // Only apply tags filter if there are tags specified
+    if (tagsArray.length > 0) {
+      query = query.overlaps("tags", tagsArray);
+    }
+
+    const { data: userData, error: userError } = await query.range(
+      offset,
+      offset + limit - 1
+    ); // Pagination
     if (userError) throw userError;
 
     if (!userData) {
@@ -97,16 +105,31 @@ export async function GET(req: NextRequest) {
     // - Remove matched/liked users
     // - Ensure users have all required events
     const filteredUserData = transformedUserData.filter((user) => {
-      const userEvents: string[] = user.events!.map((event) => event.slug);
-      return (
-        !matchedUsers.includes(user.evm_address) &&
-        eventsArray.every((event) => userEvents.includes(event))
-      );
+      // First check if this is a matched user we should exclude
+      if (matchedUsers.includes(user.evm_address)) {
+        return false;
+      }
+
+      // If we have events to filter by, check them
+      if (eventsArray.length > 0) {
+        const userEvents: string[] = user.events!.map((event) => event.slug);
+
+        // Check if user has all required events
+        const hasAllEvents = eventsArray.every((event) =>
+          userEvents.includes(event)
+        );
+        if (!hasAllEvents) {
+          return false;
+        }
+      }
+
+      // User passed all filters
+      return true;
     });
 
-    if (!filteredUserData) {
-      console.error("No users found with the required events");
-      return NextResponse.json({ data: [] }, { status: 404 });
+    if (filteredUserData.length === 0) {
+      console.error("No users found with the required filters");
+      return NextResponse.json({ data: [] }, { status: 200 });
     }
 
     // Step 6: Randomize results order

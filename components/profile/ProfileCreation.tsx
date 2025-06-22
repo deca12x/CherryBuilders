@@ -36,6 +36,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
   const router = useRouter();
   const [passcode, setPasscode] = useState<string | null>(null);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
   const handleSubmit = async (data: UserType, selectedEvents: string[]) => {
     if (!data.emailNotifications) {
@@ -135,7 +136,7 @@ const ProfileCreation: React.FC<ProfileCreationProps> = ({ jwt, address }) => {
           onSubmit={handleSubmit}
           submitButtonText="Save & Continue"
           jwt={jwt}
-          initialSelectedEvent="none"
+          initialSelectedEvents={selectedEvents}
         />
       </div>
     </motion.main>
