@@ -66,33 +66,118 @@ export async function GET(req: NextRequest) {
     );
     const matchedUsers = Array.from(matchedUsersSet);
 
-    // Step 3: Get users that have the required tags
-    let query = supabase
-      .from("users")
-      .select(
-        `
-        *,
-        events:users_events_rel (
-          event:events(*)
-        )
-      `
-      )
-      .neq("evm_address", address); // Exclude current user
+    let userData;
+    let userError;
 
-    // Only apply tags filter if there are tags specified
-    if (tagsArray.length > 0) {
-      query = query.overlaps("tags", tagsArray);
+    // Step 3: Get users based on filters
+    if (tagsArray.length === 0 && eventsArray.length > 0) {
+      // Case: No tags but has events - Query users through events relation
+
+      // First get users who have all the required events
+      let usersWithEvents = [];
+
+      // For each event, get the users who have that event
+      for (const eventSlug of eventsArray) {
+        const { data: eventUsers, error: eventUsersError } = await supabase
+          .from("users_events_rel")
+          .select("user_address")
+          .eq("event_slug", eventSlug);
+
+        if (eventUsersError) throw eventUsersError;
+
+        // Add these users to our list
+        usersWithEvents.push(eventUsers.map((item) => item.user_address));
+      }
+
+      // Find users who appear in all event lists (intersection)
+      const usersInAllEvents = usersWithEvents.reduce((acc, curr) =>
+        acc.filter((user) => curr.some((item) => item === user))
+      );
+
+      // Now get the full user data for these users
+      if (usersInAllEvents.length > 0) {
+        const { data, error } = await supabase
+          .from("users")
+          .select(
+            `
+            *,
+            events:users_events_rel (
+              event:events(*)
+            )
+          `
+          )
+          .neq("evm_address", address)
+          .in("evm_address", usersInAllEvents)
+          .range(offset, offset + limit - 1);
+
+        userData = data;
+        userError = error;
+      } else {
+        userData = [];
+        userError = null;
+      }
+    } else {
+      // Case: Has tags or no filters at all - Use original query strategy
+      let query = supabase
+        .from("users")
+        .select(
+          `
+          *,
+          events:users_events_rel (
+            event:events(*)
+          )
+        `
+        )
+        .neq("evm_address", address); // Exclude current user
+
+      // Apply tags filter with AND logic if there are tags specified
+      if (tagsArray.length > 0) {
+        // For AND logic, we need to check that each tag is contained in the user's tags array
+        tagsArray.forEach((tag) => {
+          query = query.contains("tags", [tag]);
+        });
+      }
+
+      const result = await query.range(offset, offset + limit - 1); // Pagination
+      userData = result.data;
+      userError = result.error;
+
+      // If we have events filter and we have users from the previous query,
+      // filter the results further by events
+      if (eventsArray.length > 0 && userData && userData.length > 0) {
+        // Get all users who have each event
+        let usersWithEvents = [];
+
+        // For each event, get the users who have that event
+        for (const eventSlug of eventsArray) {
+          const { data: eventUsers, error: eventUsersError } = await supabase
+            .from("users_events_rel")
+            .select("user_address")
+            .eq("event_slug", eventSlug);
+
+          if (eventUsersError) throw eventUsersError;
+
+          // Add these users to our list
+          usersWithEvents.push(eventUsers.map((item) => item.user_address));
+        }
+
+        // Find users who appear in all event lists (intersection)
+        const usersInAllEvents = usersWithEvents.reduce((acc, curr) =>
+          acc.filter((user) => curr.some((item) => item === user))
+        );
+
+        // Filter userData to only include users who have all the required events
+        userData = userData.filter((user) =>
+          usersInAllEvents.includes(user.evm_address)
+        );
+      }
     }
 
-    const { data: userData, error: userError } = await query.range(
-      offset,
-      offset + limit - 1
-    ); // Pagination
     if (userError) throw userError;
 
-    if (!userData) {
-      console.error("No users found with the required tags");
-      return NextResponse.json({ data: userData }, { status: 404 });
+    if (!userData || userData.length === 0) {
+      console.error("No users found with the required filters");
+      return NextResponse.json({ data: [] }, { status: 200 });
     }
 
     // Step 4: Simplify nested event data structure
@@ -101,29 +186,12 @@ export async function GET(req: NextRequest) {
       events: user.events.map((eventRel: { event: any }) => eventRel.event),
     }));
 
-    // Step 5: Apply final filters
-    // - Remove matched/liked users
-    // - Ensure users have all required events
+    // Step 5: Apply final filters - Remove matched/liked users
     const filteredUserData = transformedUserData.filter((user) => {
-      // First check if this is a matched user we should exclude
+      // Check if this is a matched user we should exclude
       if (matchedUsers.includes(user.evm_address)) {
         return false;
       }
-
-      // If we have events to filter by, check them
-      if (eventsArray.length > 0) {
-        const userEvents: string[] = user.events!.map((event) => event.slug);
-
-        // Check if user has all required events
-        const hasAllEvents = eventsArray.every((event) =>
-          userEvents.includes(event)
-        );
-        if (!hasAllEvents) {
-          return false;
-        }
-      }
-
-      // User passed all filters
       return true;
     });
 

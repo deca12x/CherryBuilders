@@ -354,11 +354,11 @@ export const uploadProfilePicture = async (
 };
 
 /**
- * A utility function that fetches a given number of filtered users from the database
- * @param tags - The tags that the users must have
- * @param events - The events that the users must have attended
- * @param offset - The number of users that must be skipped. It's used for pagination
- * @param limit - The number of users that must be fetched
+ * A utility function to get filtered users based on tags and events
+ * @param tags - Array of tags to filter by (using AND logic - users must have ALL specified tags)
+ * @param events - Array of events to filter by (using AND logic - users must have ALL specified events)
+ * @param offset - Pagination offset
+ * @param limit - Pagination limit
  * @param jwt - The jwt needed to authorize the call
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
@@ -370,7 +370,8 @@ export const getFilteredUsers = async (
   jwt: string | null
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
   // Create a search param string from the tags and events and encodes it
-  // e.g. solidity%20dev,backend%20dev and event_1,event_2,event_3
+  // Tags are filtered with AND logic - users must have ALL specified tags
+  // Events are filtered with AND logic - users must have ALL specified events
   const eventsSearchParam = events.map(encodeURIComponent).join(",");
   const tagsSearchParam = tags.map(encodeURIComponent).join(",");
 
