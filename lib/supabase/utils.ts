@@ -1,5 +1,7 @@
 import { FiltersProp } from "../types";
 import { ChatMessageType, EventType, UserType } from "./types";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
  * A utility function to get a specific partial match from the database
@@ -261,10 +263,6 @@ export const getChatsFromUserAddress = async (
     error: undefined,
   };
 };
-
-// SEND EMAIL NOTIFICATIONS TO MATCHES
-// CREATE A sendEmailNotification FUNCTION
-// CREATE API ROUTE  /api/email/send-notification
 
 /**
  * A utility function to get a specific chat from the database
@@ -933,7 +931,6 @@ export async function updateUserEvent(
   }
 }
 
-// New function to add to lib/supabase/utils.ts
 /**
  * A utility function that retrieves all events from the database, regardless of active status
  * @param jwt - The jwt needed to authorize the call
@@ -1016,4 +1013,49 @@ export const getActiveEvents = async (
     data: body.data,
     error: undefined,
   };
+};
+
+/**
+ * Calculate profile completeness percentage based on filled fields
+ * @param user User profile data
+ * @param hasPOAPs Boolean indicating if user has POAPs
+ * @returns Number between 0-100 representing completeness percentage
+ */
+export const calculateProfileCompleteness = (
+  user: Partial<UserType>,
+  hasPOAPs: boolean = false
+): number => {
+  let score = 0;
+
+  // 1. Has email (10%)
+  if (user.email) score += 10;
+
+  // 2. Bio has more than 4 characters (10%)
+  if (user.bio && user.bio.length > 4) score += 10;
+
+  // 3. Looking for has more than 4 characters (10%)
+  if (user.looking_for && user.looking_for.length > 4) score += 10;
+
+  // 4. Building has more than 4 characters (10%)
+  if (user.building && user.building.length > 4) score += 10;
+
+  // 5. Has GitHub link (10%)
+  if (user.github_link) score += 10;
+
+  // 6. Has Twitter link (10%)
+  if (user.twitter_link) score += 10;
+
+  // 7. Has Farcaster link (10%)
+  if (user.farcaster_link) score += 10;
+
+  // 8. Has other link (10%)
+  if (user.other_link) score += 10;
+
+  // 9. Has between 1 and 4 tags (10%)
+  if (user.tags && user.tags.length >= 1 && user.tags.length <= 4) score += 10;
+
+  // 10. Has POAPs (10%)
+  if (hasPOAPs) score += 10;
+
+  return score;
 };
