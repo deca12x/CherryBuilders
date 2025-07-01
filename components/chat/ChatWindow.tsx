@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { formatDate } from "@/lib/chat/utils";
 
 interface ChatWindowProps {
   chat: ChatItem;
@@ -223,10 +224,7 @@ export default function ChatWindow({
                   >
                     <div>{message.message}</div>
                     <div className="flex justify-end w-full text-sm text-red-foreground">
-                      {new Date(message.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(message.created_at)}
                     </div>
                   </motion.div>
                 );
@@ -241,10 +239,7 @@ export default function ChatWindow({
                   >
                     {message.message}
                     <div className="flex justify-end w-full text-sm text-red-foreground">
-                      {new Date(message.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(message.created_at)}
                     </div>
                   </motion.div>
                 );
