@@ -5,7 +5,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, Send } from "lucide-react";
 import type { ChatItem } from "./ChatParent";
 import { createMessage, getChatMessages } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
@@ -46,6 +46,7 @@ export default function ChatWindow({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   // Fetch chat messages on component mount and when chat changes
   useEffect(() => {
@@ -291,6 +292,23 @@ export default function ChatWindow({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          <Button
+            type="button"
+            size="icon"
+            variant={notificationsEnabled ? "secondary" : "default"}
+            onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+            className={`transition-colors ${
+              notificationsEnabled
+                ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-700"
+                : "bg-zinc-800 hover:bg-zinc-700"
+            }`}
+          >
+            {notificationsEnabled ? (
+              <Bell className="h-4 w-4" />
+            ) : (
+              <BellOff className="h-4 w-4" />
+            )}
+          </Button>
           <Button
             type="submit"
             size="icon"
