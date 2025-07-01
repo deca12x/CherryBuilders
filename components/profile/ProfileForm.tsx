@@ -10,8 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 import { EventType, UserTag, UserType } from "@/lib/supabase/types";
 import { supabase } from "@/lib/supabase/supabase-client";
 import { RefreshCcw, Info, CheckCircle2 } from "lucide-react";
-import { uploadProfilePicture } from "@/lib/supabase/utils";
-import { getActiveEvents } from "@/lib/supabase/utils";
+import {
+  uploadProfilePicture,
+  getActiveEvents,
+  calculateProfileCompleteness,
+} from "@/lib/supabase/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { checkForBadWords } from "@/utils/language/badWordChecker";
 import {
@@ -21,6 +24,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface ProfileFormProps {
   initialData: UserType;
@@ -54,6 +64,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     initialSelectedEvents
   );
   const [activeEvents, setActiveEvents] = useState<EventType[]>([]);
+  const [hasPOAPs, setHasPOAPs] = useState(false);
 
   const availableTags: UserTag[] = [
     "Frontend dev",
@@ -93,6 +104,23 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
     fetchActiveEvents();
   }, [jwt, toast]);
+
+  useEffect(() => {
+    const checkPOAPs = async () => {
+      if (profileData.evm_address) {
+        try {
+          const response = await fetch(`/api/poap/${profileData.evm_address}`);
+          const data = await response.json();
+          setHasPOAPs(Array.isArray(data) && data.length > 0);
+        } catch (error) {
+          console.error("Failed to fetch POAPs:", error);
+          setHasPOAPs(false);
+        }
+      }
+    };
+
+    checkPOAPs();
+  }, [profileData.evm_address]);
 
   const handleChange = (
     field: keyof UserType,
@@ -327,6 +355,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     return value;
   };
 
+  const completenessScore = calculateProfileCompleteness(profileData, hasPOAPs);
+
   return (
     <motion.form
       onSubmit={handleSubmit}
@@ -335,6 +365,24 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       animate="visible"
       variants={containerVariants}
     >
+      <motion.div variants={itemVariants} className="mb-4">
+        <TooltipProvider>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2">
+                <Progress value={completenessScore} className="h-2" />
+                <span className="text-sm font-medium">
+                  {completenessScore}%
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Fill in your profile to be prioritized in searches</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </motion.div>
+
       <motion.div variants={itemVariants}>
         <Label
           htmlFor="profilePictures"
@@ -655,6 +703,24 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="mb-4">
+        <TooltipProvider>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2">
+                <Progress value={completenessScore} className="h-2" />
+                <span className="text-sm font-medium">
+                  {completenessScore}%
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Fill in your profile to be prioritized in searches</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </motion.div>
 
       <motion.div className="mt-6" variants={itemVariants}>
