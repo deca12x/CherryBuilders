@@ -103,13 +103,19 @@ export const updateMatch = async (
  * @param user_1_address - The address of the first user of the match
  * @param user_2_address - The address of the second user of the match
  * @param jwt - The jwt needed to authorize the call
+ * @param icebreaker_message - The icebreaker message for the match
  * @returns An object representing the response { success: boolean; data: any | null; error: any | undefined }
  */
 export const createMatch = async (
   user_1_address: string,
   user_2_address: string,
-  jwt: string | null
+  jwt: string | null,
+  icebreaker_message?: string
 ): Promise<{ success: boolean; data: any | null; error: any | undefined }> => {
+  console.log(
+    "createMatch called with icebreaker_message:",
+    icebreaker_message
+  );
   const response = await fetch("/api/matches", {
     method: "POST",
     headers: {
@@ -119,6 +125,7 @@ export const createMatch = async (
     body: JSON.stringify({
       user_1_address,
       user_2_address,
+      icebreaker_message,
     }),
   });
 
@@ -135,6 +142,7 @@ export const createMatch = async (
     user_1: user_1_address,
     user_2: user_2_address,
     timestamp: new Date().toISOString(),
+    has_icebreaker: !!icebreaker_message,
   });
 
   return {

@@ -120,8 +120,15 @@ export default function CompleteMatch() {
           });
         }
 
-        // Redirect to chat
-        router.push(`/chat?chatId=${specificChat.data?.id}`);
+        // Make sure we have a valid chat ID before redirecting
+        if (specificChat.data?.id) {
+          console.log("Redirecting to chat:", specificChat.data.id);
+          // Use replace instead of push for a cleaner navigation
+          router.replace(`/chat?chatId=${specificChat.data.id}`);
+        } else {
+          console.error("No chat ID available for redirection");
+          router.push("/matching");
+        }
       } catch (error) {
         console.error("Error completing match:", error);
         router.push("/matching");
@@ -129,7 +136,7 @@ export default function CompleteMatch() {
     };
 
     completeMatch();
-  }, [ready, responderWallet, initiatorWallet]);
+  }, [ready, responderWallet, initiatorWallet, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">

@@ -87,6 +87,7 @@ export interface MatchType {
   matched: boolean;
   partial_match_date?: string;
   full_match_date?: string;
+  icebreaker_message?: string;
 }
 
 export interface PasscodeType {
