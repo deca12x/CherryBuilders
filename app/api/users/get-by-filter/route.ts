@@ -2,13 +2,47 @@ import { supabase } from "@/lib/supabase/supabase-server";
 import { UserType } from "@/lib/supabase/types";
 import { NextRequest, NextResponse } from "next/server";
 
-// Helper function to randomize array order
-function shuffleArray(array: UserType[]): UserType[] {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+// Helper function to calculate a profile's completeness score
+function scoreToPrioritizeProfiles(user: UserType): number {
+  let score = 0;
+
+  // Priority 1: Has email (highest weight)
+  if (user.email) score += 100;
+
+  // Priority 2: Bio length
+  if (user.bio && user.bio.length > 4) score += 80;
+
+  // Priority 3: Looking for
+  if (user.looking_for && user.looking_for.length > 4) score += 70;
+
+  // Priority 4: Building
+  if (user.building && user.building.length > 4) score += 60;
+
+  // Priority 5: Has GitHub username
+  if (user.github_link) score += 50;
+
+  // Priority 6: Has GitHub link
+  if (user.github_link) score += 45;
+
+  // Priority 7: Has social links
+  if (user.twitter_link || user.farcaster_link || user.other_link) score += 30;
+
+  // Priority 8: Has optimal number of tags (1-4)
+  if (user.tags && user.tags.length >= 1 && user.tags.length <= 4) score += 20;
+
+  // Add a small random factor (0-5 points) to avoid identical ordering
+  score += Math.random() * 5;
+
+  return score;
+}
+
+// Helper function to prioritize profiles based on completeness
+function prioritizeProfiles(array: UserType[]): UserType[] {
+  return array.sort((a, b) => {
+    const scoreA = scoreToPrioritizeProfiles(a);
+    const scoreB = scoreToPrioritizeProfiles(b);
+    return scoreB - scoreA; // Higher scores first
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -200,9 +234,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: [] }, { status: 200 });
     }
 
-    // Step 6: Randomize results order
-    const shuffledData = shuffleArray(filteredUserData);
-    return NextResponse.json({ data: shuffledData }, { status: 200 });
+    // Step 6: Prioritize profiles based on completeness instead of random shuffle
+    const prioritizedData = prioritizeProfiles(filteredUserData);
+    return NextResponse.json({ data: prioritizedData }, { status: 200 });
   } catch (error) {
     console.error("Internal Server Error: ", error);
     return NextResponse.json(
