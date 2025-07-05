@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Bell, BellOff, Send } from "lucide-react";
 import type { ChatItem } from "./ChatParent";
-import { createMessage, getChatMessages } from "@/lib/supabase/utils";
+import { createMessage, getChatMessages, getUser } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";
-import type { ChatMessageType } from "@/lib/supabase/types";
+import type { ChatMessageType, UserType } from "@/lib/supabase/types";
 import {
   Tooltip,
   TooltipContent,
@@ -18,6 +18,10 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/chat/utils";
+import { canSendEmail } from "@/lib/email/canSendEmail";
+import { canSendMessage } from "@/lib/chat/canSendMessage";
+import { sendNotificationEmail } from "@/lib/email/sendNotificationEmail";
+import { toast } from "@/hooks/use-toast";
 
 interface ChatWindowProps {
   chat: ChatItem;
@@ -46,7 +50,70 @@ export default function ChatWindow({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [currentUserData, setCurrentUserData] = useState<UserType | null>(null);
+
+  // We use emailBellOn to check if the user can send an email notification or a message
+  const [emailBellOn, setemailBellOn] = useState(false);
+  const [canSendEmailStatus, setCanSendEmailStatus] = useState<{
+    canSend: boolean;
+    reason: string;
+  }>({ canSend: false, reason: "Checking..." });
+  const [canSendMessageStatus, setCanSendMessageStatus] = useState<{
+    canSend: boolean;
+    reason: string;
+  }>({ canSend: false, reason: "Checking..." });
+
+  // Fetch current user data
+  useEffect(() => {
+    const fetchCurrentUserData = async () => {
+      if (userAddress && authToken) {
+        try {
+          const { success, data, error } = await getUser(
+            userAddress,
+            authToken
+          );
+          if (success && data) {
+            setCurrentUserData(data);
+          } else if (error) {
+            console.error("Error fetching current user data:", error);
+          }
+        } catch (error) {
+          console.error("Error in fetchCurrentUserData:", error);
+        }
+      }
+    };
+
+    fetchCurrentUserData();
+  }, [userAddress, authToken]);
+
+  // Check if user can send a message or an email
+  useEffect(() => {
+    if (chat.chatMessages && chat.chatMessages.length > 0) {
+      // Run when session starts, chat messages change, or notifications are disabled
+      if (!emailBellOn) {
+        const messageResult = canSendMessage(
+          chat.chatMessages,
+          userAddress,
+          chat.otherUserData.evm_address,
+          new Date()
+        );
+        setCanSendMessageStatus(messageResult);
+      } else {
+        const emailResult = canSendEmail(
+          chat.chatMessages,
+          userAddress,
+          chat.otherUserData.evm_address,
+          new Date()
+        );
+        setCanSendEmailStatus(emailResult);
+      }
+    }
+  }, [chat.chatMessages, emailBellOn]);
+
+  // Toggle notifications enabled/disabled
+  const toggleNotifications = () => {
+    setemailBellOn(!emailBellOn);
+  };
 
   // Fetch chat messages on component mount and when chat changes
   useEffect(() => {
@@ -67,11 +134,6 @@ export default function ChatWindow({
         console.error("Error fetching messages:", error);
         setChatMessagesError(true);
       } else if (data) {
-        // Set the messages read value to true before adding them to the chat history
-        // const updatedMessages = data.map((msg: ChatMessageType) => {
-        //   return { ...msg, read: true };
-        // });
-
         // Search and set the messages in the correct chat
         const updatedChatHistory = chatHistory.map((chatItem) => {
           if (chatItem.id === chat.id) {
@@ -86,12 +148,6 @@ export default function ChatWindow({
         });
         // Update the chat history
         setChatHistory(() => updatedChatHistory);
-
-        // Update the messages read value in the database
-        // const { success, error } = await updateMessagesReadValue(selectedChatId, true, authToken);
-        // if (!success && error) {
-        //   console.error("Error updating messages read value:", error);
-        // }
 
         // Set loading state to false
         setChatMessagesLoading(false);
@@ -115,6 +171,31 @@ export default function ChatWindow({
   ) => {
     if (!messageText.trim()) return;
 
+    // Check if user can send message or email
+    if (emailBellOn) {
+      if (!canSendEmailStatus.canSend) {
+        toast({
+          title: "Cannot send email notification",
+          description: canSendEmailStatus.reason,
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      if (!canSendMessageStatus.canSend) {
+        toast({
+          title: "Cannot send message",
+          description: canSendMessageStatus.reason,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Determine if this should be an email notification
+    const shouldSendEmailNotification =
+      emailBellOn && canSendEmailStatus.canSend;
+
     const newMessage: ChatMessageType = {
       id: Date.now(),
       sender: userAddress,
@@ -124,7 +205,7 @@ export default function ChatWindow({
       created_at: new Date().toISOString(),
       type: type,
       requestId: requestId,
-      //read: false,
+      email_notification: shouldSendEmailNotification,
     };
 
     // Save the last message in case of UI revert
@@ -134,14 +215,14 @@ export default function ChatWindow({
     setChatHistory((prevChats: ChatItem[]) => {
       return prevChats.map((chatItem) => {
         if (chatItem.id === selectedChatId) {
+          const updatedMessages = [...chatItem.chatMessages, newMessage];
           return {
             ...chatItem,
-            chatMessages: [...chatItem.chatMessages, newMessage],
+            chatMessages: updatedMessages,
             lastMessage: {
               text: newMessage.message,
               date: newMessage.created_at,
               fromAddress: newMessage.sender,
-              //read: true,
             },
           };
         }
@@ -171,6 +252,50 @@ export default function ChatWindow({
           return chatItem;
         });
       });
+
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } else if (shouldSendEmailNotification) {
+      // Show a toast notification that the email was sent
+      toast({
+        title: "Email Notification Sent",
+        description: `${chat.otherUserData.name} will be notified about your message.`,
+      });
+
+      // Send email notification
+      try {
+        if (chat.otherUserData.email && currentUserData) {
+          await sendNotificationEmail({
+            senderName: currentUserData.name || userAddress,
+            senderImage:
+              currentUserData.profile_pictures &&
+              currentUserData.profile_pictures.length > 0
+                ? currentUserData.profile_pictures[0]
+                : "",
+            senderBio: currentUserData.bio || "",
+            senderBuilding: currentUserData.building || "",
+            senderLookingFor: currentUserData.looking_for || "",
+            chatLink: `${window.location.origin}/chat?id=${selectedChatId}`,
+            receiverEmail: chat.otherUserData.email,
+            message: newMessage.message,
+            jwt: authToken || "",
+          });
+        } else if (!chat.otherUserData.email) {
+          console.warn(
+            "Cannot send email notification: Recipient has no email address"
+          );
+        } else if (!currentUserData) {
+          console.warn(
+            "Cannot send email notification: Current user data not available"
+          );
+        }
+      } catch (emailError) {
+        console.error("Error sending email notification:", emailError);
+        // Don't show an error to the user, as the message was sent successfully
+      }
     }
   };
 
@@ -281,6 +406,10 @@ export default function ChatWindow({
                       handleSend(newMessage);
                     }
                   }}
+                  disabled={
+                    (emailBellOn && !canSendEmailStatus.canSend) ||
+                    (!emailBellOn && !canSendMessageStatus.canSend)
+                  }
                 />
               </TooltipTrigger>
               <TooltipContent className="max-w-[300px] p-3 text-sm">
@@ -292,27 +421,47 @@ export default function ChatWindow({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button
-            type="button"
-            size="icon"
-            variant={notificationsEnabled ? "secondary" : "default"}
-            onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-            className={`transition-colors ${
-              notificationsEnabled
-                ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-700"
-                : "bg-zinc-800 hover:bg-zinc-700"
-            }`}
-          >
-            {notificationsEnabled ? (
-              <Bell className="h-4 w-4" />
-            ) : (
-              <BellOff className="h-4 w-4" />
-            )}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={emailBellOn ? "secondary" : "default"}
+                  onClick={toggleNotifications}
+                  className={`transition-colors ${
+                    emailBellOn
+                      ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-700"
+                      : "bg-zinc-800 hover:bg-zinc-700"
+                  }`}
+                >
+                  {emailBellOn ? (
+                    <Bell className="h-4 w-4" />
+                  ) : (
+                    <BellOff className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[250px] p-2 text-xs">
+                {emailBellOn
+                  ? canSendEmailStatus.canSend
+                    ? "Email notification will be sent with your message"
+                    : `Cannot send email: ${canSendEmailStatus.reason}`
+                  : !canSendMessageStatus.canSend
+                    ? canSendMessageStatus.reason
+                    : "Email notifications are disabled"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button
             type="submit"
             size="icon"
             onClick={() => handleSend(newMessage)}
+            disabled={
+              (emailBellOn && !canSendEmailStatus.canSend) ||
+              (!emailBellOn && !canSendMessageStatus.canSend) ||
+              !newMessage.trim()
+            }
           >
             <Send className="h-4 w-4" />
           </Button>

@@ -44,6 +44,7 @@ export interface ChatMessageType {
   paid?: boolean;
   chain_id?: number;
   //read: boolean;
+  email_notification?: boolean;
 }
 
 export interface ApiKeyType {
