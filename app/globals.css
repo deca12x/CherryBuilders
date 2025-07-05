@@ -16,6 +16,8 @@
     --grey-foreground: 240 5% 64.9%;
     --dark-grey: 240 3.7% 15.9%;
     --dark-grey-foreground: 0 0% 98%;
+    --zinc: 240 6% 90%;
+    --zinc-foreground: 240 5% 64.9%;
     --card: 24 9.8% 10%;
     --card-foreground: 0 0% 95%;
     --popover: 0 0% 9%;
@@ -44,6 +46,8 @@
     --dark-grey-foreground: 0 0% 98%;
     --grey: 0 0% 15%;
     --grey-foreground: 240 5% 64.9%;
+    --zinc: 240 6% 90%;
+    --zinc-foreground: 240 5% 64.9%;
     --accent: 12 6.5% 15.1%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;

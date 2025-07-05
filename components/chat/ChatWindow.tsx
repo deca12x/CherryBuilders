@@ -349,7 +349,7 @@ export default function ChatWindow({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0.07 * index }}
                     key={message.id}
-                    className="flex flex-col bg-red text-red-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
+                    className="flex flex-col bg-red/75 text-red-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
                   >
                     <div>{message.message}</div>
                     <div className="flex justify-end w-full text-sm text-red-foreground">
@@ -436,8 +436,8 @@ export default function ChatWindow({
               onClick={toggleNotifications}
               className={`transition-colors ${
                 emailBellOn
-                  ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-700"
-                  : "bg-zinc-800 hover:bg-zinc-700"
+                  ? "bg-zinc hover:bg-zinc/75 text-dark-grey"
+                  : "bg-dark-grey hover:bg-zinc/25"
               }`}
             >
               {emailBellOn ? (
