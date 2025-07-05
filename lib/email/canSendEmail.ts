@@ -102,12 +102,12 @@ export function canSendEmail(
         };
       } else {
         const hoursToWait = Math.ceil(
-          (now.getTime() - twelveHoursAfterLastEmail.getTime()) /
+          (twelveHoursAfterLastEmail.getTime() - now.getTime()) /
             (1000 * 60 * 60)
         );
         return {
           canSend: false,
-          reason: `Need to wait ${hoursToWait} more hours, unless they write back`,
+          reason: `Need to wait ${hoursToWait} more hours, unless they write back. Turn off the bell to send a message with no email.`,
         };
       }
     }
@@ -132,17 +132,16 @@ export function canSendEmail(
     if (now >= twentyFourHoursAfterLastEmail) {
       return {
         canSend: true,
-        reason:
-          "Other user sent messages in last 3 days and after last email notification",
+        reason: "Other user sent messages in last 3 days and",
       };
     } else {
       const hoursToWait = Math.ceil(
-        (now.getTime() - twentyFourHoursAfterLastEmail.getTime()) /
+        (twentyFourHoursAfterLastEmail.getTime() - now.getTime()) /
           (1000 * 60 * 60)
       );
       return {
         canSend: false,
-        reason: `Need to wait ${hoursToWait} more hours after last email notification, unless they write back`,
+        reason: `Need to wait ${hoursToWait} more hours, unless they write back. Turn off the bell to send a message with no email.`,
       };
     }
   }
@@ -172,17 +171,17 @@ export function canSendEmail(
       };
     } else {
       const hoursToWait = Math.ceil(
-        (now.getTime() - fortyEightHoursAfterLastEmail.getTime()) /
+        (fortyEightHoursAfterLastEmail.getTime() - now.getTime()) /
           (1000 * 60 * 60)
       );
       return {
         canSend: false,
-        reason: `Need to wait ${hoursToWait} more hours after second-to-last email notification, unless they write back`,
+        reason: `Need to wait ${hoursToWait} more hours, unless they write back. Turn off the bell to send a message with no email.`,
       };
     }
   }
 
-  // Case 5/8: If user B has sent any message in the last 14 days AND user B has sent any message after user A's third-to-last email notification, then user A can send an email notification 3 days after their last one
+  // Case 5/8: If user B has sent any message in the last 14 days AND user B has sent any message after user A's third-to-last email notification, then user A can send an email notification 72h after their last one
   const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const otherUserMessagesLast14Days = otherUserMessages.filter(
     (msg) => new Date(msg.created_at) >= fourteenDaysAgo
@@ -209,11 +208,11 @@ export function canSendEmail(
       };
     } else {
       const hoursToWait = Math.ceil(
-        (now.getTime() - threeDaysAfterLastEmail.getTime()) / (1000 * 60 * 60)
+        (threeDaysAfterLastEmail.getTime() - now.getTime()) / (1000 * 60 * 60)
       );
       return {
         canSend: false,
-        reason: `Need to wait ${hoursToWait} more hours after last email notification, unless they write back`,
+        reason: `Need to wait ${hoursToWait} more hours, unless they write back. Turn off the bell to send a message with no email.`,
       };
     }
   }
@@ -230,11 +229,11 @@ export function canSendEmail(
       };
     } else {
       const hoursToWait = Math.ceil(
-        (now.getTime() - sevenDaysAfterLastEmail.getTime()) / (1000 * 60 * 60)
+        (sevenDaysAfterLastEmail.getTime() - now.getTime()) / (1000 * 60 * 60)
       );
       return {
         canSend: false,
-        reason: `Need to wait ${hoursToWait} more hours after last email notification, unless they write back`,
+        reason: `Need to wait ${hoursToWait} more hours, unless they write back. Turn off the bell to send a message with no email.`,
       };
     }
   }
@@ -255,12 +254,12 @@ export function canSendEmail(
       };
     } else {
       const hoursToWait = Math.ceil(
-        (now.getTime() - fourteenDaysAfterLastEmail.getTime()) /
+        (fourteenDaysAfterLastEmail.getTime() - now.getTime()) /
           (1000 * 60 * 60)
       );
       return {
         canSend: false,
-        reason: `Need to wait ${hoursToWait} more hours after last email notification, unless they write back`,
+        reason: `Need to wait ${hoursToWait} more hours, unless they write back. Turn off the bell to send a message with no email.`,
       };
     }
   }

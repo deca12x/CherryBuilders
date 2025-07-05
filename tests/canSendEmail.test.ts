@@ -99,7 +99,7 @@ function canSendEmail(
         );
         return {
           canSend: false,
-          reason: `Need to wait ${hoursToWait} more hours, unless they write back`,
+          reason: `Need to wait ${hoursToWait} more hours after last email notification, unless they write back`,
         };
       }
     }

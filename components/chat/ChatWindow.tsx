@@ -171,25 +171,15 @@ export default function ChatWindow({
   ) => {
     if (!messageText.trim()) return;
 
-    // Check if user can send message or email
-    if (emailBellOn) {
-      if (!canSendEmailStatus.canSend) {
-        toast({
-          title: "Cannot send email notification",
-          description: canSendEmailStatus.reason,
-          variant: "destructive",
-        });
-        return;
-      }
-    } else {
-      if (!canSendMessageStatus.canSend) {
-        toast({
-          title: "Cannot send message",
-          description: canSendMessageStatus.reason,
-          variant: "destructive",
-        });
-        return;
-      }
+    // Check if user can send - NEW VALIDATION
+    const canProceed = emailBellOn
+      ? canSendEmailStatus.canSend
+      : canSendMessageStatus.canSend;
+
+    if (!canProceed) {
+      // Remove toast notifications for validation errors
+      // The tooltip will already show the error message
+      return;
     }
 
     // Determine if this should be an email notification
@@ -406,62 +396,43 @@ export default function ChatWindow({
                       handleSend(newMessage);
                     }
                   }}
-                  disabled={
-                    (emailBellOn && !canSendEmailStatus.canSend) ||
-                    (!emailBellOn && !canSendMessageStatus.canSend)
-                  }
                 />
               </TooltipTrigger>
               <TooltipContent className="max-w-[300px] p-3 text-sm">
-                <p>
-                  We don&apos;t want to spam you, you won&apos;t receive email
-                  notifications after this one, so we suggest exchanging contact
-                  details
-                </p>
+                {emailBellOn
+                  ? canSendEmailStatus.canSend
+                    ? `${chat.otherUserData.name} will receive an email with your message`
+                    : `Cannot send email: ${canSendEmailStatus.reason}`
+                  : !canSendMessageStatus.canSend
+                    ? canSendMessageStatus.reason
+                    : `Click the bell to notify ${chat.otherUserData.name} by email`}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={emailBellOn ? "secondary" : "default"}
-                  onClick={toggleNotifications}
-                  className={`transition-colors ${
-                    emailBellOn
-                      ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-700"
-                      : "bg-zinc-800 hover:bg-zinc-700"
-                  }`}
-                >
-                  {emailBellOn ? (
-                    <Bell className="h-4 w-4" />
-                  ) : (
-                    <BellOff className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[250px] p-2 text-xs">
-                {emailBellOn
-                  ? canSendEmailStatus.canSend
-                    ? "Email notification will be sent with your message"
-                    : `Cannot send email: ${canSendEmailStatus.reason}`
-                  : !canSendMessageStatus.canSend
-                    ? canSendMessageStatus.reason
-                    : "Email notifications are disabled"}
-              </TooltipContent>
-            </Tooltip>
+            <Button
+              type="button"
+              size="icon"
+              variant={emailBellOn ? "secondary" : "default"}
+              onClick={toggleNotifications}
+              className={`transition-colors ${
+                emailBellOn
+                  ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-700"
+                  : "bg-zinc-800 hover:bg-zinc-700"
+              }`}
+            >
+              {emailBellOn ? (
+                <Bell className="h-4 w-4" />
+              ) : (
+                <BellOff className="h-4 w-4" />
+              )}
+            </Button>
           </TooltipProvider>
           <Button
             type="submit"
             size="icon"
             onClick={() => handleSend(newMessage)}
-            disabled={
-              (emailBellOn && !canSendEmailStatus.canSend) ||
-              (!emailBellOn && !canSendMessageStatus.canSend) ||
-              !newMessage.trim()
-            }
+            disabled={!newMessage.trim()}
           >
             <Send className="h-4 w-4" />
           </Button>
