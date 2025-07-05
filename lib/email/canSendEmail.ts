@@ -50,14 +50,14 @@ export function canSendEmail(
   const lastEmailNotificationDate = new Date(lastEmailNotification.created_at);
   const secondToLastEmailNotification =
     userEmailNotifications[userEmailNotifications.length - 2];
-  const secondToLastEmailNotificationDate = new Date(
-    secondToLastEmailNotification.created_at
-  );
+  const secondToLastEmailNotificationDate = secondToLastEmailNotification
+    ? new Date(secondToLastEmailNotification.created_at)
+    : null;
   const thirdToLastEmailNotification =
     userEmailNotifications[userEmailNotifications.length - 3];
-  const thirdToLastEmailNotificationDate = new Date(
-    thirdToLastEmailNotification.created_at
-  );
+  const thirdToLastEmailNotificationDate = thirdToLastEmailNotification
+    ? new Date(thirdToLastEmailNotification.created_at)
+    : null;
 
   // Get messages from the other user
   const otherUserMessages = sortedMessages.filter(
@@ -72,8 +72,9 @@ export function canSendEmail(
   }
 
   // Case 2/8: If there are 2 messages at least 3 hours apart in the last 2 days, then user A can send an email notification 12h after their last one
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
   const otherUserMessagesLast2Days = otherUserMessages.filter(
-    (msg) => new Date(msg.created_at) >= new Date(now.getDate() - 2)
+    (msg) => new Date(msg.created_at) >= twoDaysAgo
   );
   if (otherUserMessagesLast2Days.length >= 2) {
     const firstMsg = otherUserMessagesLast2Days[0];
@@ -113,9 +114,9 @@ export function canSendEmail(
   }
 
   // Case 3/8: If user B has sent any message in the last 3 days AND user B has sent any message after user A's last email notification, then user A can send an email notification 24h after their last one
-  // Messages from the other user in the last 3 days
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
   const otherUserMessagesLast3Days = otherUserMessages.filter(
-    (msg) => new Date(msg.created_at) >= new Date(now.getDate() - 3)
+    (msg) => new Date(msg.created_at) >= threeDaysAgo
   );
   // User B's last message after user A's last email notification?
   const messageAfterLastEmailNotification =
@@ -147,13 +148,15 @@ export function canSendEmail(
   }
 
   // Case 4/8: If user B has sent any message in the last 7 days AND user B has sent any message after user A's second-to-last email notification, then user A can send an email notification 48h after their last one
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const otherUserMessagesLast7Days = otherUserMessages.filter(
-    (msg) => new Date(msg.created_at) >= new Date(now.getDate() - 7)
+    (msg) => new Date(msg.created_at) >= sevenDaysAgo
   );
   // User B's last message after user A's second-to-last email notification?
   const messageAfterSecondToLastEmailNotification =
+    secondToLastEmailNotificationDate &&
     new Date(otherUserMessages[otherUserMessages.length - 1].created_at) >
-    secondToLastEmailNotificationDate;
+      secondToLastEmailNotificationDate;
   if (
     otherUserMessagesLast7Days.length > 0 &&
     messageAfterSecondToLastEmailNotification
@@ -180,13 +183,15 @@ export function canSendEmail(
   }
 
   // Case 5/8: If user B has sent any message in the last 14 days AND user B has sent any message after user A's third-to-last email notification, then user A can send an email notification 3 days after their last one
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const otherUserMessagesLast14Days = otherUserMessages.filter(
-    (msg) => new Date(msg.created_at) >= new Date(now.getDate() - 14)
+    (msg) => new Date(msg.created_at) >= fourteenDaysAgo
   );
   // User B's last message after user A's third-to-last email notification?
   const messageAfterThirdToLastEmailNotification =
+    thirdToLastEmailNotificationDate &&
     new Date(otherUserMessages[otherUserMessages.length - 1].created_at) >
-    thirdToLastEmailNotificationDate;
+      thirdToLastEmailNotificationDate;
 
   if (
     otherUserMessagesLast14Days.length > 0 &&
@@ -235,8 +240,9 @@ export function canSendEmail(
   }
 
   // Case 7/8: If user B has sent any message in the last 30 days, then user A can send an email notification 14 days after their last one
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const otherUserMessagesLast30Days = otherUserMessages.filter(
-    (msg) => new Date(msg.created_at) >= new Date(now.getDate() - 30)
+    (msg) => new Date(msg.created_at) >= thirtyDaysAgo
   );
   if (otherUserMessagesLast30Days.length > 0) {
     const fourteenDaysAfterLastEmail = new Date(
