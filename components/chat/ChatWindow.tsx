@@ -51,6 +51,7 @@ export default function ChatWindow({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentUserData, setCurrentUserData] = useState<UserType | null>(null);
+  const [isPointlessToSwitch, setIsPointlessToSwitch] = useState(false);
 
   // We use emailBellOn to check if the user can send an email notification or a message
   const [emailBellOn, setemailBellOn] = useState(false);
@@ -62,6 +63,9 @@ export default function ChatWindow({
     canSend: boolean;
     reason: string;
   }>({ canSend: false, reason: "Checking..." });
+
+  // Add a ref for the input element
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Fetch current user data
   useEffect(() => {
@@ -90,23 +94,26 @@ export default function ChatWindow({
   useEffect(() => {
     if (chat.chatMessages && chat.chatMessages.length > 0) {
       // Run when session starts, chat messages change, or notifications are disabled
-      if (!emailBellOn) {
-        const messageResult = canSendMessage(
-          chat.chatMessages,
-          userAddress,
-          chat.otherUserData.evm_address,
-          new Date()
-        );
-        setCanSendMessageStatus(messageResult);
-      } else {
-        const emailResult = canSendEmail(
-          chat.chatMessages,
-          userAddress,
-          chat.otherUserData.evm_address,
-          new Date()
-        );
-        setCanSendEmailStatus(emailResult);
-      }
+
+      const messageResult = canSendMessage(
+        chat.chatMessages,
+        userAddress,
+        chat.otherUserData.evm_address,
+        new Date()
+      );
+      setCanSendMessageStatus(messageResult);
+
+      const emailResult = canSendEmail(
+        chat.chatMessages,
+        userAddress,
+        chat.otherUserData.evm_address,
+        new Date()
+      );
+      setCanSendEmailStatus(emailResult);
+
+      setIsPointlessToSwitch(
+        !emailBellOn && messageResult.canSend && !emailResult.canSend
+      );
     }
   }, [chat.chatMessages, emailBellOn]);
 
@@ -221,6 +228,12 @@ export default function ChatWindow({
     });
 
     setNewMessage("");
+
+    // Blur the input field to hide the tooltip
+    if (inputRef.current) {
+      inputRef.current.blur();
+    }
+    setIsInputFocused(false);
 
     // Send to Supabase
     const { error } = await createMessage(newMessage, authToken);
@@ -381,9 +394,13 @@ export default function ChatWindow({
       <div className="p-4 border-t border-border">
         <div className="flex space-x-2">
           <TooltipProvider>
-            <Tooltip delayDuration={0} open={isInputFocused}>
+            <Tooltip
+              delayDuration={0}
+              open={isInputFocused && !isPointlessToSwitch}
+            >
               <TooltipTrigger asChild>
                 <Input
+                  ref={inputRef}
                   className="flex"
                   placeholder="Type your message..."
                   type="text"
@@ -403,9 +420,11 @@ export default function ChatWindow({
                   ? canSendEmailStatus.canSend
                     ? `${chat.otherUserData.name} will receive an email with your message`
                     : `Cannot send email: ${canSendEmailStatus.reason}`
-                  : !canSendMessageStatus.canSend
-                    ? canSendMessageStatus.reason
-                    : `Click the bell to notify ${chat.otherUserData.name} by email`}
+                  : canSendMessageStatus.canSend
+                    ? canSendEmailStatus.canSend
+                      ? `Click the bell to notify ${chat.otherUserData.name} by email`
+                      : "remove tooltip in this case"
+                    : `Wait for ${chat.otherUserData.name}'s response`}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
