@@ -36,6 +36,10 @@ const config: Config = {
           DEFAULT: "hsl(var(--dark-grey))",
           foreground: "hsl(var(--dark-grey-foreground))",
         },
+        zinc: {
+          DEFAULT: "hsl(var(--zinc))",
+          foreground: "hsl(var(--zinc-foreground))",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--white))",
         card: {

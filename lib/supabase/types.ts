@@ -44,6 +44,7 @@ export interface ChatMessageType {
   paid?: boolean;
   chain_id?: number;
   //read: boolean;
+  email_notification?: boolean;
 }
 
 export interface ApiKeyType {
@@ -87,6 +88,7 @@ export interface MatchType {
   matched: boolean;
   partial_match_date?: string;
   full_match_date?: string;
+  icebreaker_message?: string;
 }
 
 export interface PasscodeType {

@@ -7,7 +7,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase URL or Anon Key");
 }
 
-export const createSupabaseClient = async (evmAddress?: string, privyAuthToken?: string) => {
+export const createSupabaseClient = async (
+  evmAddress?: string,
+  privyAuthToken?: string
+) => {
   let supabaseJWT;
 
   if (evmAddress && privyAuthToken) {

@@ -198,6 +198,7 @@ export default function MatchingParent({
   };
 
   const handleIcebreaker = async (message: string) => {
+    console.log("handleIcebreaker received message:", message);
     if (!address || !currentUser) {
       return;
     }
@@ -243,7 +244,8 @@ export default function MatchingParent({
         const newMatch = await createMatch(
           address,
           currentUser.evm_address,
-          jwt
+          jwt,
+          message
         );
         if (!newMatch.success) throw Error(newMatch.error);
       }

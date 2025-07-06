@@ -5,18 +5,23 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, Send } from "lucide-react";
 import type { ChatItem } from "./ChatParent";
-import { createMessage, getChatMessages } from "@/lib/supabase/utils";
+import { createMessage, getChatMessages, getUser } from "@/lib/supabase/utils";
 import { motion } from "framer-motion";
 import LoadingSpinner from "../ui/loading-spinner";
-import type { ChatMessageType } from "@/lib/supabase/types";
+import type { ChatMessageType, UserType } from "@/lib/supabase/types";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { formatDate } from "@/lib/chat/utils";
+import { canSendEmail } from "@/lib/email/canSendEmail";
+import { canSendMessage } from "@/lib/chat/canSendMessage";
+import { sendNotificationEmail } from "@/lib/email/sendNotificationEmail";
+import { toast } from "@/hooks/use-toast";
 
 interface ChatWindowProps {
   chat: ChatItem;
@@ -45,6 +50,77 @@ export default function ChatWindow({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [currentUserData, setCurrentUserData] = useState<UserType | null>(null);
+  const [isPointlessToSwitch, setIsPointlessToSwitch] = useState(false);
+
+  // We use emailBellOn to check if the user can send an email notification or a message
+  const [emailBellOn, setemailBellOn] = useState(false);
+  const [canSendEmailStatus, setCanSendEmailStatus] = useState<{
+    canSend: boolean;
+    reason: string;
+  }>({ canSend: false, reason: "Checking..." });
+  const [canSendMessageStatus, setCanSendMessageStatus] = useState<{
+    canSend: boolean;
+    reason: string;
+  }>({ canSend: false, reason: "Checking..." });
+
+  // Add a ref for the input element
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch current user data
+  useEffect(() => {
+    const fetchCurrentUserData = async () => {
+      if (userAddress && authToken) {
+        try {
+          const { success, data, error } = await getUser(
+            userAddress,
+            authToken
+          );
+          if (success && data) {
+            setCurrentUserData(data);
+          } else if (error) {
+            console.error("Error fetching current user data:", error);
+          }
+        } catch (error) {
+          console.error("Error in fetchCurrentUserData:", error);
+        }
+      }
+    };
+
+    fetchCurrentUserData();
+  }, [userAddress, authToken]);
+
+  // Check if user can send a message or an email
+  useEffect(() => {
+    if (chat.chatMessages && chat.chatMessages.length > 0) {
+      // Run when session starts, chat messages change, or notifications are disabled
+
+      const messageResult = canSendMessage(
+        chat.chatMessages,
+        userAddress,
+        chat.otherUserData.evm_address,
+        new Date()
+      );
+      setCanSendMessageStatus(messageResult);
+
+      const emailResult = canSendEmail(
+        chat.chatMessages,
+        userAddress,
+        chat.otherUserData.evm_address,
+        new Date()
+      );
+      setCanSendEmailStatus(emailResult);
+
+      setIsPointlessToSwitch(
+        !emailBellOn && messageResult.canSend && !emailResult.canSend
+      );
+    }
+  }, [chat.chatMessages, emailBellOn]);
+
+  // Toggle notifications enabled/disabled
+  const toggleNotifications = () => {
+    setemailBellOn(!emailBellOn);
+  };
 
   // Fetch chat messages on component mount and when chat changes
   useEffect(() => {
@@ -65,11 +141,6 @@ export default function ChatWindow({
         console.error("Error fetching messages:", error);
         setChatMessagesError(true);
       } else if (data) {
-        // Set the messages read value to true before adding them to the chat history
-        // const updatedMessages = data.map((msg: ChatMessageType) => {
-        //   return { ...msg, read: true };
-        // });
-
         // Search and set the messages in the correct chat
         const updatedChatHistory = chatHistory.map((chatItem) => {
           if (chatItem.id === chat.id) {
@@ -84,12 +155,6 @@ export default function ChatWindow({
         });
         // Update the chat history
         setChatHistory(() => updatedChatHistory);
-
-        // Update the messages read value in the database
-        // const { success, error } = await updateMessagesReadValue(selectedChatId, true, authToken);
-        // if (!success && error) {
-        //   console.error("Error updating messages read value:", error);
-        // }
 
         // Set loading state to false
         setChatMessagesLoading(false);
@@ -113,6 +178,21 @@ export default function ChatWindow({
   ) => {
     if (!messageText.trim()) return;
 
+    // Check if user can send - NEW VALIDATION
+    const canProceed = emailBellOn
+      ? canSendEmailStatus.canSend
+      : canSendMessageStatus.canSend;
+
+    if (!canProceed) {
+      // Remove toast notifications for validation errors
+      // The tooltip will already show the error message
+      return;
+    }
+
+    // Determine if this should be an email notification
+    const shouldSendEmailNotification =
+      emailBellOn && canSendEmailStatus.canSend;
+
     const newMessage: ChatMessageType = {
       id: Date.now(),
       sender: userAddress,
@@ -122,7 +202,7 @@ export default function ChatWindow({
       created_at: new Date().toISOString(),
       type: type,
       requestId: requestId,
-      //read: false,
+      email_notification: shouldSendEmailNotification,
     };
 
     // Save the last message in case of UI revert
@@ -132,14 +212,14 @@ export default function ChatWindow({
     setChatHistory((prevChats: ChatItem[]) => {
       return prevChats.map((chatItem) => {
         if (chatItem.id === selectedChatId) {
+          const updatedMessages = [...chatItem.chatMessages, newMessage];
           return {
             ...chatItem,
-            chatMessages: [...chatItem.chatMessages, newMessage],
+            chatMessages: updatedMessages,
             lastMessage: {
               text: newMessage.message,
               date: newMessage.created_at,
               fromAddress: newMessage.sender,
-              //read: true,
             },
           };
         }
@@ -148,6 +228,12 @@ export default function ChatWindow({
     });
 
     setNewMessage("");
+
+    // Blur the input field to hide the tooltip
+    if (inputRef.current) {
+      inputRef.current.blur();
+    }
+    setIsInputFocused(false);
 
     // Send to Supabase
     const { error } = await createMessage(newMessage, authToken);
@@ -169,6 +255,50 @@ export default function ChatWindow({
           return chatItem;
         });
       });
+
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } else if (shouldSendEmailNotification) {
+      // Show a toast notification that the email was sent
+      toast({
+        title: "Email Notification Sent",
+        description: `${chat.otherUserData.name} will be notified about your message.`,
+      });
+
+      // Send email notification
+      try {
+        if (chat.otherUserData.email && currentUserData) {
+          await sendNotificationEmail({
+            senderName: currentUserData.name || userAddress,
+            senderImage:
+              currentUserData.profile_pictures &&
+              currentUserData.profile_pictures.length > 0
+                ? currentUserData.profile_pictures[0]
+                : "",
+            senderBio: currentUserData.bio || "",
+            senderBuilding: currentUserData.building || "",
+            senderLookingFor: currentUserData.looking_for || "",
+            chatLink: `${window.location.origin}/chat?id=${selectedChatId}`,
+            receiverEmail: chat.otherUserData.email,
+            message: newMessage.message,
+            jwt: authToken || "",
+          });
+        } else if (!chat.otherUserData.email) {
+          console.warn(
+            "Cannot send email notification: Recipient has no email address"
+          );
+        } else if (!currentUserData) {
+          console.warn(
+            "Cannot send email notification: Current user data not available"
+          );
+        }
+      } catch (emailError) {
+        console.error("Error sending email notification:", emailError);
+        // Don't show an error to the user, as the message was sent successfully
+      }
     }
   };
 
@@ -219,14 +349,11 @@ export default function ChatWindow({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0.07 * index }}
                     key={message.id}
-                    className="flex flex-col bg-red text-red-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
+                    className="flex flex-col bg-red/75 text-red-foreground px-3 py-2 rounded-lg max-w-[65%] ml-auto mr-2"
                   >
                     <div>{message.message}</div>
                     <div className="flex justify-end w-full text-sm text-red-foreground">
-                      {new Date(message.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(message.created_at)}
                     </div>
                   </motion.div>
                 );
@@ -241,10 +368,7 @@ export default function ChatWindow({
                   >
                     {message.message}
                     <div className="flex justify-end w-full text-sm text-red-foreground">
-                      {new Date(message.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(message.created_at)}
                     </div>
                   </motion.div>
                 );
@@ -270,9 +394,13 @@ export default function ChatWindow({
       <div className="p-4 border-t border-border">
         <div className="flex space-x-2">
           <TooltipProvider>
-            <Tooltip delayDuration={0} open={isInputFocused}>
+            <Tooltip
+              delayDuration={0}
+              open={isInputFocused && !isPointlessToSwitch}
+            >
               <TooltipTrigger asChild>
                 <Input
+                  ref={inputRef}
                   className="flex"
                   placeholder="Type your message..."
                   type="text"
@@ -288,18 +416,42 @@ export default function ChatWindow({
                 />
               </TooltipTrigger>
               <TooltipContent className="max-w-[300px] p-3 text-sm">
-                <p>
-                  We don&apos;t want to spam you, you won&apos;t receive email
-                  notifications after this one, so we suggest exchanging contact
-                  details
-                </p>
+                {emailBellOn
+                  ? canSendEmailStatus.canSend
+                    ? `${chat.otherUserData.name} will receive an email with your message`
+                    : `Cannot send email: ${canSendEmailStatus.reason}`
+                  : canSendMessageStatus.canSend
+                    ? canSendEmailStatus.canSend
+                      ? `Click the bell to notify ${chat.otherUserData.name} by email`
+                      : "remove tooltip in this case"
+                    : `Wait for ${chat.otherUserData.name}'s response`}
               </TooltipContent>
             </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Button
+              type="button"
+              size="icon"
+              variant={emailBellOn ? "secondary" : "default"}
+              onClick={toggleNotifications}
+              className={`transition-colors ${
+                emailBellOn
+                  ? "bg-zinc hover:bg-zinc/75 text-dark-grey"
+                  : "bg-dark-grey hover:bg-zinc/25"
+              }`}
+            >
+              {emailBellOn ? (
+                <Bell className="h-4 w-4" />
+              ) : (
+                <BellOff className="h-4 w-4" />
+              )}
+            </Button>
           </TooltipProvider>
           <Button
             type="submit"
             size="icon"
             onClick={() => handleSend(newMessage)}
+            disabled={!newMessage.trim()}
           >
             <Send className="h-4 w-4" />
           </Button>
