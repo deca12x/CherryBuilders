@@ -16,8 +16,10 @@ export async function POST(req: NextRequest) {
   const { data: existingChat, error: existingChatError } = await supabase
     .from("chats")
     .select("*")
-    .eq("user_1", user_1_address)
-    .eq("user_2", user_2_address);
+    .or(
+      `and(user_1.eq.${user_1_address},user_2.eq.${user_2_address}),and(user_1.eq.${user_2_address},user_2.eq.${user_1_address})`
+    )
+    .limit(1);
 
   if (existingChatError) throw existingChatError;
 
