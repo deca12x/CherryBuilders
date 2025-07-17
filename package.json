@@ -79,6 +79,7 @@
     "recharts": "^2.12.7",
     "resend": "^4.1.2",
     "sonner": "^1.5.0",
+    "swiper": "^11.2.10",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.1.6",
