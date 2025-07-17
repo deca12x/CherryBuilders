@@ -84,7 +84,7 @@ export const ALL_EVENTS = [
     slug: "aleph_2025",
     name: "Aleph 2025",
     // Promotional fields
-    title: "Aleph Hackathon - Aug 29-31",
+    title: "Aleph - Aug 29-31",
     url: "https://alephhackathon.notion.site/",
     image: "/images/eventDialogAleph2.png",
     alt: "Aleph Hackathon event promotion",
