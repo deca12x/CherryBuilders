@@ -15,7 +15,7 @@ export interface FiltersProp {
   tags: Partial<Record<UserTag, boolean>>;
   events: {
     [key: string]: {
-      name: string;
+      title: string;
       selected: boolean;
     };
   };

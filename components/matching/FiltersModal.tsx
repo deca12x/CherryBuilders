@@ -130,7 +130,7 @@ export default function FiltersModal({
                         events: {
                           ...prev.events,
                           [event]: {
-                            name: prev.events[event].name,
+                            title: prev.events[event].title,
                             selected: !prev.events[event].selected,
                           },
                         },
@@ -141,7 +141,7 @@ export default function FiltersModal({
                     }
                     className="w-full text-wrap leading-4 p-5 h-3"
                   >
-                    {filters.events[event].name}
+                    {filters.events[event].title}
                   </Button2>
                 ))}
             </div>
